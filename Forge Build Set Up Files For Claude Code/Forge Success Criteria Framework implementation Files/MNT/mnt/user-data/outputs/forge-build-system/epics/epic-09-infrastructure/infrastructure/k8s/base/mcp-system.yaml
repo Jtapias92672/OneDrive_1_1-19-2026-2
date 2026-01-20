@@ -1,0 +1,233 @@
+# FORGE Platform - MCP Server Infrastructure
+# @epic 09 - Cloud Deployment
+# 
+# MCP servers as first-class deployable units with:
+# - Namespace/network segmentation
+# - Per-server service discovery
+# - Independent scaling and rollback
+# - Trust boundary enforcement
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcp-system
+  labels:
+    app.kubernetes.io/name: mcp-system
+    app.kubernetes.io/part-of: forge-platform
+    forge.dev/trust-boundary: mcp
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: mcp-quota
+  namespace: mcp-system
+spec:
+  hard:
+    requests.cpu: "10"
+    requests.memory: 20Gi
+    limits.cpu: "20"
+    limits.memory: 40Gi
+    pods: "50"
+    services: "20"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: mcp-limits
+  namespace: mcp-system
+spec:
+  limits:
+  - default:
+      cpu: "500m"
+      memory: "512Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"
+    max:
+      cpu: "2000m"
+      memory: "4Gi"
+    type: Container
+---
+# Default deny all ingress - MCP servers are isolated
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: mcp-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+# Allow ingress only from forge namespace (mcp-gateway)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-forge
+  namespace: mcp-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          app.kubernetes.io/name: forge
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: mcp-gateway
+    ports:
+    - protocol: TCP
+      port: 8080
+---
+# Allow egress to AWS endpoints only (restricted)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-aws-egress
+  namespace: mcp-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  # DNS
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  # VPC endpoints (HTTPS)
+  - to:
+    - ipBlock:
+        cidr: 10.0.0.0/8  # VPC CIDR - endpoints are in private subnets
+    ports:
+    - protocol: TCP
+      port: 443
+---
+# MCP Server Registry ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-registry
+  namespace: mcp-system
+data:
+  # Registry of available MCP servers and their capabilities
+  registry.yaml: |
+    servers:
+      - name: filesystem
+        service: mcp-filesystem.mcp-system.svc.cluster.local:8080
+        tools:
+          - read_file
+          - write_file
+          - list_directory
+        trust_level: high
+        rate_limit:
+          requests_per_minute: 100
+          
+      - name: github
+        service: mcp-github.mcp-system.svc.cluster.local:8080
+        tools:
+          - create_pull_request
+          - get_file_contents
+          - search_repositories
+        trust_level: medium
+        rate_limit:
+          requests_per_minute: 60
+          
+      - name: slack
+        service: mcp-slack.mcp-system.svc.cluster.local:8080
+        tools:
+          - send_message
+          - list_channels
+        trust_level: medium
+        rate_limit:
+          requests_per_minute: 30
+          
+      - name: web-search
+        service: mcp-web-search.mcp-system.svc.cluster.local:8080
+        tools:
+          - search
+          - fetch_url
+        trust_level: low
+        rate_limit:
+          requests_per_minute: 20
+          
+      - name: database
+        service: mcp-database.mcp-system.svc.cluster.local:8080
+        tools:
+          - query
+          - execute
+        trust_level: high
+        rate_limit:
+          requests_per_minute: 50
+---
+# MCP Server mTLS Certificate (managed by cert-manager)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mcp-server-cert
+  namespace: mcp-system
+spec:
+  secretName: mcp-server-tls
+  duration: 2160h # 90 days
+  renewBefore: 360h # 15 days
+  subject:
+    organizations:
+      - forge-platform
+  isCA: false
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - "*.mcp-system.svc.cluster.local"
+    - "mcp-gateway.forge.svc.cluster.local"
+  issuerRef:
+    name: forge-ca-issuer
+    kind: ClusterIssuer
+---
+# MCP Audit Policy ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-audit-policy
+  namespace: mcp-system
+data:
+  policy.yaml: |
+    # Every MCP tool invocation must be attributable
+    audit:
+      enabled: true
+      
+      # Required fields for every tool call
+      required_context:
+        - run_id        # Convergence run ID
+        - work_id       # Work item ID
+        - user_id       # Initiating user
+        - tenant_id     # Multi-tenant isolation
+        - tool_name     # Tool being invoked
+        - server_name   # MCP server name
+        
+      # Evidence plane integration
+      evidence:
+        enabled: true
+        receipt_required: true
+        bucket: "${EVIDENCE_BUCKET}"
+        prefix: "mcp-audit/"
+        
+      # Retention
+      retention_days: 90
+      
+      # Alerts
+      alert_on:
+        - unauthorized_tool_access
+        - rate_limit_exceeded
+        - policy_violation
+        - server_error

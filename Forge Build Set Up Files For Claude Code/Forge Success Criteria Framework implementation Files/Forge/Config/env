@@ -1,0 +1,22 @@
+# FORGE Environment Configuration
+# Owner: joe@arcfoundry.ai
+# Last Updated: 2026-01-19
+
+# ============================================
+# WOLFRAM ALPHA API CONFIGURATION
+# ============================================
+WOLFRAM_APP_ID=2K3K8Q5XGA
+WOLFRAM_API_TYPE=LLM_API
+WOLFRAM_BASE_URL=https://www.wolframalpha.com/api/v1/llm-api
+WOLFRAM_TIMEOUT_MS=5000
+
+# Rate limiting (free tier: 2,000/month)
+WOLFRAM_MONTHLY_LIMIT=2000
+WOLFRAM_DAILY_BUDGET_CAP=100
+
+# ============================================
+# FORGE VALIDATION SETTINGS
+# ============================================
+FORGE_VALIDATION_MODE=conditional
+FORGE_CACHE_ENABLED=true
+FORGE_CACHE_TTL_SECONDS=3600

@@ -1,0 +1,217 @@
+# FORGE Convergence Engine Deployment
+# @epic 09 - Cloud Deployment
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: convergence-engine
+  namespace: forge
+  annotations:
+    # Primary role for S3, Secrets, SQS access
+    eks.amazonaws.com/role-arn: "${CONVERGENCE_ENGINE_ROLE_ARN}"
+---
+# Separate service account for Bedrock invocations (least privilege)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bedrock-invoker
+  namespace: forge
+  annotations:
+    eks.amazonaws.com/role-arn: "${BEDROCK_INVOKER_ROLE_ARN}"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: convergence-engine
+  namespace: forge
+  labels:
+    app.kubernetes.io/name: convergence-engine
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: forge-platform
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: convergence-engine
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: convergence-engine
+        app.kubernetes.io/component: worker
+        app.kubernetes.io/part-of: forge-platform
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      serviceAccountName: convergence-engine
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      tolerations:
+      - key: "forge.dev/convergence"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      nodeSelector:
+        forge.dev/workload: convergence
+      containers:
+      - name: engine
+        image: forge/convergence-engine:latest
+        imagePullPolicy: Always
+        ports:
+        - name: grpc
+          containerPort: 50051
+        - name: metrics
+          containerPort: 9090
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: GRPC_PORT
+          value: "50051"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: forge-database
+              key: url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: forge-redis
+              key: url
+        # Bedrock configuration
+        - name: BEDROCK_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: forge-config
+              key: aws-region
+        - name: BEDROCK_MODEL_ID
+          valueFrom:
+            configMapKeyRef:
+              name: forge-bedrock-config
+              key: primary-model-id
+        - name: BEDROCK_ALLOWED_MODELS
+          valueFrom:
+            configMapKeyRef:
+              name: forge-bedrock-config
+              key: allowed-models
+        - name: S3_EVIDENCE_BUCKET
+          valueFrom:
+            configMapKeyRef:
+              name: forge-config
+              key: evidence-bucket
+        - name: MAX_ITERATIONS
+          value: "10"
+        - name: TARGET_SCORE
+          value: "0.9"
+        - name: TIMEOUT_MS
+          value: "300000"
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 2000m
+            memory: 4Gi
+        livenessProbe:
+          grpc:
+            port: 50051
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          grpc:
+            port: 50051
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/.cache
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir:
+          sizeLimit: 1Gi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: convergence-engine
+              topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: convergence-engine
+  namespace: forge
+  labels:
+    app.kubernetes.io/name: convergence-engine
+spec:
+  type: ClusterIP
+  ports:
+  - name: grpc
+    port: 50051
+    targetPort: grpc
+  - name: metrics
+    port: 9090
+    targetPort: metrics
+  selector:
+    app.kubernetes.io/name: convergence-engine
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: convergence-engine
+  namespace: forge
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: convergence-engine
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+  - type: Pods
+    pods:
+      metric:
+        name: forge_active_runs
+      target:
+        type: AverageValue
+        averageValue: "5"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Pods
+        value: 4
+        periodSeconds: 30
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: convergence-engine
+  namespace: forge
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: convergence-engine

@@ -1,0 +1,753 @@
+{
+  "name": "CMMC Dashboard Design",
+  "lastModified": "2026-01-15T10:30:00Z",
+  "version": "123456789",
+  "role": "owner",
+  "thumbnailUrl": "https://figma.com/thumbnails/sample.png",
+  "schemaVersion": 0,
+  "document": {
+    "id": "0:0",
+    "name": "Document",
+    "type": "DOCUMENT",
+    "children": [
+      {
+        "id": "1:1",
+        "name": "Dashboard",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "2:1",
+            "name": "Header",
+            "type": "FRAME",
+            "visible": true,
+            "layoutMode": "HORIZONTAL",
+            "primaryAxisAlignItems": "SPACE_BETWEEN",
+            "counterAxisAlignItems": "CENTER",
+            "paddingLeft": 24,
+            "paddingRight": 24,
+            "paddingTop": 16,
+            "paddingBottom": 16,
+            "itemSpacing": 16,
+            "absoluteBoundingBox": {
+              "x": 0,
+              "y": 0,
+              "width": 1440,
+              "height": 64
+            },
+            "fills": [
+              {
+                "type": "SOLID",
+                "visible": true,
+                "color": { "r": 0.067, "g": 0.094, "b": 0.153, "a": 1 }
+              }
+            ],
+            "children": [
+              {
+                "id": "2:2",
+                "name": "Logo",
+                "type": "FRAME",
+                "visible": true,
+                "absoluteBoundingBox": { "x": 24, "y": 16, "width": 120, "height": 32 },
+                "fills": [
+                  {
+                    "type": "IMAGE",
+                    "visible": true,
+                    "imageRef": "img_logo_001"
+                  }
+                ],
+                "children": []
+              },
+              {
+                "id": "2:3",
+                "name": "Navigation",
+                "type": "FRAME",
+                "visible": true,
+                "layoutMode": "HORIZONTAL",
+                "itemSpacing": 32,
+                "absoluteBoundingBox": { "x": 200, "y": 20, "width": 400, "height": 24 },
+                "children": [
+                  {
+                    "id": "2:4",
+                    "name": "Nav Link - Dashboard",
+                    "type": "TEXT",
+                    "visible": true,
+                    "characters": "Dashboard",
+                    "style": {
+                      "fontFamily": "Inter",
+                      "fontWeight": 600,
+                      "fontSize": 14,
+                      "lineHeightPx": 20,
+                      "lineHeightUnit": "PIXELS",
+                      "letterSpacing": 0,
+                      "textAlignHorizontal": "LEFT",
+                      "textAlignVertical": "CENTER"
+                    },
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "color": { "r": 1, "g": 1, "b": 1, "a": 1 }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "2:5",
+                    "name": "Nav Link - Compliance",
+                    "type": "TEXT",
+                    "visible": true,
+                    "characters": "Compliance",
+                    "style": {
+                      "fontFamily": "Inter",
+                      "fontWeight": 400,
+                      "fontSize": 14,
+                      "lineHeightPx": 20,
+                      "lineHeightUnit": "PIXELS",
+                      "letterSpacing": 0,
+                      "textAlignHorizontal": "LEFT",
+                      "textAlignVertical": "CENTER"
+                    },
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "color": { "r": 0.7, "g": 0.7, "b": 0.8, "a": 1 }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "2:6",
+                "name": "User Menu Button",
+                "type": "FRAME",
+                "visible": true,
+                "layoutMode": "HORIZONTAL",
+                "itemSpacing": 8,
+                "cornerRadius": 8,
+                "paddingLeft": 12,
+                "paddingRight": 12,
+                "paddingTop": 8,
+                "paddingBottom": 8,
+                "absoluteBoundingBox": { "x": 1300, "y": 16, "width": 116, "height": 32 },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "color": { "r": 0.2, "g": 0.4, "b": 0.8, "a": 1 }
+                  }
+                ],
+                "reactions": [
+                  {
+                    "trigger": { "type": "ON_CLICK" },
+                    "action": {
+                      "type": "NODE",
+                      "destinationId": "10:1",
+                      "navigation": "OVERLAY"
+                    }
+                  }
+                ],
+                "children": [
+                  {
+                    "id": "2:7",
+                    "name": "Avatar",
+                    "type": "ELLIPSE",
+                    "visible": true,
+                    "absoluteBoundingBox": { "x": 1312, "y": 24, "width": 24, "height": 24 },
+                    "fills": [
+                      {
+                        "type": "IMAGE",
+                        "visible": true,
+                        "imageRef": "img_avatar_001"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "2:8",
+                    "name": "Username",
+                    "type": "TEXT",
+                    "visible": true,
+                    "characters": "John D.",
+                    "style": {
+                      "fontFamily": "Inter",
+                      "fontWeight": 500,
+                      "fontSize": 14,
+                      "lineHeightPx": 20,
+                      "lineHeightUnit": "PIXELS",
+                      "letterSpacing": 0,
+                      "textAlignHorizontal": "LEFT",
+                      "textAlignVertical": "CENTER"
+                    },
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "color": { "r": 1, "g": 1, "b": 1, "a": 1 }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "3:1",
+            "name": "Sidebar",
+            "type": "FRAME",
+            "visible": true,
+            "layoutMode": "VERTICAL",
+            "paddingLeft": 16,
+            "paddingRight": 16,
+            "paddingTop": 24,
+            "paddingBottom": 24,
+            "itemSpacing": 8,
+            "absoluteBoundingBox": { "x": 0, "y": 64, "width": 256, "height": 736 },
+            "fills": [
+              {
+                "type": "SOLID",
+                "visible": true,
+                "color": { "r": 0.95, "g": 0.96, "b": 0.98, "a": 1 }
+              }
+            ],
+            "children": [
+              {
+                "id": "3:2",
+                "name": "Menu Item - Overview",
+                "type": "INSTANCE",
+                "visible": true,
+                "componentId": "100:1",
+                "absoluteBoundingBox": { "x": 16, "y": 88, "width": 224, "height": 40 }
+              },
+              {
+                "id": "3:3",
+                "name": "Menu Item - Domains",
+                "type": "INSTANCE",
+                "visible": true,
+                "componentId": "100:1",
+                "absoluteBoundingBox": { "x": 16, "y": 136, "width": 224, "height": 40 }
+              }
+            ]
+          },
+          {
+            "id": "4:1",
+            "name": "Main Content",
+            "type": "FRAME",
+            "visible": true,
+            "layoutMode": "VERTICAL",
+            "paddingLeft": 32,
+            "paddingRight": 32,
+            "paddingTop": 32,
+            "paddingBottom": 32,
+            "itemSpacing": 24,
+            "absoluteBoundingBox": { "x": 256, "y": 64, "width": 1184, "height": 736 },
+            "fills": [
+              {
+                "type": "SOLID",
+                "visible": true,
+                "color": { "r": 1, "g": 1, "b": 1, "a": 1 }
+              }
+            ],
+            "children": [
+              {
+                "id": "4:2",
+                "name": "Page Title",
+                "type": "TEXT",
+                "visible": true,
+                "characters": "CMMC Compliance Dashboard",
+                "style": {
+                  "fontFamily": "Inter",
+                  "fontWeight": 700,
+                  "fontSize": 28,
+                  "lineHeightPx": 36,
+                  "lineHeightUnit": "PIXELS",
+                  "letterSpacing": -0.5,
+                  "textAlignHorizontal": "LEFT",
+                  "textAlignVertical": "TOP"
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "color": { "r": 0.1, "g": 0.1, "b": 0.15, "a": 1 }
+                  }
+                ]
+              },
+              {
+                "id": "4:3",
+                "name": "Stats Cards",
+                "type": "FRAME",
+                "visible": true,
+                "layoutMode": "HORIZONTAL",
+                "itemSpacing": 24,
+                "absoluteBoundingBox": { "x": 288, "y": 132, "width": 1120, "height": 120 },
+                "children": [
+                  {
+                    "id": "4:4",
+                    "name": "Stat Card - Compliance Score",
+                    "type": "INSTANCE",
+                    "visible": true,
+                    "componentId": "101:1",
+                    "absoluteBoundingBox": { "x": 288, "y": 132, "width": 264, "height": 120 }
+                  },
+                  {
+                    "id": "4:5",
+                    "name": "Stat Card - Controls Met",
+                    "type": "INSTANCE",
+                    "visible": true,
+                    "componentId": "101:1",
+                    "absoluteBoundingBox": { "x": 576, "y": 132, "width": 264, "height": 120 }
+                  },
+                  {
+                    "id": "4:6",
+                    "name": "Stat Card - Actions Required",
+                    "type": "INSTANCE",
+                    "visible": true,
+                    "componentId": "101:1",
+                    "absoluteBoundingBox": { "x": 864, "y": 132, "width": 264, "height": 120 }
+                  },
+                  {
+                    "id": "4:7",
+                    "name": "Stat Card - Risk Level",
+                    "type": "INSTANCE",
+                    "visible": true,
+                    "componentId": "101:1",
+                    "absoluteBoundingBox": { "x": 1152, "y": 132, "width": 264, "height": 120 }
+                  }
+                ]
+              },
+              {
+                "id": "5:1",
+                "name": "Domain Progress Table",
+                "type": "FRAME",
+                "visible": true,
+                "layoutMode": "VERTICAL",
+                "cornerRadius": 12,
+                "paddingTop": 16,
+                "paddingBottom": 16,
+                "absoluteBoundingBox": { "x": 288, "y": 276, "width": 1120, "height": 400 },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "color": { "r": 1, "g": 1, "b": 1, "a": 1 }
+                  }
+                ],
+                "strokes": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "color": { "r": 0.9, "g": 0.9, "b": 0.92, "a": 1 }
+                  }
+                ],
+                "strokeWeight": 1,
+                "effects": [
+                  {
+                    "type": "DROP_SHADOW",
+                    "visible": true,
+                    "radius": 8,
+                    "offset": { "x": 0, "y": 2 },
+                    "spread": 0,
+                    "color": { "r": 0, "g": 0, "b": 0, "a": 0.08 }
+                  }
+                ],
+                "children": [
+                  {
+                    "id": "5:2",
+                    "name": "Table Header",
+                    "type": "FRAME",
+                    "visible": true,
+                    "layoutMode": "HORIZONTAL",
+                    "paddingLeft": 24,
+                    "paddingRight": 24,
+                    "itemSpacing": 16,
+                    "absoluteBoundingBox": { "x": 288, "y": 292, "width": 1120, "height": 48 },
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "color": { "r": 0.97, "g": 0.97, "b": 0.98, "a": 1 }
+                      }
+                    ],
+                    "children": [
+                      {
+                        "id": "5:3",
+                        "name": "Header - Domain",
+                        "type": "TEXT",
+                        "visible": true,
+                        "characters": "Domain",
+                        "style": {
+                          "fontFamily": "Inter",
+                          "fontWeight": 600,
+                          "fontSize": 12,
+                          "lineHeightPx": 16,
+                          "lineHeightUnit": "PIXELS",
+                          "letterSpacing": 0.5,
+                          "textCase": "UPPER",
+                          "textAlignHorizontal": "LEFT",
+                          "textAlignVertical": "CENTER"
+                        },
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": true,
+                            "color": { "r": 0.4, "g": 0.4, "b": 0.5, "a": 1 }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "10:1",
+        "name": "Components",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "100:1",
+            "name": "Menu Item",
+            "type": "COMPONENT",
+            "visible": true,
+            "layoutMode": "HORIZONTAL",
+            "paddingLeft": 12,
+            "paddingRight": 12,
+            "paddingTop": 10,
+            "paddingBottom": 10,
+            "itemSpacing": 12,
+            "cornerRadius": 8,
+            "absoluteBoundingBox": { "x": 0, "y": 0, "width": 224, "height": 40 },
+            "componentPropertyDefinitions": {
+              "label": {
+                "type": "TEXT",
+                "defaultValue": "Menu Item"
+              },
+              "selected": {
+                "type": "BOOLEAN",
+                "defaultValue": false
+              }
+            },
+            "children": [
+              {
+                "id": "100:2",
+                "name": "Icon",
+                "type": "FRAME",
+                "visible": true,
+                "absoluteBoundingBox": { "x": 12, "y": 10, "width": 20, "height": 20 }
+              },
+              {
+                "id": "100:3",
+                "name": "Label",
+                "type": "TEXT",
+                "visible": true,
+                "characters": "Menu Item",
+                "style": {
+                  "fontFamily": "Inter",
+                  "fontWeight": 500,
+                  "fontSize": 14,
+                  "lineHeightPx": 20,
+                  "lineHeightUnit": "PIXELS",
+                  "letterSpacing": 0,
+                  "textAlignHorizontal": "LEFT",
+                  "textAlignVertical": "CENTER"
+                }
+              }
+            ]
+          },
+          {
+            "id": "101:1",
+            "name": "Stat Card",
+            "type": "COMPONENT",
+            "visible": true,
+            "layoutMode": "VERTICAL",
+            "paddingLeft": 20,
+            "paddingRight": 20,
+            "paddingTop": 20,
+            "paddingBottom": 20,
+            "itemSpacing": 8,
+            "cornerRadius": 12,
+            "absoluteBoundingBox": { "x": 300, "y": 0, "width": 264, "height": 120 },
+            "fills": [
+              {
+                "type": "SOLID",
+                "visible": true,
+                "color": { "r": 1, "g": 1, "b": 1, "a": 1 }
+              }
+            ],
+            "strokes": [
+              {
+                "type": "SOLID",
+                "visible": true,
+                "color": { "r": 0.9, "g": 0.9, "b": 0.92, "a": 1 }
+              }
+            ],
+            "strokeWeight": 1,
+            "effects": [
+              {
+                "type": "DROP_SHADOW",
+                "visible": true,
+                "radius": 4,
+                "offset": { "x": 0, "y": 1 },
+                "spread": 0,
+                "color": { "r": 0, "g": 0, "b": 0, "a": 0.05 }
+              }
+            ],
+            "componentPropertyDefinitions": {
+              "title": {
+                "type": "TEXT",
+                "defaultValue": "Stat Title"
+              },
+              "value": {
+                "type": "TEXT",
+                "defaultValue": "0"
+              },
+              "trend": {
+                "type": "VARIANT",
+                "defaultValue": "neutral",
+                "variantOptions": ["up", "down", "neutral"]
+              }
+            },
+            "children": [
+              {
+                "id": "101:2",
+                "name": "Title",
+                "type": "TEXT",
+                "visible": true,
+                "characters": "Stat Title",
+                "style": {
+                  "fontFamily": "Inter",
+                  "fontWeight": 500,
+                  "fontSize": 14,
+                  "lineHeightPx": 20,
+                  "lineHeightUnit": "PIXELS",
+                  "letterSpacing": 0,
+                  "textAlignHorizontal": "LEFT",
+                  "textAlignVertical": "TOP"
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "color": { "r": 0.4, "g": 0.4, "b": 0.5, "a": 1 }
+                  }
+                ]
+              },
+              {
+                "id": "101:3",
+                "name": "Value",
+                "type": "TEXT",
+                "visible": true,
+                "characters": "87%",
+                "style": {
+                  "fontFamily": "Inter",
+                  "fontWeight": 700,
+                  "fontSize": 36,
+                  "lineHeightPx": 44,
+                  "lineHeightUnit": "PIXELS",
+                  "letterSpacing": -1,
+                  "textAlignHorizontal": "LEFT",
+                  "textAlignVertical": "TOP"
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "color": { "r": 0.1, "g": 0.1, "b": 0.15, "a": 1 }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "102:1",
+            "name": "Button",
+            "type": "COMPONENT_SET",
+            "visible": true,
+            "absoluteBoundingBox": { "x": 600, "y": 0, "width": 400, "height": 200 },
+            "componentPropertyDefinitions": {
+              "variant": {
+                "type": "VARIANT",
+                "defaultValue": "primary",
+                "variantOptions": ["primary", "secondary", "ghost"]
+              },
+              "size": {
+                "type": "VARIANT",
+                "defaultValue": "md",
+                "variantOptions": ["sm", "md", "lg"]
+              }
+            },
+            "children": [
+              {
+                "id": "102:2",
+                "name": "Button, variant=primary, size=md",
+                "type": "COMPONENT",
+                "visible": true,
+                "layoutMode": "HORIZONTAL",
+                "primaryAxisAlignItems": "CENTER",
+                "counterAxisAlignItems": "CENTER",
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "paddingTop": 10,
+                "paddingBottom": 10,
+                "cornerRadius": 8,
+                "absoluteBoundingBox": { "x": 600, "y": 0, "width": 120, "height": 40 },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "color": { "r": 0.2, "g": 0.4, "b": 0.9, "a": 1 }
+                  }
+                ],
+                "children": [
+                  {
+                    "id": "102:3",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "visible": true,
+                    "characters": "Button",
+                    "style": {
+                      "fontFamily": "Inter",
+                      "fontWeight": 600,
+                      "fontSize": 14,
+                      "lineHeightPx": 20,
+                      "lineHeightUnit": "PIXELS",
+                      "letterSpacing": 0,
+                      "textAlignHorizontal": "CENTER",
+                      "textAlignVertical": "CENTER"
+                    },
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "color": { "r": 1, "g": 1, "b": 1, "a": 1 }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "102:4",
+                "name": "Button, variant=secondary, size=md",
+                "type": "COMPONENT",
+                "visible": true,
+                "layoutMode": "HORIZONTAL",
+                "primaryAxisAlignItems": "CENTER",
+                "counterAxisAlignItems": "CENTER",
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "paddingTop": 10,
+                "paddingBottom": 10,
+                "cornerRadius": 8,
+                "absoluteBoundingBox": { "x": 730, "y": 0, "width": 120, "height": 40 },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "color": { "r": 0.95, "g": 0.95, "b": 0.97, "a": 1 }
+                  }
+                ],
+                "strokes": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "color": { "r": 0.85, "g": 0.85, "b": 0.9, "a": 1 }
+                  }
+                ],
+                "strokeWeight": 1,
+                "children": [
+                  {
+                    "id": "102:5",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "visible": true,
+                    "characters": "Button",
+                    "style": {
+                      "fontFamily": "Inter",
+                      "fontWeight": 600,
+                      "fontSize": 14,
+                      "lineHeightPx": 20,
+                      "lineHeightUnit": "PIXELS",
+                      "letterSpacing": 0,
+                      "textAlignHorizontal": "CENTER",
+                      "textAlignVertical": "CENTER"
+                    },
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "color": { "r": 0.2, "g": 0.2, "b": 0.25, "a": 1 }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "components": {
+    "100:1": {
+      "key": "menu_item_v1",
+      "name": "Menu Item",
+      "description": "Sidebar navigation menu item with icon and label"
+    },
+    "101:1": {
+      "key": "stat_card_v1",
+      "name": "Stat Card",
+      "description": "Dashboard statistic card showing a metric with optional trend indicator"
+    },
+    "102:2": {
+      "key": "button_primary_md",
+      "name": "Button, variant=primary, size=md",
+      "description": "Primary button variant, medium size"
+    },
+    "102:4": {
+      "key": "button_secondary_md",
+      "name": "Button, variant=secondary, size=md",
+      "description": "Secondary button variant, medium size"
+    }
+  },
+  "componentSets": {
+    "102:1": {
+      "key": "button_set_v1",
+      "name": "Button",
+      "description": "Button component with multiple variants and sizes"
+    }
+  },
+  "styles": {
+    "S:fill_primary": {
+      "key": "fill_primary",
+      "name": "Primary",
+      "styleType": "FILL",
+      "description": "Primary brand color"
+    },
+    "S:fill_background": {
+      "key": "fill_background",
+      "name": "Background",
+      "styleType": "FILL",
+      "description": "Default background color"
+    },
+    "S:text_heading": {
+      "key": "text_heading",
+      "name": "Heading",
+      "styleType": "TEXT",
+      "description": "Heading text style"
+    },
+    "S:text_body": {
+      "key": "text_body",
+      "name": "Body",
+      "styleType": "TEXT",
+      "description": "Body text style"
+    },
+    "S:effect_shadow_sm": {
+      "key": "effect_shadow_sm",
+      "name": "Shadow Small",
+      "styleType": "EFFECT",
+      "description": "Small drop shadow"
+    }
+  }
+}

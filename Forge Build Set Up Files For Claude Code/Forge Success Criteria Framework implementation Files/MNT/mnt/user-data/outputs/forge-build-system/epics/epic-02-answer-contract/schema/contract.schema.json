@@ -1,0 +1,432 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://arcfoundry.ai/schemas/answer-contract-v1.json",
+  "title": "FORGE Answer Contract",
+  "description": "Schema for defining AI output contracts with validation rules and convergence policies",
+  "type": "object",
+  "required": ["id", "version", "name", "output", "validators", "stoppingPolicy"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$",
+      "minLength": 3,
+      "maxLength": 64,
+      "description": "Unique contract identifier (lowercase, hyphenated)"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version (e.g., 1.0.0)"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128,
+      "description": "Human-readable contract name"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Contract description"
+    },
+    "output": {
+      "$ref": "#/definitions/OutputSchema"
+    },
+    "validators": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/ValidatorConfig"
+      },
+      "description": "Validators to run against output"
+    },
+    "stoppingPolicy": {
+      "$ref": "#/definitions/StoppingPolicy"
+    },
+    "convergence": {
+      "$ref": "#/definitions/ConvergenceConfig"
+    },
+    "frontend": {
+      "$ref": "#/definitions/FrontendSpec"
+    },
+    "backend": {
+      "$ref": "#/definitions/BackendSpec"
+    },
+    "variables": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Variables that can be substituted in templates"
+    },
+    "metadata": {
+      "$ref": "#/definitions/ContractMetadata"
+    }
+  },
+  "definitions": {
+    "OutputSchema": {
+      "type": "object",
+      "required": ["type", "required", "properties"],
+      "properties": {
+        "type": {
+          "const": "object"
+        },
+        "required": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/PropertySchema"
+          }
+        },
+        "additionalProperties": {
+          "oneOf": [
+            { "type": "boolean" },
+            { "$ref": "#/definitions/PropertySchema" }
+          ]
+        }
+      }
+    },
+    "PropertySchema": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "oneOf": [
+            { "type": "string", "enum": ["string", "number", "integer", "boolean", "object", "array", "null"] },
+            { "type": "array", "items": { "type": "string", "enum": ["string", "number", "integer", "boolean", "object", "array", "null"] } }
+          ]
+        },
+        "description": { "type": "string" },
+        "minLength": { "type": "integer", "minimum": 0 },
+        "maxLength": { "type": "integer", "minimum": 0 },
+        "pattern": { "type": "string" },
+        "format": { "type": "string", "enum": ["email", "uri", "date", "date-time", "uuid"] },
+        "enum": { "type": "array", "items": { "type": "string" } },
+        "minimum": { "type": "number" },
+        "maximum": { "type": "number" },
+        "exclusiveMinimum": { "type": "number" },
+        "exclusiveMaximum": { "type": "number" },
+        "multipleOf": { "type": "number", "exclusiveMinimum": 0 },
+        "items": { "$ref": "#/definitions/PropertySchema" },
+        "minItems": { "type": "integer", "minimum": 0 },
+        "maxItems": { "type": "integer", "minimum": 0 },
+        "uniqueItems": { "type": "boolean" },
+        "properties": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/PropertySchema" }
+        },
+        "required": { "type": "array", "items": { "type": "string" } },
+        "additionalProperties": {
+          "oneOf": [
+            { "type": "boolean" },
+            { "$ref": "#/definitions/PropertySchema" }
+          ]
+        },
+        "sections": { "type": "array", "items": { "type": "string" } },
+        "default": {}
+      }
+    },
+    "ValidatorConfig": {
+      "oneOf": [
+        { "$ref": "#/definitions/JsonSchemaValidator" },
+        { "$ref": "#/definitions/CustomValidator" },
+        { "$ref": "#/definitions/LLMJudgeValidator" },
+        { "$ref": "#/definitions/RegexValidator" },
+        { "$ref": "#/definitions/ComputationalValidator" },
+        { "$ref": "#/definitions/CompositeValidator" }
+      ]
+    },
+    "JsonSchemaValidator": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "json_schema" },
+        "name": { "type": "string" },
+        "enabled": { "type": "boolean", "default": true },
+        "weight": { "type": "number", "minimum": 0, "maximum": 1 },
+        "strict": { "type": "boolean", "default": false },
+        "schema": { "type": "object" }
+      }
+    },
+    "CustomValidator": {
+      "type": "object",
+      "required": ["type", "function"],
+      "properties": {
+        "type": { "const": "custom" },
+        "name": { "type": "string" },
+        "enabled": { "type": "boolean", "default": true },
+        "weight": { "type": "number", "minimum": 0, "maximum": 1 },
+        "function": { "type": "string" },
+        "async": { "type": "boolean", "default": false }
+      }
+    },
+    "LLMJudgeValidator": {
+      "type": "object",
+      "required": ["type", "criteria"],
+      "properties": {
+        "type": { "const": "llm_judge" },
+        "name": { "type": "string" },
+        "enabled": { "type": "boolean", "default": true },
+        "weight": { "type": "number", "minimum": 0, "maximum": 1 },
+        "criteria": { "type": "string", "minLength": 10 },
+        "model": { "type": "string" },
+        "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
+        "rubric": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "RegexValidator": {
+      "type": "object",
+      "required": ["type", "field", "pattern"],
+      "properties": {
+        "type": { "const": "regex" },
+        "name": { "type": "string" },
+        "enabled": { "type": "boolean", "default": true },
+        "weight": { "type": "number", "minimum": 0, "maximum": 1 },
+        "field": { "type": "string" },
+        "pattern": { "type": "string" },
+        "flags": { "type": "string" },
+        "message": { "type": "string" }
+      }
+    },
+    "ComputationalValidator": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "computational" },
+        "name": { "type": "string" },
+        "enabled": { "type": "boolean", "default": true },
+        "weight": { "type": "number", "minimum": 0, "maximum": 1 },
+        "tier": { "type": "string", "enum": ["L1", "L1.5", "L2"] },
+        "categories": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "CompositeValidator": {
+      "type": "object",
+      "required": ["type", "validators", "mode"],
+      "properties": {
+        "type": { "const": "composite" },
+        "name": { "type": "string" },
+        "enabled": { "type": "boolean", "default": true },
+        "weight": { "type": "number", "minimum": 0, "maximum": 1 },
+        "validators": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/ValidatorConfig" }
+        },
+        "mode": { "type": "string", "enum": ["all", "any", "weighted"] },
+        "threshold": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "StoppingPolicy": {
+      "type": "object",
+      "required": ["maxIterations"],
+      "properties": {
+        "maxIterations": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "minScore": { "type": "number", "minimum": 0, "maximum": 1 },
+        "targetPassRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "failFastOnCritical": { "type": "boolean" },
+        "timeoutMs": { "type": "integer", "minimum": 1000 },
+        "tokenBudget": { "type": "integer", "minimum": 1000 }
+      }
+    },
+    "ConvergenceConfig": {
+      "type": "object",
+      "properties": {
+        "strategy": { "type": "string", "enum": ["greedy", "prioritized", "random"], "default": "prioritized" },
+        "batchRepairs": { "type": "boolean", "default": false },
+        "feedbackFormat": { "type": "string", "enum": ["structured", "natural", "diff"], "default": "structured" },
+        "includePreviousAttempts": { "type": "boolean", "default": true },
+        "maxFeedbackTokens": { "type": "integer", "minimum": 100 }
+      }
+    },
+    "FrontendSpec": {
+      "type": "object",
+      "required": ["framework"],
+      "properties": {
+        "framework": { "type": "string", "enum": ["react", "vue", "angular", "svelte", "nextjs"] },
+        "styling": { "type": "string", "enum": ["tailwind", "css-modules", "styled-components", "sass"] },
+        "typescript": { "type": "boolean", "default": true },
+        "components": { "type": "array", "items": { "$ref": "#/definitions/ComponentSpec" } },
+        "pages": { "type": "array", "items": { "$ref": "#/definitions/PageSpec" } },
+        "designTokens": { "$ref": "#/definitions/DesignTokens" }
+      }
+    },
+    "ComponentSpec": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["atom", "molecule", "organism", "template"] },
+        "props": { "type": "object", "additionalProperties": { "$ref": "#/definitions/PropertySchema" } },
+        "children": { "type": "boolean" },
+        "accessibility": { "$ref": "#/definitions/AccessibilitySpec" }
+      }
+    },
+    "PageSpec": {
+      "type": "object",
+      "required": ["path", "name", "components"],
+      "properties": {
+        "path": { "type": "string" },
+        "name": { "type": "string" },
+        "components": { "type": "array", "items": { "type": "string" } },
+        "layout": { "type": "string" },
+        "auth": { "type": "boolean" },
+        "roles": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "DesignTokens": {
+      "type": "object",
+      "properties": {
+        "colors": { "type": "object", "additionalProperties": { "type": "string" } },
+        "spacing": { "type": "object", "additionalProperties": { "type": "string" } },
+        "typography": { "type": "object", "additionalProperties": { "$ref": "#/definitions/TypographyToken" } },
+        "breakpoints": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "TypographyToken": {
+      "type": "object",
+      "required": ["fontFamily", "fontSize", "fontWeight", "lineHeight"],
+      "properties": {
+        "fontFamily": { "type": "string" },
+        "fontSize": { "type": "string" },
+        "fontWeight": { "type": "number" },
+        "lineHeight": { "type": "string" }
+      }
+    },
+    "AccessibilitySpec": {
+      "type": "object",
+      "properties": {
+        "ariaLabel": { "type": "string" },
+        "ariaDescribedBy": { "type": "string" },
+        "role": { "type": "string" },
+        "tabIndex": { "type": "integer" }
+      }
+    },
+    "BackendSpec": {
+      "type": "object",
+      "required": ["framework", "language"],
+      "properties": {
+        "framework": { "type": "string", "enum": ["express", "fastify", "nestjs", "hono"] },
+        "language": { "type": "string", "enum": ["typescript", "javascript"] },
+        "database": { "type": "string", "enum": ["postgresql", "mysql", "mongodb", "sqlite"] },
+        "endpoints": { "type": "array", "items": { "$ref": "#/definitions/EndpointSpec" } },
+        "dataModels": { "type": "array", "items": { "$ref": "#/definitions/DataModelSpec" } },
+        "rbac": { "$ref": "#/definitions/RBACSpec" },
+        "middleware": { "type": "array", "items": { "$ref": "#/definitions/MiddlewareSpec" } }
+      }
+    },
+    "EndpointSpec": {
+      "type": "object",
+      "required": ["path", "method"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^/" },
+        "method": { "type": "string", "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+        "auth": { "type": "boolean" },
+        "roles": { "type": "array", "items": { "type": "string" } },
+        "rateLimit": { "$ref": "#/definitions/RateLimitSpec" },
+        "request": { "$ref": "#/definitions/PropertySchema" },
+        "response": { "$ref": "#/definitions/PropertySchema" },
+        "errors": { "type": "array", "items": { "$ref": "#/definitions/ErrorSpec" } }
+      }
+    },
+    "DataModelSpec": {
+      "type": "object",
+      "required": ["name", "fields"],
+      "properties": {
+        "name": { "type": "string" },
+        "tableName": { "type": "string" },
+        "fields": { "type": "array", "items": { "$ref": "#/definitions/FieldSpec" } },
+        "indexes": { "type": "array", "items": { "$ref": "#/definitions/IndexSpec" } },
+        "relations": { "type": "array", "items": { "$ref": "#/definitions/RelationSpec" } }
+      }
+    },
+    "FieldSpec": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["uuid", "string", "number", "boolean", "date", "json", "text"] },
+        "primaryKey": { "type": "boolean" },
+        "required": { "type": "boolean" },
+        "unique": { "type": "boolean" },
+        "default": {},
+        "references": { "type": "string" }
+      }
+    },
+    "IndexSpec": {
+      "type": "object",
+      "required": ["name", "fields"],
+      "properties": {
+        "name": { "type": "string" },
+        "fields": { "type": "array", "items": { "type": "string" } },
+        "unique": { "type": "boolean" }
+      }
+    },
+    "RelationSpec": {
+      "type": "object",
+      "required": ["name", "type", "target"],
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["one-to-one", "one-to-many", "many-to-many"] },
+        "target": { "type": "string" },
+        "foreignKey": { "type": "string" }
+      }
+    },
+    "RBACSpec": {
+      "type": "object",
+      "required": ["roles"],
+      "properties": {
+        "roles": { "type": "array", "items": { "$ref": "#/definitions/RoleSpec" } },
+        "defaultRole": { "type": "string" }
+      }
+    },
+    "RoleSpec": {
+      "type": "object",
+      "required": ["name", "permissions"],
+      "properties": {
+        "name": { "type": "string" },
+        "permissions": { "type": "array", "items": { "type": "string" } },
+        "inherits": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "MiddlewareSpec": {
+      "type": "object",
+      "required": ["name", "order"],
+      "properties": {
+        "name": { "type": "string" },
+        "order": { "type": "integer" },
+        "config": { "type": "object" }
+      }
+    },
+    "RateLimitSpec": {
+      "type": "object",
+      "required": ["windowMs", "maxRequests"],
+      "properties": {
+        "windowMs": { "type": "integer", "minimum": 1000 },
+        "maxRequests": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "ErrorSpec": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "integer" },
+        "message": { "type": "string" },
+        "schema": { "$ref": "#/definitions/PropertySchema" }
+      }
+    },
+    "ContractMetadata": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "version": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "author": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

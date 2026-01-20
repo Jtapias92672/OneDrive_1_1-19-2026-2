@@ -1,0 +1,130 @@
+# FORGE Platform - Production Overlay
+# @epic 09 - Cloud Deployment
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: forge
+
+resources:
+- ../../base
+
+commonLabels:
+  environment: prod
+
+# Production replicas (HPA will manage actual count)
+replicas:
+- name: forge-api
+  count: 3
+- name: convergence-engine
+  count: 3
+
+# Production-specific patches
+patches:
+# API resources
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/cpu
+      value: "250m"
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/memory
+      value: "512Mi"
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/cpu
+      value: "1000m"
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/memory
+      value: "1Gi"
+  target:
+    kind: Deployment
+    name: forge-api
+
+# Convergence Engine resources
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/cpu
+      value: "500m"
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/memory
+      value: "1Gi"
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/cpu
+      value: "2000m"
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/memory
+      value: "4Gi"
+  target:
+    kind: Deployment
+    name: convergence-engine
+
+# API HPA for production
+- patch: |-
+    - op: replace
+      path: /spec/minReplicas
+      value: 3
+    - op: replace
+      path: /spec/maxReplicas
+      value: 15
+    - op: replace
+      path: /spec/metrics/0/resource/target/averageUtilization
+      value: 65
+  target:
+    kind: HorizontalPodAutoscaler
+    name: forge-api
+
+# Convergence Engine HPA for production
+- patch: |-
+    - op: replace
+      path: /spec/minReplicas
+      value: 3
+    - op: replace
+      path: /spec/maxReplicas
+      value: 30
+    - op: replace
+      path: /spec/metrics/0/resource/target/averageUtilization
+      value: 55
+  target:
+    kind: HorizontalPodAutoscaler
+    name: convergence-engine
+
+# PDB for production - higher availability
+- patch: |-
+    - op: replace
+      path: /spec/minAvailable
+      value: 2
+  target:
+    kind: PodDisruptionBudget
+    name: forge-api
+
+- patch: |-
+    - op: replace
+      path: /spec/minAvailable
+      value: 3
+  target:
+    kind: PodDisruptionBudget
+    name: convergence-engine
+
+# Enable pod anti-affinity for production
+- patch: |-
+    - op: add
+      path: /spec/template/spec/affinity/podAntiAffinity/requiredDuringSchedulingIgnoredDuringExecution
+      value:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: forge-api
+        topologyKey: kubernetes.io/hostname
+  target:
+    kind: Deployment
+    name: forge-api
+
+configMapGenerator:
+- name: forge-config
+  behavior: merge
+  literals:
+  - log-level=warn
+  - environment=prod
+
+images:
+- name: forge/api
+  newTag: "${IMAGE_TAG}"
+- name: forge/convergence-engine
+  newTag: "${IMAGE_TAG}"

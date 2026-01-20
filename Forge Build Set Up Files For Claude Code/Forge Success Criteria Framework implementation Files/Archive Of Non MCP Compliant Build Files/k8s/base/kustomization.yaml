@@ -1,0 +1,25 @@
+# FORGE Platform - Kustomize Base
+# @epic 09 - Cloud Deployment
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: forge
+
+resources:
+- namespace.yaml
+- config.yaml
+- forge-api.yaml
+- convergence-engine.yaml
+- ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: forge-platform
+  app.kubernetes.io/managed-by: kustomize
+
+images:
+- name: forge/api
+  newName: ${ECR_REGISTRY}/forge-api
+  newTag: latest
+- name: forge/convergence-engine
+  newName: ${ECR_REGISTRY}/forge-convergence-engine
+  newTag: latest
