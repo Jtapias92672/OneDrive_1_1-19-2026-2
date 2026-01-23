@@ -13,12 +13,29 @@
  *   Implements resource limits and network/filesystem policies.
  */
 
-import { SandboxConfig, RequestContext } from '../core/types';
-import { ToolHandler } from '../core/gateway';
-import { DenoRuntime, DenoPermissions, DenoExecutionRequest } from './deno-runtime';
+import { SandboxConfig, RequestContext } from '../core/types.js';
+import { ToolHandler } from '../core/gateway.js';
+import { DenoRuntime, DenoPermissions, DenoExecutionRequest } from './deno-runtime.js';
 
 // Re-export Deno runtime for direct access
-export { DenoRuntime, DenoPermissions, isDenoAvailable, getDenoRuntime } from './deno-runtime';
+export { DenoRuntime, DenoPermissions, isDenoAvailable, getDenoRuntime } from './deno-runtime.js';
+
+// Re-export security policy
+export {
+  SecurityPolicyEngine,
+  MINIMAL_POLICY,
+  STANDARD_POLICY,
+  type SecurityPolicy,
+  type LinuxCapability,
+  type MCPCapability,
+  type CapabilityGrant,
+  type SyscallFilter,
+  type NetworkPolicy,
+  type FilesystemPolicy,
+  type ResourcePolicy,
+  type PolicyViolation,
+  type PolicyEvaluation,
+} from './security-policy.js';
 
 // ============================================
 // SANDBOX EXECUTOR
@@ -304,8 +321,8 @@ async function handler(params: Record<string, unknown>, context: any): Promise<u
       network: this.config.network.allowEgress ? 'bridge' : 'none',
       readOnly: true,
       volumes: [
-        ...this.config.filesystem.readOnly.map(p => `${p}:${p}:ro`),
-        ...this.config.filesystem.writable.map(p => `${p}:${p}:rw`),
+        ...this.config.filesystem.readOnly.map((p: string) => `${p}:${p}:ro`),
+        ...this.config.filesystem.writable.map((p: string) => `${p}:${p}:rw`),
       ],
       env: {
         TOOL_NAME: request.tool,
@@ -412,13 +429,13 @@ async function handler(params: Record<string, unknown>, context: any): Promise<u
     }
 
     // Check blocked hosts
-    if (this.config.network.blockedHosts.some(h => host.includes(h))) {
+    if (this.config.network.blockedHosts.some((h: string) => host.includes(h))) {
       return false;
     }
 
     // Check allowed hosts
     if (this.config.network.allowedHosts.length > 0) {
-      return this.config.network.allowedHosts.some(h => host.includes(h));
+      return this.config.network.allowedHosts.some((h: string) => host.includes(h));
     }
 
     return true;
@@ -433,17 +450,17 @@ async function handler(params: Record<string, unknown>, context: any): Promise<u
    */
   isPathAccessible(path: string, mode: 'read' | 'write'): boolean {
     // Check blocked paths
-    if (this.config.filesystem.blocked.some(p => path.startsWith(p))) {
+    if (this.config.filesystem.blocked.some((p: string) => path.startsWith(p))) {
       return false;
     }
 
     if (mode === 'write') {
-      return this.config.filesystem.writable.some(p => path.startsWith(p));
+      return this.config.filesystem.writable.some((p: string) => path.startsWith(p));
     }
 
     // Read access
-    return this.config.filesystem.readOnly.some(p => path.startsWith(p)) ||
-           this.config.filesystem.writable.some(p => path.startsWith(p));
+    return this.config.filesystem.readOnly.some((p: string) => path.startsWith(p)) ||
+           this.config.filesystem.writable.some((p: string) => path.startsWith(p));
   }
 
   // ==========================================

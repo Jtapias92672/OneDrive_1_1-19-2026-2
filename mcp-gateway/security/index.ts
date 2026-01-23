@@ -11,7 +11,7 @@
  *   verification to prevent Tool Poisoning Attacks (TPA).
  */
 
-import { SecurityConfig, MCPTool, RequestContext } from '../core/types';
+import { SecurityConfig, MCPTool, RequestContext } from '../core/types.js';
 import * as crypto from 'crypto';
 
 // ============================================
@@ -56,7 +56,7 @@ export class SecurityLayer {
       // Check required scopes
       const requiredScopes = this.config.oauth.scopes || [];
       const tokenScopes = claims.scope?.split(' ') || [];
-      const hasRequiredScopes = requiredScopes.every(s => tokenScopes.includes(s));
+      const hasRequiredScopes = requiredScopes.every((s: string) => tokenScopes.includes(s));
       
       if (!hasRequiredScopes) {
         return { valid: false, error: 'Insufficient scopes' };
@@ -87,7 +87,7 @@ export class SecurityLayer {
     }
 
     try {
-      const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
+      const payload = JSON.parse(Buffer.from(parts[1]!, 'base64url').toString());
       
       // Check expiration
       if (payload.exp && payload.exp * 1000 < Date.now()) {
@@ -168,7 +168,7 @@ export class SecurityLayer {
     }
 
     // Recursively sanitize strings
-    const sanitized = this.deepSanitize(params);
+    const sanitized = this.deepSanitize(params) as Record<string, unknown>;
 
     return {
       safe: true,
@@ -284,12 +284,15 @@ export class SecurityLayer {
       if (parts.length !== 2) return false;
       
       const [signerId, sig] = parts;
-      
+
+      // Check parts are valid
+      if (!signerId || !sig) return false;
+
       // Check if signer is trusted
       if (!this.config.toolIntegrity.trustedSigners.includes(signerId)) {
         return false;
       }
-      
+
       // Would verify actual cryptographic signature here
       return sig.length >= 64; // Minimum signature length
     } catch {

@@ -16,7 +16,7 @@ import {
   ApprovalInfo,
   CARSAssessment,
   RequestContext,
-} from '../core/types';
+} from '../core/types.js';
 
 // ============================================
 // APPROVAL GATE

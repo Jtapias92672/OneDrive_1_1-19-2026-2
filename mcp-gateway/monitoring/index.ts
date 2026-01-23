@@ -16,7 +16,7 @@ import {
   AuditEntry, 
   MCPTool,
   RiskLevel,
-} from '../core/types';
+} from '../core/types.js';
 
 // ============================================
 // AUDIT LOGGER
@@ -293,11 +293,11 @@ export class BehaviorMonitor {
     const baseline = this.toolBaselines.get(tool.name);
     if (baseline) {
       // Check for permission changes
-      const currentPerms = new Set(tool.metadata.permissions);
-      const baselinePerms = new Set(baseline.permissions);
-      
-      const addedPerms = [...currentPerms].filter(p => !baselinePerms.has(p));
-      const removedPerms = [...baselinePerms].filter(p => !currentPerms.has(p));
+      const currentPerms = new Set<string>(tool.metadata.permissions);
+      const baselinePerms = new Set<string>(baseline.permissions);
+
+      const addedPerms = [...currentPerms].filter((p: string) => !baselinePerms.has(p));
+      const removedPerms = [...baselinePerms].filter((p: string) => !currentPerms.has(p));
       
       if (addedPerms.length > 0) {
         changes.push(`permissions_added: ${addedPerms.join(', ')}`);
@@ -469,8 +469,7 @@ export interface BehaviorAlert {
 }
 
 // ============================================
-// EXPORTS
+// DEFAULT EXPORT
 // ============================================
 
-export { AuditLogger, BehaviorMonitor };
 export default AuditLogger;

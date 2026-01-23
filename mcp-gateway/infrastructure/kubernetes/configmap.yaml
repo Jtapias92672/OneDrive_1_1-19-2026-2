@@ -1,0 +1,113 @@
+# FORGE Platform - Kubernetes ConfigMap
+# Epic 9: Infrastructure
+# Non-sensitive configuration values
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: forge-config
+  namespace: forge
+  labels:
+    app: forge
+data:
+  # Environment
+  node-env: production
+  log-level: info
+
+  # AWS Configuration
+  aws-region: us-east-1
+  bedrock-enabled: "true"
+
+  # Bedrock Models
+  bedrock-model-sonnet: anthropic.claude-3-5-sonnet-20241022-v2:0
+  bedrock-model-haiku: anthropic.claude-3-5-haiku-20241022-v1:0
+  bedrock-model-opus: anthropic.claude-3-opus-20240229-v1:0
+
+  # Application Configuration
+  api-rate-limit: "1000"
+  api-rate-window: "60000"
+  max-tokens-per-request: "100000"
+
+  # Feature Flags
+  feature-mcp-enabled: "true"
+  feature-cars-enabled: "true"
+  feature-audit-enabled: "true"
+
+  # Convergence Engine Settings
+  convergence-max-iterations: "10"
+  convergence-timeout-ms: "300000"
+  convergence-budget-tokens: "50000"
+
+  # Observability
+  otel-enabled: "true"
+  otel-service-name: forge-api
+  otel-exporter-endpoint: http://otel-collector:4317
+
+  # Health Check Configuration
+  health-check-interval: "30"
+  ready-check-timeout: "5"
+
+---
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: forge
+  labels:
+    name: forge
+    istio-injection: enabled
+
+---
+# Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: forge-api
+  namespace: forge
+  annotations:
+    # EKS IRSA - Links to IAM role for Bedrock access
+    eks.amazonaws.com/role-arn: arn:aws:iam::${AWS_ACCOUNT_ID}:role/forge-api-role
+  labels:
+    app: forge
+    component: api
+
+---
+# Resource Quota
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: forge-quota
+  namespace: forge
+spec:
+  hard:
+    requests.cpu: "10"
+    requests.memory: 20Gi
+    limits.cpu: "20"
+    limits.memory: 40Gi
+    pods: "50"
+    services: "10"
+    persistentvolumeclaims: "10"
+
+---
+# Limit Range
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: forge-limits
+  namespace: forge
+spec:
+  limits:
+    - default:
+        cpu: 500m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+      type: Container
+    - max:
+        cpu: 4
+        memory: 8Gi
+      min:
+        cpu: 50m
+        memory: 64Mi
+      type: Container

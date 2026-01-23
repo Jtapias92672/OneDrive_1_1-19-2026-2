@@ -12,7 +12,7 @@
  *   Supports reversible tokenization for response processing.
  */
 
-import { PrivacyConfig, PIIPattern } from '../core/types';
+import { PrivacyConfig, PIIPattern } from '../core/types.js';
 import * as crypto from 'crypto';
 
 // ============================================

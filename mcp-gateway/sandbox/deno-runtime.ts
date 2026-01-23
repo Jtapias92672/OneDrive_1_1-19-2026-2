@@ -502,18 +502,22 @@ __forge_main__().catch((error) => {
       let stdout = '';
       let stderr = '';
 
-      const proc = child_process.spawn(args[0], args.slice(1), {
-        stdio: ['pipe', 'pipe', 'pipe'],
-      });
+      const command = args[0];
+      if (!command) {
+        resolve({ stdout: '', stderr: 'No command provided', exitCode: 1, signal: null, timedOut: false, killed: false });
+        return;
+      }
+
+      const proc = child_process.spawn(command, args.slice(1));
 
       const timeout = setTimeout(() => {
         proc.kill();
       }, timeoutMs);
 
-      proc.stdout?.on('data', (data) => { stdout += data.toString(); });
-      proc.stderr?.on('data', (data) => { stderr += data.toString(); });
+      proc.stdout?.on('data', (data: Buffer) => { stdout += data.toString(); });
+      proc.stderr?.on('data', (data: Buffer) => { stderr += data.toString(); });
 
-      proc.on('close', (exitCode) => {
+      proc.on('close', (exitCode: number | null) => {
         clearTimeout(timeout);
         resolve({ stdout, stderr, exitCode, signal: null, timedOut: false, killed: false });
       });

@@ -35,13 +35,14 @@ import {
   RiskLevel,
   ApprovalInfo,
   RequestContext,
-} from './types';
+  SandboxInfo,
+} from './types.js';
 
-import { SecurityLayer } from '../security';
-import { ApprovalGate } from '../approval';
-import { SandboxExecutor } from '../sandbox';
-import { PrivacyTokenizer } from '../privacy';
-import { AuditLogger, BehaviorMonitor } from '../monitoring';
+import { SecurityLayer } from '../security/index.js';
+import { ApprovalGate } from '../approval/index.js';
+import { SandboxExecutor } from '../sandbox/index.js';
+import { PrivacyTokenizer } from '../privacy/index.js';
+import { AuditLogger, BehaviorMonitor } from '../monitoring/index.js';
 
 // ============================================
 // DEFAULT CONFIGURATION
@@ -404,7 +405,7 @@ export class MCPGateway {
             tool: tool.name,
             params: request.params,
             context: request.context,
-            riskAssessment: carsAssessment,
+            riskAssessment: carsAssessment ?? undefined,
           });
           
           if (approvalInfo.status === 'denied') {
@@ -432,7 +433,7 @@ export class MCPGateway {
       
       if (this.config.privacy.enabled) {
         const tokenizeResult = this.privacyTokenizer.tokenize(request.params);
-        request.params = tokenizeResult.data;
+        request.params = tokenizeResult.data as Record<string, unknown>;
         privacyInfo = {
           tokenized: tokenizeResult.tokenized,
           fieldsTokenized: tokenizeResult.fieldsTokenized,
@@ -454,7 +455,7 @@ export class MCPGateway {
       });
 
       let result: unknown;
-      let sandboxInfo = { used: false };
+      let sandboxInfo: SandboxInfo = { used: false };
       
       if (this.config.sandbox.enabled && tool.metadata.riskLevel !== 'minimal') {
         const sandboxResult = await this.sandbox.execute({
@@ -594,7 +595,7 @@ export class MCPGateway {
     
     // Adjust for permissions
     const highRiskPermissions = ['filesystem:write', 'database:write', 'secrets:read', 'external:api'];
-    const permissionRisk = permissions.filter(p => highRiskPermissions.includes(p)).length * 0.1;
+    const permissionRisk = permissions.filter((p: string) => highRiskPermissions.includes(p)).length * 0.1;
     score = Math.min(1, score + permissionRisk);
     
     // Determine recommendation

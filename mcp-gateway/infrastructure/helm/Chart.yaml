@@ -1,0 +1,83 @@
+# FORGE Platform - Helm Chart
+# Epic 9: Infrastructure
+# Target: AWS EKS on EC2 with Bedrock integration
+
+apiVersion: v2
+name: forge-platform
+description: FORGE AI Platform - Secure MCP Gateway with Bedrock Integration
+type: application
+
+# Chart version - increment on chart changes
+version: 1.0.0
+
+# Application version - matches FORGE release
+appVersion: "1.0.0"
+
+# Minimum Kubernetes version
+kubeVersion: ">=1.28.0"
+
+# Keywords for search
+keywords:
+  - forge
+  - ai
+  - mcp
+  - bedrock
+  - claude
+  - anthropic
+
+# Maintainers
+maintainers:
+  - name: ArcFoundry
+    email: infrastructure@arcfoundry.ai
+    url: https://arcfoundry.ai
+
+# Home and sources
+home: https://forge.arcfoundry.ai
+sources:
+  - https://github.com/arcfoundry/forge
+
+# Dependencies
+dependencies:
+  - name: postgresql
+    version: "13.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+    tags:
+      - database
+
+  - name: redis
+    version: "18.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+    tags:
+      - cache
+
+  - name: prometheus
+    version: "25.x.x"
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: monitoring.prometheus.enabled
+    tags:
+      - monitoring
+
+  - name: grafana
+    version: "7.x.x"
+    repository: https://grafana.github.io/helm-charts
+    condition: monitoring.grafana.enabled
+    tags:
+      - monitoring
+
+# Annotations
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |
+    - name: Documentation
+      url: https://docs.forge.arcfoundry.ai
+    - name: Support
+      url: https://support.arcfoundry.ai
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial FORGE platform chart
+    - kind: added
+      description: Bedrock integration for Claude models
+    - kind: added
+      description: Lambda worker deployment support
