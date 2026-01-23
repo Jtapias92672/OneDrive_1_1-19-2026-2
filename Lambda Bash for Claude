@@ -1,0 +1,13 @@
+# In your local forge-build-system repo
+cp -r ~/Downloads/forge-infrastructure/terraform/modules/lambda \
+      packages/infrastructure/terraform/modules/
+```
+
+This places it alongside your existing modules:
+```
+terraform/modules/
+├── api-gateway/
+├── bedrock/       ← Already exists
+├── eks/
+├── lambda/        ← NEW (add here)
+└── vpc/
