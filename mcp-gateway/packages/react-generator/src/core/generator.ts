@@ -21,7 +21,6 @@ import {
   GenerationError,
   ImportStatement,
   ComponentProp,
-  WarningType,
   ErrorType,
 } from './types';
 
@@ -842,11 +841,6 @@ describe('${name}', () => {
       uniqueImports: allImports.size,
       durationMs: Date.now() - startTime,
     };
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private addWarning(type: WarningType, message: string, nodeId?: string, componentName?: string): void {
-    this.warnings.push({ type, message, nodeId, componentName });
   }
 
   private addError(type: ErrorType, message: string, nodeId?: string): void {
