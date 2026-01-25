@@ -74,11 +74,31 @@ interface TokenRequest {
 }
 
 // ============================================
+// DASHBOARD TYPES
+// ============================================
+
+interface DashboardMessage {
+  id: string;
+  content: string;
+  timestamp: string;
+  status: 'sent' | 'pending' | 'failed';
+}
+
+interface UploadedFile {
+  id: string;
+  filename: string;
+  size: number;
+  uploadedAt: string;
+}
+
+// ============================================
 // IN-MEMORY STORES
 // ============================================
 
 const assessments = new Map<string, Assessment>();
 const sessions = new Map<string, { userId: string; tenantId: string; createdAt: string }>();
+const messages = new Map<string, DashboardMessage>();
+const uploads = new Map<string, UploadedFile>();
 
 // Initialize some test sessions
 sessions.set('session-1', { userId: 'user-1', tenantId: 'tenant-abc', createdAt: new Date().toISOString() });
@@ -897,6 +917,341 @@ async function handleSkillsStats(req: http.IncomingMessage, res: http.ServerResp
 }
 
 // ============================================
+// DASHBOARD HANDLERS
+// ============================================
+
+// GET /api/v1/evidence/packs - Get evidence pack data for dashboard
+function handleGetEvidencePacks(req: http.IncomingMessage, res: http.ServerResponse): void {
+  const query = parseQueryParams(req.url || '');
+  const mode = query.get('mode') || 'normal';
+
+  // Generate mock evidence packs based on mode
+  const sessionPacks = mode === 'critical' ? 8 : mode === 'warning' ? 5 : 3;
+  const epicTotal = 12;
+  const cmmcReady = mode !== 'critical';
+  const dfarsCompliant = mode !== 'critical';
+  const lastGenerated = mode === 'critical' ? '15 min ago' : '2 min ago';
+
+  const recentPacks = [
+    { id: 'EP-001', task: 'API Gateway Security Review', timestamp: '2 min ago', size: '45 KB', signed: true },
+    { id: 'EP-002', task: 'Supply Chain Verification', timestamp: '8 min ago', size: '32 KB', signed: true },
+    { id: 'EP-003', task: 'Compliance Check Results', timestamp: '15 min ago', size: '28 KB', signed: mode !== 'critical' },
+  ];
+
+  sendJson(res, 200, {
+    sessionPacks,
+    epicTotal,
+    cmmcReady,
+    dfarsCompliant,
+    lastGenerated,
+    recentPacks,
+  });
+}
+
+// GET /api/v1/cars/status - Get CARS risk assessment status
+function handleGetCarsStatus(req: http.IncomingMessage, res: http.ServerResponse): void {
+  const query = parseQueryParams(req.url || '');
+  const mode = query.get('mode') || 'normal';
+
+  // Get pending assessments
+  const pendingList = Array.from(assessments.values())
+    .filter(a => a.status === 'pending')
+    .slice(0, 5)
+    .map(a => ({
+      id: a.id,
+      tool: a.tool,
+      riskLevel: a.riskLevel,
+      action: a.action,
+      createdAt: a.createdAt,
+    }));
+
+  // Calculate stats
+  const assessmentList = Array.from(assessments.values());
+  const byLevel = {
+    L1: assessmentList.filter(a => a.riskLevel === 'L1_MINIMAL').length,
+    L2: assessmentList.filter(a => a.riskLevel === 'L2_LOW').length,
+    L3: assessmentList.filter(a => a.riskLevel === 'L3_MEDIUM').length,
+    L4: assessmentList.filter(a => a.riskLevel === 'L4_HIGH').length,
+    L5: assessmentList.filter(a => a.riskLevel === 'L5_CRITICAL').length,
+  };
+
+  // Determine current level based on mode
+  const level = mode === 'critical' ? 'L4' : mode === 'warning' ? 'L3' : 'L2';
+  const agentAutonomy = mode === 'critical' ? 65 : mode === 'warning' ? 78 : 85;
+  const humanOversight = 100 - agentAutonomy;
+
+  sendJson(res, 200, {
+    level,
+    pendingApprovals: pendingList,
+    pendingCount: pendingList.length,
+    stats: {
+      total: assessmentList.length,
+      byLevel,
+      approved: assessmentList.filter(a => a.status === 'approved').length,
+      rejected: assessmentList.filter(a => a.status === 'rejected').length,
+    },
+    agentAutonomy,
+    humanOversight,
+  });
+}
+
+// GET /api/v1/supply-chain/status - Get supply chain verification status
+function handleGetSupplyChainStatus(req: http.IncomingMessage, res: http.ServerResponse): void {
+  const query = parseQueryParams(req.url || '');
+  const mode = query.get('mode') || 'normal';
+
+  const slsaLevel = mode === 'critical' ? 2 : 3;
+  const sbomGenerated = mode !== 'critical';
+  const lastScan = mode === 'critical' ? '2 hours ago' : '5 min ago';
+
+  const dependencies = [
+    { name: '@anthropic/mcp-sdk', version: '1.2.0', verified: true, license: 'MIT' },
+    { name: 'typescript', version: '5.3.0', verified: true, license: 'Apache-2.0' },
+    { name: 'zod', version: '3.22.0', verified: true, license: 'MIT' },
+  ];
+
+  const vulnerabilities = mode === 'critical' ? [
+    { id: 'CVE-2024-0001', severity: 'HIGH', package: 'lodash', fixAvailable: true },
+    { id: 'CVE-2024-0002', severity: 'MEDIUM', package: 'axios', fixAvailable: true },
+  ] : mode === 'warning' ? [
+    { id: 'CVE-2024-0003', severity: 'LOW', package: 'minimist', fixAvailable: true },
+  ] : [];
+
+  sendJson(res, 200, {
+    slsaLevel,
+    sbomGenerated,
+    lastScan,
+    dependencies,
+    vulnerabilities,
+    totalDependencies: 47,
+    verifiedCount: mode === 'critical' ? 42 : 47,
+  });
+}
+
+// GET /api/v1/session/tokens - Get token usage for session
+function handleGetSessionTokens(req: http.IncomingMessage, res: http.ServerResponse): void {
+  const query = parseQueryParams(req.url || '');
+  const mode = query.get('mode') || 'normal';
+
+  const optimal = 15000;
+  const warning = 30000;
+  const danger = 40000;
+
+  let current: number;
+  let status: 'optimal' | 'warning' | 'danger';
+
+  if (mode === 'critical') {
+    current = 35000;
+    status = 'danger';
+  } else if (mode === 'warning') {
+    current = 22000;
+    status = 'warning';
+  } else {
+    current = 8500;
+    status = 'optimal';
+  }
+
+  const breakdown = {
+    systemPrompt: 2500,
+    conversation: current - 2500 - 1500 - 500,
+    tools: 1500,
+    context: 500,
+  };
+
+  sendJson(res, 200, {
+    current,
+    optimal,
+    warning,
+    danger,
+    status,
+    breakdown,
+    lastUpdated: new Date().toISOString(),
+  });
+}
+
+// GET /api/v1/guardrails/status - Get guardrail status (DP-09, DP-10)
+function handleGetGuardrailsStatus(req: http.IncomingMessage, res: http.ServerResponse): void {
+  const query = parseQueryParams(req.url || '');
+  const mode = query.get('mode') || 'normal';
+
+  const guardrails = [
+    {
+      id: 'DP-09',
+      name: 'CARS Risk Assessment',
+      status: 'active',
+      lastTriggered: mode === 'critical' ? '1 min ago' : '30 min ago',
+      triggerCount: mode === 'critical' ? 12 : mode === 'warning' ? 5 : 2,
+    },
+    {
+      id: 'DP-10',
+      name: 'Human Oversight Protocol',
+      status: 'active',
+      lastTriggered: mode === 'critical' ? '5 min ago' : '1 hour ago',
+      triggerCount: mode === 'critical' ? 8 : mode === 'warning' ? 3 : 1,
+    },
+  ];
+
+  const alerts = mode === 'critical' ? [
+    { id: 'alert-1', guardrail: 'DP-09', severity: 'HIGH', message: 'Multiple L4 risk operations detected', timestamp: new Date().toISOString() },
+    { id: 'alert-2', guardrail: 'DP-10', severity: 'MEDIUM', message: 'Human approval pending for 3 operations', timestamp: new Date().toISOString() },
+  ] : mode === 'warning' ? [
+    { id: 'alert-3', guardrail: 'DP-09', severity: 'LOW', message: 'Elevated risk level detected', timestamp: new Date().toISOString() },
+  ] : [];
+
+  sendJson(res, 200, {
+    guardrails,
+    alerts,
+    overallStatus: mode === 'critical' ? 'alert' : mode === 'warning' ? 'warning' : 'healthy',
+  });
+}
+
+// POST /api/v1/messages - Send message from dashboard
+async function handlePostMessage(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+  try {
+    const body = await parseJsonBody(req) as { content?: string; timestamp?: string };
+
+    if (!body.content || body.content.trim() === '') {
+      sendJson(res, 400, { error: 'Missing required field: content' });
+      return;
+    }
+
+    const id = crypto.randomUUID();
+    const message: DashboardMessage = {
+      id,
+      content: body.content.trim(),
+      timestamp: body.timestamp || new Date().toISOString(),
+      status: 'sent',
+    };
+
+    messages.set(id, message);
+
+    sendJson(res, 201, {
+      id: message.id,
+      status: message.status,
+      timestamp: message.timestamp,
+    });
+  } catch (error) {
+    sendJson(res, 400, { error: (error as Error).message });
+  }
+}
+
+// POST /api/v1/upload - Upload file from dashboard
+async function handleUpload(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+  try {
+    const body = await parseJsonBody(req) as { filename?: string; size?: number; content?: string };
+
+    if (!body.filename) {
+      sendJson(res, 400, { error: 'Missing required field: filename' });
+      return;
+    }
+
+    const id = crypto.randomUUID();
+    const file: UploadedFile = {
+      id,
+      filename: body.filename,
+      size: body.size || (body.content ? body.content.length : 0),
+      uploadedAt: new Date().toISOString(),
+    };
+
+    uploads.set(id, file);
+
+    sendJson(res, 201, {
+      id: file.id,
+      filename: file.filename,
+      size: file.size,
+      uploadedAt: file.uploadedAt,
+    });
+  } catch (error) {
+    sendJson(res, 400, { error: (error as Error).message });
+  }
+}
+
+// GET /api/v1/session/memory - Get agent memory status
+function handleGetAgentMemory(req: http.IncomingMessage, res: http.ServerResponse): void {
+  const query = parseQueryParams(req.url || '');
+  const mode = query.get('mode') || 'normal';
+
+  // Session memory thresholds
+  const optimal = 15000;
+  const warning = 30000;
+  const danger = 40000;
+
+  let current: number;
+  if (mode === 'critical') {
+    current = 35000;
+  } else if (mode === 'warning') {
+    current = 22000;
+  } else {
+    current = 8500;
+  }
+
+  // Guardrails status
+  const guardrails = {
+    dp09: {
+      name: 'PII Recall',
+      target: 99,
+      current: mode === 'critical' ? 97.1 : 99.2,
+      status: mode === 'critical' ? 'fail' : 'pass',
+      critical: true,
+    },
+    dp10: {
+      name: 'Secret Recall',
+      target: 100,
+      current: mode === 'critical' ? 98.5 : 100,
+      status: mode === 'critical' ? 'fail' : 'pass',
+      critical: true,
+    },
+  };
+
+  sendJson(res, 200, {
+    session: {
+      current,
+      optimal,
+      warning,
+      danger,
+    },
+    guardrails,
+    lastSync: mode === 'critical' ? '15 min ago' : '2 min ago',
+  });
+}
+
+// GET /api/v1/verification/status - Get verification status
+function handleGetVerificationStatus(req: http.IncomingMessage, res: http.ServerResponse): void {
+  const query = parseQueryParams(req.url || '');
+  const mode = query.get('mode') || 'normal';
+
+  const verificationItems = [
+    {
+      name: 'Unit Tests',
+      status: mode === 'critical' ? 'fail' : 'pass',
+      count: mode === 'critical' ? 142 : 156,
+    },
+    {
+      name: 'Integration Tests',
+      status: mode === 'critical' ? 'running' : 'pass',
+      count: mode === 'critical' ? 18 : 24,
+    },
+    {
+      name: 'Type Check',
+      status: 'pass',
+      count: 0,
+    },
+    {
+      name: 'Lint',
+      status: mode === 'warning' || mode === 'critical' ? 'fail' : 'pass',
+      count: mode === 'warning' ? 3 : mode === 'critical' ? 12 : 0,
+    },
+    {
+      name: 'Security Scan',
+      status: mode === 'critical' ? 'fail' : 'pass',
+      count: mode === 'critical' ? 2 : 0,
+    },
+  ];
+
+  sendJson(res, 200, verificationItems);
+}
+
+// ============================================
 // ROUTER
 // ============================================
 
@@ -952,6 +1307,64 @@ export async function handleApiRequest(
   // GET /api/v1/stats
   if (method === 'GET' && pathname === '/api/v1/stats') {
     handleStats(req, res);
+    return true;
+  }
+
+  // ============================================
+  // DASHBOARD ROUTES
+  // ============================================
+
+  // GET /api/v1/evidence/packs - Get evidence pack data
+  if (method === 'GET' && pathname === '/api/v1/evidence/packs') {
+    handleGetEvidencePacks(req, res);
+    return true;
+  }
+
+  // GET /api/v1/cars/status - Get CARS risk assessment status
+  if (method === 'GET' && pathname === '/api/v1/cars/status') {
+    handleGetCarsStatus(req, res);
+    return true;
+  }
+
+  // GET /api/v1/supply-chain/status - Get supply chain status
+  if (method === 'GET' && pathname === '/api/v1/supply-chain/status') {
+    handleGetSupplyChainStatus(req, res);
+    return true;
+  }
+
+  // GET /api/v1/session/tokens - Get token usage
+  if (method === 'GET' && pathname === '/api/v1/session/tokens') {
+    handleGetSessionTokens(req, res);
+    return true;
+  }
+
+  // GET /api/v1/guardrails/status - Get guardrail status
+  if (method === 'GET' && pathname === '/api/v1/guardrails/status') {
+    handleGetGuardrailsStatus(req, res);
+    return true;
+  }
+
+  // POST /api/v1/messages - Send message
+  if (method === 'POST' && pathname === '/api/v1/messages') {
+    await handlePostMessage(req, res);
+    return true;
+  }
+
+  // POST /api/v1/upload - Upload file
+  if (method === 'POST' && pathname === '/api/v1/upload') {
+    await handleUpload(req, res);
+    return true;
+  }
+
+  // GET /api/v1/session/memory - Get agent memory status
+  if (method === 'GET' && pathname === '/api/v1/session/memory') {
+    handleGetAgentMemory(req, res);
+    return true;
+  }
+
+  // GET /api/v1/verification/status - Get verification status
+  if (method === 'GET' && pathname === '/api/v1/verification/status') {
+    handleGetVerificationStatus(req, res);
     return true;
   }
 
