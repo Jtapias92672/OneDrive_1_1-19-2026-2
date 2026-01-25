@@ -57,6 +57,25 @@ npm test               # All tests must pass
 npm test -- --coverage # Show report (≥97% target)
 ```
 
+### File-Level Coverage Review
+Before claiming COMPLETE, check per-file metrics:
+
+1. **Flag any file with branch coverage <85%**
+   - Investigate why branches are uncovered
+   - Document if acceptable (error paths)
+
+2. **Flag any function at 0% coverage**
+   - Dead code? → Remove it
+   - Missing tests? → Add them
+
+3. **Review uncovered lines and classify:**
+   | Type | Examples | Verdict |
+   |------|----------|---------|
+   | Error handlers | `catch` blocks, `this.addError()` | ✓ Acceptable |
+   | Switch defaults | `default: return 'any'` | ✓ Acceptable |
+   | Fallback logic | Defensive null checks | ✓ Acceptable |
+   | Real functionality | Business logic, data transforms | ❌ Must test or justify |
+
 ### Package Structure
 ```
 packages/
