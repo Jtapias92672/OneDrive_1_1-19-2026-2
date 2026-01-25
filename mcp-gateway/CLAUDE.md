@@ -16,7 +16,7 @@ Enterprise-grade AI-assisted design-to-code platform. Converts Figma designs to 
 | Package | Target | Current |
 |---------|--------|---------|
 | figma-parser | 97% | 97%+ |
-| react-generator | 97% | 97.54% |
+| react-generator | 97% | 97.75% |
 | mcp-gateway | 97% | 97%+ |
 | security-controls | 97% | 97%+ |
 
@@ -57,24 +57,27 @@ npm test               # All tests must pass
 npm test -- --coverage # Show report (≥97% target)
 ```
 
-### File-Level Coverage Review
-Before claiming COMPLETE, check per-file metrics:
+### Coverage Review Protocol
+**Trigger:** After `npm test -- --coverage`, before claiming COMPLETE
 
-1. **Flag any file with branch coverage <85%**
-   - Investigate why branches are uncovered
-   - Document if acceptable (error paths)
+**Procedure:**
+1. Check rollup metrics (must pass thresholds)
+2. Review per-file breakdown:
+   - Any file <85% branch coverage? → Investigate
+   - Any function at 0%? → Dead code or missing test
+3. For each uncovered line, classify:
+   - **DEFENSIVE:** catch blocks, switch defaults → Accept + document
+   - **REAL:** actual functionality → Test or justify
+4. Document accepted gaps in commit message
 
-2. **Flag any function at 0% coverage**
-   - Dead code? → Remove it
-   - Missing tests? → Add them
-
-3. **Review uncovered lines and classify:**
-   | Type | Examples | Verdict |
-   |------|----------|---------|
-   | Error handlers | `catch` blocks, `this.addError()` | ✓ Acceptable |
-   | Switch defaults | `default: return 'any'` | ✓ Acceptable |
-   | Fallback logic | Defensive null checks | ✓ Acceptable |
-   | Real functionality | Business logic, data transforms | ❌ Must test or justify |
+**Required Output:**
+```
+Coverage Review:
+- Files <85% branch: [list or "none"]
+- Functions at 0%: [list or "none"]
+- Accepted gaps: [defensive code lines]
+- Action needed: [real functionality lines]
+```
 
 ### Package Structure
 ```
