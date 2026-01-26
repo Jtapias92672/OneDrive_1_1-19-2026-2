@@ -133,13 +133,12 @@ export async function validateCheckerSpec(spec: CheckerSpec): Promise<{
 // =============================================================================
 
 /**
- * Evaluate verification checks against evidence
+ * Evaluate a check block (verification or validation) against evidence
  */
-export async function evaluateVerification(
-  spec: CheckerSpec,
+async function evaluateBlock(
+  checks: Check[],
   evidence: Evidence & { testResults?: TestEvidence }
 ): Promise<VnVBlockResult> {
-  const checks = spec.verification.checks;
   const mustPass = checks.filter((c) => c.priority === 'must').map((c) => c.id);
   const passed: string[] = [];
   const failed: string[] = [];
@@ -156,11 +155,20 @@ export async function evaluateVerification(
     }
   }
 
-  // Status: must-priority checks determine overall status
   const mustFailed = mustPass.filter((id) => failed.includes(id));
   const status: VnVStatus = mustFailed.length > 0 ? 'failed' : 'passed';
 
   return { mustPass, passed, failed, skipped, status };
+}
+
+/**
+ * Evaluate verification checks against evidence
+ */
+export async function evaluateVerification(
+  spec: CheckerSpec,
+  evidence: Evidence & { testResults?: TestEvidence }
+): Promise<VnVBlockResult> {
+  return evaluateBlock(spec.verification.checks, evidence);
 }
 
 /**
@@ -170,27 +178,7 @@ export async function evaluateValidation(
   spec: CheckerSpec,
   evidence: Evidence & { testResults?: TestEvidence }
 ): Promise<VnVBlockResult> {
-  const checks = spec.validation.checks;
-  const mustPass = checks.filter((c) => c.priority === 'must').map((c) => c.id);
-  const passed: string[] = [];
-  const failed: string[] = [];
-  const skipped: string[] = [];
-
-  for (const check of checks) {
-    const result = await evaluateCheck(check, evidence);
-    if (result === 'passed') {
-      passed.push(check.id);
-    } else if (result === 'failed') {
-      failed.push(check.id);
-    } else {
-      skipped.push(check.id);
-    }
-  }
-
-  const mustFailed = mustPass.filter((id) => failed.includes(id));
-  const status: VnVStatus = mustFailed.length > 0 ? 'failed' : 'passed';
-
-  return { mustPass, passed, failed, skipped, status };
+  return evaluateBlock(spec.validation.checks, evidence);
 }
 
 /**
