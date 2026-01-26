@@ -62,13 +62,38 @@ const convoy = await createConvoy({
 });
 ```
 
-### 2. Dispatch Tasks
+### 2. Verify CheckerSpec Exists (Epic 7.5)
+```typescript
+// Before dispatch, verify work item has CheckerSpec
+const spec = await loadCheckerSpec(workItemId);
+if (!spec) {
+  throw new Error(`CheckerSpec required for ${workItemId}`);
+}
+```
+
+### 3. Evaluate Gate (Epic 7.5)
+```typescript
+// Evaluate pre_dispatch gate before sling
+const gateDecision = await evaluateGate('pre_dispatch', {
+  workItemId,
+  checkerSpecId: spec.workItem.id,
+  suiteResults: { smoke: { passed: true } },
+  targetedTestsPassed: true
+});
+
+if (gateDecision.status === 'DENIED') {
+  await ledger.recordGateResult(taskId, 'pre_dispatch', 'DENIED', gateDecision.reasons);
+  return; // Do NOT dispatch
+}
+```
+
+### 4. Dispatch Tasks
 ```typescript
 // Write task to worker hook (not direct communication)
+// Gate evaluation is built into sling()
 await sling({
   taskId: "convoy-a1b2.1",
   rig: "forge-translator",
-  context: buildMVC(task)  // Minimum Viable Context only
 });
 ```
 

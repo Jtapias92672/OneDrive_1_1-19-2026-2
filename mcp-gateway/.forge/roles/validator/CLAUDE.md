@@ -87,7 +87,59 @@ You receive **Minimum Viable Context (MVC)** only:
     "pixelDiffPercent": 2.0,
     "structuralMatchPercent": 95.0
   },
-  "tools": ["file-system", "image-compare", "schema-validator"]
+  "tools": ["file-system", "image-compare", "schema-validator"],
+  "checkerSpec": { /* V&V requirements - Epic 7.5 */ },
+  "workItemId": "FORGE-123"
+}
+```
+
+## CheckerSpec Consumption (Epic 7.5)
+
+Your context includes a **CheckerSpec** defining V&V requirements:
+
+```typescript
+// Read CheckerSpec from context
+const spec = context.checkerSpec;
+
+// Execute verification checks (V-N)
+for (const check of spec.verification.checks) {
+  if (check.priority === 'must') {
+    // Must-pass: failure blocks completion
+    const result = await executeCheck(check);
+    if (!result.passed) {
+      vnvResult.verification.failed.push(check.id);
+    }
+  }
+}
+
+// Execute validation checks (B-N)
+for (const check of spec.validation.checks) {
+  // Business correctness checks
+  const result = await executeCheck(check);
+  vnvResult.validation[result.passed ? 'passed' : 'failed'].push(check.id);
+}
+```
+
+### V&V Output Contract
+
+Write `vnv_evidence.json` to hook:
+
+```json
+{
+  "checkerSpecId": "FORGE-123",
+  "verification": {
+    "status": "passed",
+    "mustPass": ["V-1", "V-2", "V-3"],
+    "passed": ["V-1", "V-2", "V-3"],
+    "failed": []
+  },
+  "validation": {
+    "status": "passed",
+    "mustPass": ["B-1"],
+    "passed": ["B-1", "B-2"],
+    "failed": []
+  },
+  "overallStatus": "PASS"
 }
 ```
 

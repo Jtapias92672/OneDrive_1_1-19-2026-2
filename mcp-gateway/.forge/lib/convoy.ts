@@ -16,6 +16,8 @@ import {
   WorkerRole,
   SlingRequest,
   SlingResult,
+  GateDecision,
+  GateContext,
 } from './types.js';
 import {
   createTask,
@@ -30,6 +32,7 @@ import {
   generateId,
 } from './ledger.js';
 import { createHook } from './hook.js';
+import { evaluateGate, loadCheckerSpec } from './vnv.js';
 
 // =============================================================================
 // Convoy Creation
@@ -105,11 +108,19 @@ export async function createConvoyFromFigma(
 // Sling: Task Dispatch
 // =============================================================================
 
+export interface SlingOptions {
+  skipGateCheck?: boolean;
+  suiteResults?: Record<string, { passed: boolean; failed: number; total: number; skipped: number; duration: number; withinBudget: boolean }>;
+  targetedTestsPassed?: boolean;
+}
+
 /**
  * Sling a task to a worker via hook
  * Mayor uses this to dispatch work
+ *
+ * Epic 7.5: Evaluates pre_dispatch gate before sling (unless skipped)
  */
-export async function sling(request: SlingRequest): Promise<SlingResult> {
+export async function sling(request: SlingRequest, options: SlingOptions = {}): Promise<SlingResult> {
   const { taskId, rig } = request;
 
   // Get task from ledger
@@ -125,11 +136,36 @@ export async function sling(request: SlingRequest): Promise<SlingResult> {
     return { success: false, error: `Task ${taskId} is not ready (status: ${task.status})` };
   }
 
+  // Epic 7.5: Evaluate pre_dispatch gate
+  if (!options.skipGateCheck && task.workItemId) {
+    const spec = await loadCheckerSpec(task.workItemId);
+    const gateContext: GateContext = {
+      workItemId: task.workItemId,
+      checkerSpecId: spec?.workItem.id,
+      suiteResults: options.suiteResults || {},
+      targetedTestsPassed: options.targetedTestsPassed || false,
+      riskLevel: spec?.risk?.level,
+    };
+
+    const gateDecision = await evaluateGate('pre_dispatch', gateContext);
+
+    if (gateDecision.status === 'DENIED') {
+      return {
+        success: false,
+        error: `Pre-dispatch gate denied: ${gateDecision.reasons.join(', ')}`,
+        gateDecision,
+      };
+    }
+  }
+
   // Build MVC for worker
   const context = await buildMinimumViableContext(task, rig);
 
   // Create hook (writes to pending/)
-  const hook = await createHook(task, context, rig);
+  // Skip CheckerSpec validation since we already did it in gate check
+  const hook = await createHook(task, context, rig, {
+    skipCheckerSpecValidation: options.skipGateCheck,
+  });
 
   // Update task status
   await updateTaskStatus(taskId, 'IN_PROGRESS', { assignedWorker: hook.workerId });

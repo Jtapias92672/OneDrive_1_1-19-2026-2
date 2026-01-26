@@ -22,6 +22,7 @@ import {
   TaskError,
 } from './types.js';
 import { generateId, hashContent, logEvent, updateTaskStatus } from './ledger.js';
+import { loadCheckerSpec } from './vnv.js';
 
 // =============================================================================
 // Configuration
@@ -59,15 +60,45 @@ function getHookPaths(hookDir: string): HookFiles {
 // Hook Lifecycle: PENDING → ACTIVE → COMPLETE
 // =============================================================================
 
+export interface CreateHookOptions {
+  skipCheckerSpecValidation?: boolean;
+}
+
 /**
  * Create a new hook for a worker (Mayor dispatches via this)
  * Hook starts in PENDING state in pending/ directory
+ *
+ * Epic 7.5: Validates CheckerSpec exists for work item (unless skipped)
  */
 export async function createHook(
   task: Task,
   context: MinimumViableContext,
-  role: WorkerRole
+  role: WorkerRole,
+  options: CreateHookOptions = {}
 ): Promise<Hook> {
+  // Epic 7.5: Validate CheckerSpec exists
+  if (!options.skipCheckerSpecValidation && task.workItemId) {
+    const spec = await loadCheckerSpec(task.workItemId);
+    if (!spec) {
+      throw new Error(`CheckerSpec required for work item ${task.workItemId}. Create .forge/work_items/${task.workItemId}/checker_spec.yaml`);
+    }
+    // Add checker spec to context for validator role
+    if (role === 'validator' && !context.checkerSpec) {
+      context.checkerSpec = spec;
+    }
+    // Update task with checkerSpecId
+    if (!task.vnv) {
+      task.vnv = {
+        checkerSpecId: spec.workItem.id,
+        verificationStatus: 'pending',
+        validationStatus: 'pending',
+        gatesPassed: [],
+        gatesFailed: [],
+        lastEvaluated: new Date().toISOString(),
+      };
+    }
+  }
+
   const hookId = generateId(role, task.id);
   const workerId = `${role}-${Date.now()}`;
   const now = new Date().toISOString();
@@ -98,7 +129,7 @@ export async function createHook(
   await logEvent('task_dispatched', {
     taskId: task.id,
     workerId,
-    data: { hookId, role },
+    data: { hookId, role, checkerSpecValidated: !options.skipCheckerSpecValidation },
   });
 
   return hook;
