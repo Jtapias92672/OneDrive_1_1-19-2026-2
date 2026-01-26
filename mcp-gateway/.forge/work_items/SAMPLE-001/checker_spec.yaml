@@ -1,0 +1,98 @@
+# Sample CheckerSpec for Epic 7.5 Integration Testing
+# Work Item: SAMPLE-001
+
+version: "1.0.0"
+
+workItem:
+  id: "SAMPLE-001"
+  title: "Sample Work Item for V&V Integration Test"
+  type: feature
+  storyPoints: 3
+  touchedModules:
+    - "mcp-gateway"
+
+intent:
+  summary: |
+    This is a sample work item used to verify the Epic 7.5 V&V framework
+    integration. It demonstrates all required CheckerSpec fields.
+  acceptanceCriteria:
+    - "CheckerSpec loads successfully"
+    - "Verification checks can be evaluated"
+    - "Validation checks can be evaluated"
+    - "Gate evaluation returns correct decision"
+  context: |
+    Created for Epic 7.5 integration testing.
+
+risk:
+  level: low
+  changeSurface: isolated
+  factors:
+    - "Test-only work item"
+  mitigations:
+    - "No production impact"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "TypeScript compiles without errors"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "Unit tests pass"
+      priority: must
+      automated: true
+      testIds: ["vnv.test.ts"]
+      evidenceType: test-result
+    - id: "V-3"
+      description: "Schema validates correctly"
+      priority: should
+      automated: true
+      evidenceType: test-result
+  notes: |
+    Sample verification checks for testing.
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "CheckerSpec can be loaded and parsed"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "B-2"
+      description: "Gate evaluation produces correct result"
+      priority: should
+      automated: true
+      evidenceType: test-result
+  notes: |
+    Sample validation checks for testing.
+
+testSuites:
+  membership:
+    - smoke
+  tags:
+    - "epic-7.5"
+    - "vnv"
+    - "integration"
+  targetedTests:
+    - ".forge/lib/integration-vnv.test.ts"
+
+evidence:
+  required:
+    - test-results
+  optional:
+    - coverage-report
+  artifacts:
+    - name: "V&V Test Results"
+      path: ".forge/evidence/SAMPLE-001/vnv-results.json"
+      description: "V&V evaluation results"
+
+definitionOfDone:
+  - "CheckerSpec loads without error"
+  - "All must-priority verification checks pass"
+  - "All must-priority validation checks pass"
+  - "Pre-dispatch gate authorizes"
+
+nonGoals:
+  - "Production deployment"
+  - "Full regression testing"

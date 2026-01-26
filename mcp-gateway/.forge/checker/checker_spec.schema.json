@@ -167,7 +167,7 @@
           "description": "Test case IDs that verify this check"
         },
         "evidenceType": {
-          "enum": ["test-result", "code-review", "manual-verification", "screenshot", "log"],
+          "enum": ["test-result", "code-review", "manual-verification", "screenshot", "log", "coverage-report", "lint-results", "visual-diff", "schema-validation"],
           "description": "Type of evidence required"
         }
       }
@@ -230,19 +230,19 @@
       "properties": {
         "ticket": {
           "type": "string",
-          "format": "uri"
+          "description": "URL to issue tracker"
         },
         "design": {
           "type": "string",
-          "format": "uri"
+          "description": "URL to design document"
         },
         "documentation": {
           "type": "string",
-          "format": "uri"
+          "description": "URL to documentation"
         },
         "figma": {
           "type": "string",
-          "format": "uri"
+          "description": "URL to Figma file"
         }
       }
     }

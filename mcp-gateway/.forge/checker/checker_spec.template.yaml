@@ -5,7 +5,7 @@
 version: "1.0.0"
 
 workItem:
-  id: "FORGE-XXX"           # Replace with actual work item ID
+  id: "FORGE-000"           # Replace with actual work item ID
   title: "Work item title"  # Brief descriptive title
   type: feature             # feature | bug | refactor | spike | chore
   storyPoints: 5            # 1-21, use Fibonacci (1,2,3,5,8,13,21)
@@ -62,7 +62,7 @@ verification:
       description: "Schema validates against examples"
       priority: should
       automated: true
-      evidenceType: schema-validation
+      evidenceType: test-result
   notes: |
     Verification checks focus on technical implementation quality.
     All "must" priority checks must pass for work to be considered complete.
