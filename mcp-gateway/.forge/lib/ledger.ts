@@ -227,7 +227,7 @@ export async function getReadyTasks(convoyId?: string): Promise<Task[]> {
 
   // Find ready tasks
   const ready: Task[] = [];
-  for (const task of taskMap.values()) {
+  for (const task of Array.from(taskMap.values())) {
     if (convoyId && task.convoyId !== convoyId) continue;
     if (task.status !== 'PENDING' && task.status !== 'READY') continue;
 
@@ -255,7 +255,7 @@ async function checkUnblocked(completedTaskId: string): Promise<void> {
     taskMap.set(task.id, task);
   }
 
-  for (const task of taskMap.values()) {
+  for (const task of Array.from(taskMap.values())) {
     if (task.status !== 'BLOCKED') continue;
     if (!task.blockedBy.includes(completedTaskId)) continue;
 
