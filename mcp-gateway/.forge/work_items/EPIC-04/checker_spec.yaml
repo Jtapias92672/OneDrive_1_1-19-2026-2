@@ -1,0 +1,115 @@
+# Epic 04 CheckerSpec: Convergence Engine
+# V&V audit using Epic 7.5 framework
+
+version: "1.0.0"
+
+workItem:
+  id: "EPIC-04"
+  title: "Convergence Engine - Simulation Framework"
+  type: feature
+  storyPoints: 13
+  touchedModules:
+    - "src/convergence"
+
+intent:
+  summary: |
+    Implement convergence engine for multi-agent coordination.
+    Currently a SIMULATION FRAMEWORK for MVP - single-agent workflows
+    are production-ready, multi-agent is simulated.
+  acceptanceCriteria:
+    - "Simulation status clearly documented"
+    - "Single-agent workflows production-ready"
+    - "Multi-agent coordination simulated (acceptable for MVP)"
+    - "README.md with simulation warnings"
+    - "ROADMAP.md for production requirements"
+  context: |
+    Documented as simulation during RECOVERY-05.
+    Acceptable for MVP where only single-agent workflows are used.
+
+risk:
+  level: medium
+  changeSurface: module
+  factors:
+    - "Simulation vs production confusion risk"
+    - "Multi-agent not production-ready"
+  mitigations:
+    - "Clear documentation with // SIMULATION: prefixes"
+    - "WARNING headers in all files"
+    - "ROADMAP.md for production path"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "TypeScript compiles without errors"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "Convergence files exist and export correctly"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-3"
+      description: "README.md exists with simulation warnings"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-4"
+      description: "Tests pass"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-5"
+      description: "SIMULATION: prefixes in code comments"
+      priority: must
+      automated: true
+      evidenceType: code-review
+  notes: |
+    Key verification: simulation status is clearly documented.
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "Single-agent workflows work correctly"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "B-2"
+      description: "ROADMAP.md documents production path"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "B-3"
+      description: "MVP deployment criteria documented"
+      priority: should
+      automated: true
+      evidenceType: code-review
+  notes: |
+    Business validation: simulation is acceptable for MVP.
+
+testSuites:
+  membership:
+    - smoke
+  tags:
+    - "epic-04"
+    - "convergence"
+    - "simulation"
+  targetedTests:
+    - "tests/unit/convergence.test.ts"
+
+evidence:
+  required:
+    - test-results
+  artifacts:
+    - name: "Convergence Test Results"
+      path: ".forge/evidence/EPIC-04/test-results.json"
+
+definitionOfDone:
+  - "Simulation clearly documented"
+  - "Single-agent production-ready"
+  - "Tests passing"
+  - "ROADMAP for production"
+
+nonGoals:
+  - "Production multi-agent coordination"
+  - "Real-time consensus"
