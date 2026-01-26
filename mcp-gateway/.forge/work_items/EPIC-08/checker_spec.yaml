@@ -1,0 +1,130 @@
+# Epic 08 CheckerSpec: Evidence Packs
+# V&V audit using Epic 7.5 framework
+
+version: "1.0.0"
+
+workItem:
+  id: "EPIC-08"
+  title: "Evidence Packs - Supply Chain Security"
+  type: feature
+  storyPoints: 8
+  touchedModules:
+    - "supply-chain"
+
+intent:
+  summary: |
+    Implement supply chain security with evidence binding, signature verification,
+    and provenance verification using real Sigstore/SLSA integration.
+  acceptanceCriteria:
+    - "Evidence binding with SHA-256 hash generation"
+    - "Evidence pack generation for audit trails"
+    - "Deceptive compliance detection blocks execution"
+    - "Reward hacking detection triggers alerts"
+    - "Signature verification via real Sigstore"
+    - "Provenance verification via real SLSA"
+    - "Fail-closed security on missing attestations"
+    - "Verification result caching"
+  context: |
+    Critical security layer for FORGE supply chain integrity.
+    Prior "fake" claim was INCORRECT - uses real cryptographic verification.
+
+risk:
+  level: high
+  changeSurface: module
+  factors:
+    - "Security-critical verification"
+    - "External API dependencies (npm registry)"
+  mitigations:
+    - "Real cryptographic verification"
+    - "Fail-closed default behavior"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "TypeScript compiles without errors"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "Signature verifier uses real sigstore library"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-3"
+      description: "Provenance verifier uses real SLSA verification"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-4"
+      description: "48 tests pass (signature + provenance + evidence pipeline)"
+      priority: must
+      automated: true
+      testIds: ["signature-verification.test.ts", "provenance-verification.test.ts"]
+      evidenceType: test-result
+    - id: "V-5"
+      description: "Fail-closed behavior enforced (strict mode)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+  notes: |
+    Verification confirms real cryptographic verification,
+    not mocked or hardcoded behavior.
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "Evidence binding generates SHA-256 hashes"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "B-2"
+      description: "Deceptive compliance detection blocks execution"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "B-3"
+      description: "Reward hacking detection triggers alerts"
+      priority: should
+      automated: true
+      evidenceType: test-result
+    - id: "B-4"
+      description: "Caching works correctly (cache hit, cache clear)"
+      priority: should
+      automated: true
+      evidenceType: test-result
+  notes: |
+    Business validation ensures security controls
+    protect against supply chain attacks.
+
+testSuites:
+  membership:
+    - smoke
+    - sanity
+  tags:
+    - "epic-08"
+    - "supply-chain"
+    - "security"
+  targetedTests:
+    - "tests/unit/signature-verification.test.ts"
+    - "tests/unit/provenance-verification.test.ts"
+    - "tests/integration/behavioral-evidence-pipeline.test.ts"
+
+evidence:
+  required:
+    - test-results
+  optional:
+    - coverage-report
+  artifacts:
+    - name: "Supply Chain Test Results"
+      path: ".forge/evidence/EPIC-08/test-results.json"
+      description: "Epic 08 test output"
+
+definitionOfDone:
+  - "All V-* checks with priority 'must' pass"
+  - "All B-* checks with priority 'must' pass"
+  - "Real sigstore/SLSA verification confirmed"
+  - "Fail-closed security behavior verified"
+
+nonGoals:
+  - "Custom certificate authorities"
+  - "Offline verification"
