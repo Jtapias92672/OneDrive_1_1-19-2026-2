@@ -1,0 +1,128 @@
+# Epic 05 CheckerSpec: Figma Parser
+# V&V audit using Epic 7.5 framework
+
+version: "1.0.0"
+
+workItem:
+  id: "EPIC-05"
+  title: "Figma Parser - Design File Extraction"
+  type: feature
+  storyPoints: 13
+  touchedModules:
+    - "src/figma-parser"
+
+intent:
+  summary: |
+    Parse Figma design files to extract components, styles, layout, tokens,
+    and assets for downstream React code generation.
+  acceptanceCriteria:
+    - "FigmaClient with caching and retries"
+    - "Component extraction with variants and instances"
+    - "Style extraction (fills, gradients, effects, typography)"
+    - "Layout analysis (flex, grid, absolute)"
+    - "Token generation (colors, spacing, typography, shadows)"
+    - "Asset extraction (images)"
+    - "Interactions/prototype extraction"
+  context: |
+    Core parser package for Figma-to-React pipeline.
+    Outputs ParsedDesign consumed by Epic 06 React Generator.
+
+risk:
+  level: medium
+  changeSurface: module
+  factors:
+    - "External Figma API integration"
+    - "Complex node tree traversal"
+  mitigations:
+    - "HTTP mocking in tests"
+    - "Comprehensive test coverage (181 tests)"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "TypeScript compiles without errors"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "FigmaParser class exports correctly"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-3"
+      description: "FigmaClient with caching implemented"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-4"
+      description: "Component extraction works"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-5"
+      description: "Style extraction works"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-6"
+      description: "Layout analysis works"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-7"
+      description: "All tests pass (181 tests)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+  notes: |
+    P1-P9 capabilities verified via figma-parser-capabilities.test.ts
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "ParsedDesign schema matches React Generator input"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "B-2"
+      description: "Interaction/prototype extraction for UX"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "B-3"
+      description: "Token generation for design system"
+      priority: should
+      automated: true
+      evidenceType: code-review
+  notes: |
+    Business validation ensures parser output usable by downstream generator.
+
+testSuites:
+  membership:
+    - smoke
+    - sanity
+  tags:
+    - "epic-05"
+    - "figma-parser"
+  targetedTests:
+    - "tests/unit/figma-parser.test.ts"
+    - "tests/unit/figma-parser-extended.test.ts"
+    - "tests/unit/figma-client.test.ts"
+    - "tests/unit/figma-parser-capabilities.test.ts"
+
+evidence:
+  required:
+    - test-results
+  artifacts:
+    - name: "Figma Parser Test Results"
+      path: ".forge/evidence/EPIC-05/test-results.json"
+
+definitionOfDone:
+  - "FigmaClient working"
+  - "All extractors working"
+  - "181 tests passing"
+  - "ParsedDesign output valid"
+
+nonGoals:
+  - "Real Figma API calls in tests"
+  - "Image download/processing"
