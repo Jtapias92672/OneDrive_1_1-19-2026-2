@@ -1,0 +1,100 @@
+# Epic 3.6 CheckerSpec: Security Controls
+# V&V audit using Epic 7.5 framework
+
+version: "1.0.0"
+
+workItem:
+  id: "EPIC-3.6"
+  title: "Security Controls - JWT & Crypto"
+  type: feature
+  storyPoints: 5
+  touchedModules:
+    - "security"
+
+intent:
+  summary: |
+    Implement security controls including JWT validation with clock tolerance,
+    real cryptographic verification, and security metrics.
+  acceptanceCriteria:
+    - "JWT validation with signature verification"
+    - "Clock skew tolerance (300s)"
+    - "Real crypto verification (not mocked)"
+    - "Security metrics collection"
+  context: |
+    Sub-epic of Epic 3.5 (Gateway Foundation).
+    Provides authentication and cryptographic security layer.
+
+risk:
+  level: high
+  changeSurface: module
+  factors:
+    - "Security-critical JWT handling"
+    - "Cryptographic operations"
+  mitigations:
+    - "Real jose library for JWT"
+    - "Clock tolerance for distributed systems"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "TypeScript compiles without errors"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "JWT validation uses real jose library"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-3"
+      description: "Clock tolerance implemented (300s)"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-4"
+      description: "JWT tests pass"
+      priority: must
+      automated: true
+      evidenceType: test-result
+  notes: |
+    Verification confirms real cryptographic JWT validation.
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "Integrates with Epic 3.5 gateway"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "B-2"
+      description: "Security metrics exported"
+      priority: should
+      automated: true
+      evidenceType: code-review
+  notes: |
+    Business validation ensures integration with gateway.
+
+testSuites:
+  membership:
+    - smoke
+  tags:
+    - "epic-3.6"
+    - "security"
+    - "jwt"
+  targetedTests:
+    - "tests/unit/jwt-validation.test.ts"
+
+evidence:
+  required:
+    - test-results
+  artifacts:
+    - name: "JWT Test Results"
+      path: ".forge/evidence/EPIC-3.6/test-results.json"
+
+definitionOfDone:
+  - "JWT validation with real crypto"
+  - "Clock tolerance verified"
+  - "Tests passing"
+
+nonGoals:
+  - "Custom JWT algorithms"

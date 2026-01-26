@@ -1,0 +1,44 @@
+{
+  "receiptId": "vnv-EPIC-3.6-20260126",
+  "workItemId": "EPIC-3.6",
+  "checkerSpecId": "EPIC-3.6",
+  "evaluatedAt": "2026-01-26T16:00:00Z",
+  "evaluator": "Claude Opus 4.5 (batch audit session 2)",
+
+  "verification": {
+    "status": "passed",
+    "mustPass": ["V-1", "V-2", "V-3", "V-4"],
+    "passed": ["V-1", "V-2", "V-3", "V-4"],
+    "failed": [],
+    "checks": {
+      "V-1": { "status": "passed", "evidence": "tsc --noEmit passes" },
+      "V-2": { "status": "passed", "evidence": "import * as jose from 'jose'" },
+      "V-3": { "status": "passed", "evidence": "clockTolerance: 300 (5 min industry standard)" },
+      "V-4": { "status": "passed", "evidence": "26 JWT tests pass" }
+    }
+  },
+
+  "validation": {
+    "status": "passed",
+    "mustPass": ["B-1"],
+    "passed": ["B-1", "B-2"],
+    "failed": [],
+    "checks": {
+      "B-1": { "status": "passed", "evidence": "SecurityLayer exported, integrates with gateway" },
+      "B-2": { "status": "passed", "evidence": "security-metrics.ts exports Prometheus metrics" }
+    }
+  },
+
+  "testEvidence": {
+    "summary": { "totalTests": 26, "totalPassed": 26, "totalFailed": 0 }
+  },
+
+  "vnvSummary": {
+    "verification": { "status": "passed", "mustPassed": 4, "mustFailed": 0 },
+    "validation": { "status": "passed", "mustPassed": 1, "mustFailed": 0 },
+    "overallStatus": "PASS"
+  },
+
+  "overallStatus": "PASS",
+  "summary": "Epic 3.6 Security Controls passes all checks. Real jose JWT with 300s clock tolerance."
+}
