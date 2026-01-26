@@ -41,6 +41,10 @@ export interface Task {
   // Attempt tracking
   attempts: number;
   maxAttempts: number;
+
+  // V&V tracking (Epic 7.5)
+  vnv?: TaskVnV;
+  workItemId?: string;             // Link to work item with CheckerSpec
 }
 
 export interface TaskInput {
@@ -185,6 +189,10 @@ export interface MinimumViableContext {
 
   // Allowed tools (3-5 max)
   tools: string[];
+
+  // V&V context (Epic 7.5)
+  checkerSpec?: CheckerSpec;       // For validator: V&V requirements
+  workItemId?: string;             // Link to work item
 }
 
 // =============================================================================
@@ -263,7 +271,16 @@ export type EventType =
   | 'convoy_created'
   | 'convoy_completed'
   | 'convoy_blocked'
-  | 'escalation';
+  | 'escalation'
+  // V&V Events (Epic 7.5)
+  | 'gate_evaluated'
+  | 'gate_authorized'
+  | 'gate_denied'
+  | 'vnv_evaluated'
+  | 'vnv_passed'
+  | 'vnv_failed'
+  | 'checker_spec_loaded'
+  | 'checker_spec_invalid';
 
 export interface LedgerEvent {
   id: string;                    // Hash-based event ID
@@ -292,4 +309,231 @@ export interface SlingResult {
   success: boolean;
   hookId?: string;
   error?: string;
+  gateDecision?: GateDecision;
+}
+
+// =============================================================================
+// V&V Types (Epic 7.5 - Verification & Validation)
+// =============================================================================
+
+export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
+export type ChangeSurface = 'isolated' | 'module' | 'cross-module' | 'system-wide';
+export type CheckPriority = 'must' | 'should' | 'could';
+export type VnVStatus = 'pending' | 'passed' | 'failed';
+export type GateName = 'pr' | 'pre_merge' | 'release_candidate' | 'release' | 'pre_dispatch';
+export type GateStatus = 'AUTHORIZED' | 'DENIED';
+
+/**
+ * CheckerSpec: V&V contract for work items
+ * Defines verification (technical) and validation (business) checks
+ */
+export interface CheckerSpec {
+  version: string;
+  workItem: WorkItemMeta;
+  intent: Intent;
+  risk?: RiskAssessment;
+  verification: CheckBlock;
+  validation: CheckBlock;
+  testSuites: SuiteRequirements;
+  evidence: EvidenceRequirements;
+  definitionOfDone: string[];
+  nonGoals?: string[];
+  externalLinks?: ExternalLinks;
+}
+
+export interface WorkItemMeta {
+  id: string;                      // e.g., "FORGE-123"
+  title: string;
+  type: 'feature' | 'bug' | 'refactor' | 'spike' | 'chore';
+  storyPoints?: number;
+  touchedModules?: string[];
+}
+
+export interface Intent {
+  summary: string;
+  acceptanceCriteria: string[];
+  context?: string;
+}
+
+export interface RiskAssessment {
+  level: RiskLevel;
+  changeSurface?: ChangeSurface;
+  factors?: string[];
+  mitigations?: string[];
+}
+
+export interface CheckBlock {
+  checks: Check[];
+  notes?: string;
+}
+
+export interface Check {
+  id: string;                      // V-N for verification, B-N for validation
+  description: string;
+  priority: CheckPriority;
+  automated?: boolean;
+  testIds?: string[];
+  evidenceType?: 'test-result' | 'code-review' | 'manual-verification' | 'screenshot' | 'log';
+}
+
+export interface SuiteRequirements {
+  membership: Array<'smoke' | 'sanity' | 'regression'>;
+  tags?: string[];
+  targetedTests?: string[];
+}
+
+export interface EvidenceRequirements {
+  required: Array<'test-results' | 'coverage-report' | 'visual-diff' | 'schema-validation' | 'lint-results' | 'build-log' | 'manual-sign-off'>;
+  optional?: string[];
+  artifacts?: EvidenceArtifact[];
+}
+
+export interface EvidenceArtifact {
+  name: string;
+  path: string;
+  description?: string;
+}
+
+export interface ExternalLinks {
+  ticket?: string;
+  design?: string;
+  documentation?: string;
+  figma?: string;
+}
+
+/**
+ * VnVResult: Result of V&V evaluation against evidence
+ */
+export interface VnVResult {
+  checkerSpecId: string;
+  workItemId: string;
+  evaluatedAt: string;
+
+  verification: VnVBlockResult;
+  validation: VnVBlockResult;
+
+  overallStatus: 'PASS' | 'FAIL';
+  summary: string;
+}
+
+export interface VnVBlockResult {
+  mustPass: string[];              // Check IDs that must pass
+  passed: string[];                // Check IDs that passed
+  failed: string[];                // Check IDs that failed
+  skipped: string[];               // Check IDs not evaluated
+  status: VnVStatus;
+}
+
+/**
+ * GateDecision: Result of gate evaluation
+ */
+export interface GateDecision {
+  gate: GateName;
+  status: GateStatus;
+  reasons: string[];
+  warnings?: string[];
+  requiredActions?: string[];
+  evaluatedAt: string;
+  context?: GateContext;
+}
+
+export interface GateContext {
+  workItemId?: string;
+  checkerSpecId?: string;
+  suiteResults: Record<string, SuiteResult>;
+  targetedTestsPassed: boolean;
+  coveragePercent?: number;
+  coverageDelta?: number;
+  riskLevel?: RiskLevel;
+  approved?: boolean;
+  approvers?: string[];
+}
+
+export interface SuiteResult {
+  passed: boolean;
+  total: number;
+  failed: number;
+  skipped: number;
+  duration: number;                // milliseconds
+  withinBudget: boolean;
+}
+
+/**
+ * TaskVnV: V&V status fields for Task entries
+ */
+export interface TaskVnV {
+  checkerSpecId: string;
+  verificationStatus: VnVStatus;
+  validationStatus: VnVStatus;
+  gatesPassed: GateName[];
+  gatesFailed: GateName[];
+  lastEvaluated: string;
+}
+
+/**
+ * TestEvidence: Evidence for Receipt Pack
+ */
+export interface TestEvidence {
+  runs: TestRun[];
+  summary: TestSummary;
+}
+
+export interface TestRun {
+  suite: string;
+  runner: string;
+  status: 'pass' | 'fail' | 'error';
+  total: number;
+  passed: number;
+  failed: number;
+  skipped: number;
+  duration: number;
+  startedAt: string;
+  completedAt: string;
+  artifacts?: string[];
+  failures?: TestFailure[];
+}
+
+export interface TestFailure {
+  testId: string;
+  testName: string;
+  message: string;
+  location?: string;
+  stack?: string;
+}
+
+export interface TestSummary {
+  overallStatus: 'pass' | 'fail';
+  suites: string[];
+  totalTests: number;
+  totalPassed: number;
+  totalFailed: number;
+  totalSkipped: number;
+  totalDuration: number;
+  coveragePercent?: number;
+}
+
+/**
+ * VnVSummary: V&V summary for Receipt Pack
+ */
+export interface VnVSummary {
+  verification: VnVBlockSummary;
+  validation: VnVBlockSummary;
+  gatesEvaluated: GateSummary[];
+  overallStatus: 'PASS' | 'FAIL';
+}
+
+export interface VnVBlockSummary {
+  status: VnVStatus;
+  totalChecks: number;
+  mustChecks: number;
+  mustPassed: number;
+  mustFailed: number;
+  passedIds: string[];
+  failedIds: string[];
+}
+
+export interface GateSummary {
+  gate: GateName;
+  status: GateStatus;
+  evaluatedAt: string;
 }

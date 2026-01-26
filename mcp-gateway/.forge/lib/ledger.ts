@@ -467,6 +467,221 @@ export async function updateConvoyStatus(convoyId: string): Promise<Convoy | nul
 }
 
 // =============================================================================
+// V&V Queries (Epic 7.5)
+// =============================================================================
+
+/**
+ * Query tasks by V&V status
+ */
+export async function queryByVnVStatus(
+  status: 'pending' | 'passed' | 'failed',
+  type: 'verification' | 'validation'
+): Promise<Task[]> {
+  const allTasks = await readJsonl<Task>(TASKS_FILE);
+
+  // Build latest state map
+  const taskMap = new Map<string, Task>();
+  for (const task of allTasks) {
+    taskMap.set(task.id, task);
+  }
+
+  // Filter by V&V status
+  return Array.from(taskMap.values()).filter((task) => {
+    if (!task.vnv) return status === 'pending';
+
+    if (type === 'verification') {
+      return task.vnv.verificationStatus === status;
+    } else {
+      return task.vnv.validationStatus === status;
+    }
+  });
+}
+
+/**
+ * Query tasks that failed a specific gate
+ */
+export async function queryFailedGates(gateName?: string): Promise<Task[]> {
+  const allTasks = await readJsonl<Task>(TASKS_FILE);
+
+  // Build latest state map
+  const taskMap = new Map<string, Task>();
+  for (const task of allTasks) {
+    taskMap.set(task.id, task);
+  }
+
+  return Array.from(taskMap.values()).filter((task) => {
+    if (!task.vnv) return false;
+    if (gateName) {
+      return task.vnv.gatesFailed.includes(gateName as any);
+    }
+    return task.vnv.gatesFailed.length > 0;
+  });
+}
+
+/**
+ * Query tasks by work item ID
+ */
+export async function queryByWorkItemId(workItemId: string): Promise<Task[]> {
+  const allTasks = await readJsonl<Task>(TASKS_FILE);
+
+  // Build latest state map
+  const taskMap = new Map<string, Task>();
+  for (const task of allTasks) {
+    taskMap.set(task.id, task);
+  }
+
+  return Array.from(taskMap.values()).filter(
+    (task) => task.workItemId === workItemId
+  );
+}
+
+/**
+ * Update task V&V status
+ */
+export async function updateTaskVnV(
+  taskId: string,
+  vnvUpdate: Partial<Task['vnv']>
+): Promise<Task | null> {
+  const existing = await getTask(taskId);
+  if (!existing) return null;
+
+  const updated: Task = {
+    ...existing,
+    vnv: {
+      ...existing.vnv,
+      ...vnvUpdate,
+      lastEvaluated: new Date().toISOString(),
+    } as Task['vnv'],
+    updated: new Date().toISOString(),
+  };
+
+  await appendJsonl(TASKS_FILE, updated);
+
+  // Log appropriate event
+  if (vnvUpdate.verificationStatus === 'passed' && vnvUpdate.validationStatus === 'passed') {
+    await logEvent('vnv_passed', { taskId });
+  } else if (vnvUpdate.verificationStatus === 'failed' || vnvUpdate.validationStatus === 'failed') {
+    await logEvent('vnv_failed', { taskId });
+  } else {
+    await logEvent('vnv_evaluated', { taskId });
+  }
+
+  return updated;
+}
+
+/**
+ * Record gate evaluation result
+ */
+export async function recordGateResult(
+  taskId: string,
+  gateName: string,
+  status: 'AUTHORIZED' | 'DENIED',
+  reasons: string[]
+): Promise<Task | null> {
+  const existing = await getTask(taskId);
+  if (!existing) return null;
+
+  const vnv = existing.vnv || {
+    checkerSpecId: '',
+    verificationStatus: 'pending' as const,
+    validationStatus: 'pending' as const,
+    gatesPassed: [],
+    gatesFailed: [],
+    lastEvaluated: new Date().toISOString(),
+  };
+
+  if (status === 'AUTHORIZED') {
+    if (!vnv.gatesPassed.includes(gateName as any)) {
+      vnv.gatesPassed.push(gateName as any);
+    }
+    // Remove from failed if it was there
+    vnv.gatesFailed = vnv.gatesFailed.filter((g) => g !== gateName);
+  } else {
+    if (!vnv.gatesFailed.includes(gateName as any)) {
+      vnv.gatesFailed.push(gateName as any);
+    }
+    // Remove from passed if it was there
+    vnv.gatesPassed = vnv.gatesPassed.filter((g) => g !== gateName);
+  }
+
+  const updated: Task = {
+    ...existing,
+    vnv,
+    updated: new Date().toISOString(),
+  };
+
+  await appendJsonl(TASKS_FILE, updated);
+
+  // Log event
+  await logEvent(status === 'AUTHORIZED' ? 'gate_authorized' : 'gate_denied', {
+    taskId,
+    data: { gate: gateName, reasons },
+  });
+
+  return updated;
+}
+
+/**
+ * Get V&V summary for a convoy
+ */
+export async function getConvoyVnVSummary(convoyId: string): Promise<{
+  total: number;
+  verificationPassed: number;
+  verificationFailed: number;
+  verificationPending: number;
+  validationPassed: number;
+  validationFailed: number;
+  validationPending: number;
+  gatesBlocked: number;
+} | null> {
+  const tasks = await getConvoyTasks(convoyId);
+  if (tasks.length === 0) return null;
+
+  let verificationPassed = 0;
+  let verificationFailed = 0;
+  let verificationPending = 0;
+  let validationPassed = 0;
+  let validationFailed = 0;
+  let validationPending = 0;
+  let gatesBlocked = 0;
+
+  for (const task of tasks) {
+    if (!task.vnv) {
+      verificationPending++;
+      validationPending++;
+      continue;
+    }
+
+    switch (task.vnv.verificationStatus) {
+      case 'passed': verificationPassed++; break;
+      case 'failed': verificationFailed++; break;
+      case 'pending': verificationPending++; break;
+    }
+
+    switch (task.vnv.validationStatus) {
+      case 'passed': validationPassed++; break;
+      case 'failed': validationFailed++; break;
+      case 'pending': validationPending++; break;
+    }
+
+    if (task.vnv.gatesFailed.length > 0) {
+      gatesBlocked++;
+    }
+  }
+
+  return {
+    total: tasks.length,
+    verificationPassed,
+    verificationFailed,
+    verificationPending,
+    validationPassed,
+    validationFailed,
+    validationPending,
+    gatesBlocked,
+  };
+}
+
+// =============================================================================
 // Helpers
 // =============================================================================
 
@@ -525,6 +740,14 @@ export const ledger = {
   addTaskToConvoy,
   getConvoyProgress,
   updateConvoyStatus,
+
+  // V&V operations (Epic 7.5)
+  queryByVnVStatus,
+  queryFailedGates,
+  queryByWorkItemId,
+  updateTaskVnV,
+  recordGateResult,
+  getConvoyVnVSummary,
 
   // Utilities
   generateId,
