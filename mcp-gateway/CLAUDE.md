@@ -145,6 +145,33 @@ Track in every response: `[Turn N/10]`
 | Response to user | <500 preferred, <800 max |
 | Directive to Claude Code | <200 tokens |
 
+### Token Guardrails (Epic-Level)
+
+| Threshold | Action |
+|-----------|--------|
+| 60K tokens | Evaluate progress, consider session split |
+| 80K tokens | STOP, commit, handoff to fresh session |
+| Context compacted | Quality audit required in fresh session |
+
+### Per-Phase Reporting
+
+After completing each phase of an epic:
+```
+Phase N complete. Tokens: ~X/Y (Z%)
+Proceeding to Phase N+1 / Requesting session split
+```
+
+### Epic Budget Guidelines
+
+| Epic Type | Budget | Sessions |
+|-----------|--------|----------|
+| Simple feature | 30K | 1 |
+| Runtime/lib | 60K | 1 |
+| Schema-heavy | 80-120K | 1-2 |
+| Cross-cutting | 100-150K | 2 |
+
+**Reference:** `.forge/LESSONS_LEARNED.md` for detailed patterns
+
 ---
 
 ## ANTI-PATTERNS (IMMEDIATE STOP)
@@ -159,8 +186,8 @@ Track in every response: `[Turn N/10]`
 ## Epic Tracking
 See: `.forge/progress.md`
 
-Current: Epic 10b (Platform UI Dashboard)
-Completed: Epics 00-05, Epic 06 (React Generator)
+Current: Post-Epic 7.5 (V&V Framework complete)
+Completed: Epics 00-07, Epic 7.5 (V&V Framework)
 
 ## Skills
 See: `.forge/skills/MANIFEST.md`
