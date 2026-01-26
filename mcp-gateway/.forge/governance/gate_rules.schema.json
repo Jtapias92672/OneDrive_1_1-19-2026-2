@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcfoundry.com/forge/gate-rules.schema.json",
+  "title": "FORGE Gate Rules",
+  "description": "Quality gate policies for PR, merge, release candidate, and release stages",
+  "type": "object",
+  "required": ["version", "gates", "complexity", "communication"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "gates": {
+      "type": "object",
+      "required": ["pr", "pre_merge", "release_candidate", "release", "pre_dispatch"],
+      "additionalProperties": { "$ref": "#/$defs/gate" }
+    },
+    "complexity": {
+      "$ref": "#/$defs/complexityRules"
+    },
+    "communication": {
+      "$ref": "#/$defs/communicationPolicy"
+    },
+    "audit": {
+      "$ref": "#/$defs/auditPolicy"
+    }
+  },
+  "$defs": {
+    "gate": {
+      "type": "object",
+      "required": ["name", "description", "requiredSuites"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "requiredSuites": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "requireTargetedTests": {
+          "type": "boolean",
+          "default": false
+        },
+        "requireCheckerSpec": {
+          "type": "boolean",
+          "default": true
+        },
+        "denyIf": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/denyCondition" }
+        },
+        "warnIf": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/warnCondition" }
+        },
+        "requireApproval": {
+          "$ref": "#/$defs/approvalRequirement"
+        },
+        "additionalChecks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/additionalCheck" }
+        }
+      }
+    },
+    "denyCondition": {
+      "type": "object",
+      "required": ["condition", "reason"],
+      "properties": {
+        "condition": {
+          "type": "string",
+          "description": "Condition expression (e.g., 'coverage < 80')"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "overridable": {
+          "type": "boolean",
+          "default": false
+        },
+        "overrideRequires": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "warnCondition": {
+      "type": "object",
+      "required": ["condition", "message"],
+      "properties": {
+        "condition": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "approvalRequirement": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "default": true
+        },
+        "minReviewers": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        },
+        "requireCodeOwner": {
+          "type": "boolean",
+          "default": false
+        },
+        "requireSecurityReview": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "additionalCheck": {
+      "type": "object",
+      "required": ["name", "command"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "command": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "string",
+          "pattern": "^\\d+[ms]$"
+        },
+        "required": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "complexityRules": {
+      "type": "object",
+      "properties": {
+        "maxActiveWorkItemsPerRun": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "default": 2
+        },
+        "requireDecompositionIf": {
+          "type": "object",
+          "properties": {
+            "storyPointsAtLeast": {
+              "type": "integer",
+              "default": 13
+            },
+            "touchedModulesAtLeast": {
+              "type": "integer",
+              "default": 5
+            }
+          }
+        },
+        "requireIntegrationPlanIfDecomposed": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "communicationPolicy": {
+      "type": "object",
+      "properties": {
+        "riskLevelTriggers": {
+          "type": "object",
+          "properties": {
+            "high": {
+              "$ref": "#/$defs/communicationTrigger"
+            },
+            "critical": {
+              "$ref": "#/$defs/communicationTrigger"
+            }
+          }
+        },
+        "escalationPath": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["role", "contact"],
+            "properties": {
+              "role": { "type": "string" },
+              "contact": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "communicationTrigger": {
+      "type": "object",
+      "properties": {
+        "requireRichReview": {
+          "type": "boolean"
+        },
+        "notifyStakeholders": {
+          "type": "boolean"
+        },
+        "channels": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "auditPolicy": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "randomAuditRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.1,
+          "description": "Fraction of work items to randomly audit"
+        },
+        "alwaysAuditIf": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Conditions that always trigger audit"
+        }
+      }
+    }
+  }
+}

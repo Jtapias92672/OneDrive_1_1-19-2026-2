@@ -1,0 +1,140 @@
+# FORGE CheckerSpec Template
+# V&V contract defining verification and validation requirements
+# Copy to: .forge/work_items/{WORK_ID}/checker_spec.yaml
+
+version: "1.0.0"
+
+workItem:
+  id: "FORGE-XXX"           # Replace with actual work item ID
+  title: "Work item title"  # Brief descriptive title
+  type: feature             # feature | bug | refactor | spike | chore
+  storyPoints: 5            # 1-21, use Fibonacci (1,2,3,5,8,13,21)
+  touchedModules:           # Packages/modules affected
+    - "mcp-gateway"
+
+intent:
+  summary: |
+    Brief description of what this work accomplishes.
+    Should be 2-3 sentences explaining the purpose and value.
+  acceptanceCriteria:
+    - "Given X, when Y, then Z"
+    - "Feature behaves correctly under condition A"
+    - "Error handling covers edge case B"
+  context: |
+    Optional background information that helps understand
+    why this work is needed and how it fits into the larger system.
+
+risk:
+  level: medium             # low | medium | high | critical (CARS)
+  changeSurface: module     # isolated | module | cross-module | system-wide
+  factors:
+    - "Modifies public API"
+    - "Touches authentication flow"
+  mitigations:
+    - "Comprehensive test coverage"
+    - "Staged rollout"
+
+# Verification: Did we build it right? (Technical correctness)
+verification:
+  checks:
+    - id: "V-1"
+      description: "TypeScript compiles without errors"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "All unit tests pass"
+      priority: must
+      automated: true
+      testIds: ["*.test.ts"]
+      evidenceType: test-result
+    - id: "V-3"
+      description: "Code coverage meets threshold (≥97%)"
+      priority: must
+      automated: true
+      evidenceType: coverage-report
+    - id: "V-4"
+      description: "No lint errors or warnings"
+      priority: should
+      automated: true
+      evidenceType: lint-results
+    - id: "V-5"
+      description: "Schema validates against examples"
+      priority: should
+      automated: true
+      evidenceType: schema-validation
+  notes: |
+    Verification checks focus on technical implementation quality.
+    All "must" priority checks must pass for work to be considered complete.
+
+# Validation: Did we build the right thing? (Business correctness)
+validation:
+  checks:
+    - id: "B-1"
+      description: "Feature satisfies acceptance criteria"
+      priority: must
+      automated: false
+      evidenceType: manual-verification
+    - id: "B-2"
+      description: "UI matches Figma design (visual diff < 2%)"
+      priority: should
+      automated: true
+      evidenceType: visual-diff
+    - id: "B-3"
+      description: "Performance within acceptable bounds"
+      priority: should
+      automated: true
+      evidenceType: test-result
+    - id: "B-4"
+      description: "Accessibility standards met (WCAG 2.1 AA)"
+      priority: could
+      automated: true
+      evidenceType: test-result
+  notes: |
+    Validation checks ensure the work delivers business value.
+    Business stakeholder review required for manual checks.
+
+testSuites:
+  membership:
+    - smoke       # Quick (<30min) critical path tests
+    - sanity      # Medium (<3hr) broader coverage
+  tags:
+    - "feature-name"
+    - "module-name"
+  targetedTests:
+    - "tests/unit/feature.test.ts"
+    - "tests/integration/feature.integration.test.ts"
+
+evidence:
+  required:
+    - test-results
+    - coverage-report
+    - lint-results
+  optional:
+    - visual-diff
+    - manual-sign-off
+  artifacts:
+    - name: "Test Results"
+      path: ".forge/evidence/{WORK_ID}/test-results.json"
+      description: "Jest test output in JSON format"
+    - name: "Coverage Report"
+      path: ".forge/evidence/{WORK_ID}/coverage/lcov-report/index.html"
+      description: "Code coverage HTML report"
+
+definitionOfDone:
+  - "All verification checks (V-*) with priority 'must' pass"
+  - "All validation checks (B-*) with priority 'must' pass"
+  - "Code reviewed and approved"
+  - "Documentation updated if needed"
+  - "No regression in existing tests"
+  - "Deployed to staging environment"
+
+nonGoals:
+  - "Performance optimization beyond acceptable bounds"
+  - "Support for browsers older than 2 years"
+  - "Offline functionality"
+
+externalLinks:
+  ticket: "https://jira.example.com/browse/FORGE-XXX"
+  design: "https://figma.com/file/xxx"
+  documentation: "https://docs.example.com/feature"

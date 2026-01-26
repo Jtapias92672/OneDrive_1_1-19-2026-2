@@ -1,0 +1,250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcfoundry.com/forge/checker-spec.schema.json",
+  "title": "FORGE CheckerSpec",
+  "description": "V&V contract for work items. Defines verification (technical) and validation (business) checks.",
+  "type": "object",
+  "required": ["version", "workItem", "intent", "verification", "validation", "testSuites", "evidence", "definitionOfDone"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of this spec format"
+    },
+    "workItem": {
+      "$ref": "#/$defs/workItemMeta"
+    },
+    "intent": {
+      "$ref": "#/$defs/intent"
+    },
+    "risk": {
+      "$ref": "#/$defs/riskAssessment"
+    },
+    "verification": {
+      "$ref": "#/$defs/checkBlock",
+      "description": "Technical correctness checks (did we build it right?)"
+    },
+    "validation": {
+      "$ref": "#/$defs/checkBlock",
+      "description": "Business correctness checks (did we build the right thing?)"
+    },
+    "testSuites": {
+      "$ref": "#/$defs/suiteRequirements"
+    },
+    "evidence": {
+      "$ref": "#/$defs/evidenceRequirements"
+    },
+    "definitionOfDone": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Checklist items that must all be true for completion"
+    },
+    "nonGoals": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Explicitly out of scope items"
+    },
+    "externalLinks": {
+      "$ref": "#/$defs/externalLinks"
+    }
+  },
+  "$defs": {
+    "workItemMeta": {
+      "type": "object",
+      "required": ["id", "title", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z]+-\\d+$",
+          "description": "Work item identifier (e.g., FORGE-123)"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 200
+        },
+        "type": {
+          "enum": ["feature", "bug", "refactor", "spike", "chore"],
+          "description": "Category of work"
+        },
+        "storyPoints": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 21
+        },
+        "touchedModules": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Modules/packages affected by this work"
+        }
+      }
+    },
+    "intent": {
+      "type": "object",
+      "required": ["summary", "acceptanceCriteria"],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 500,
+          "description": "Brief description of what this work accomplishes"
+        },
+        "acceptanceCriteria": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Testable conditions that define success"
+        },
+        "context": {
+          "type": "string",
+          "description": "Background information for understanding this work"
+        }
+      }
+    },
+    "riskAssessment": {
+      "type": "object",
+      "required": ["level"],
+      "properties": {
+        "level": {
+          "enum": ["low", "medium", "high", "critical"],
+          "description": "CARS risk level"
+        },
+        "changeSurface": {
+          "enum": ["isolated", "module", "cross-module", "system-wide"],
+          "description": "Blast radius of changes"
+        },
+        "factors": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Reasons for risk assessment"
+        },
+        "mitigations": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Actions to reduce risk"
+        }
+      }
+    },
+    "checkBlock": {
+      "type": "object",
+      "required": ["checks"],
+      "properties": {
+        "checks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/check" }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "required": ["id", "description", "priority"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[VB]-\\d+$",
+          "description": "V-N for verification, B-N for validation"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 10
+        },
+        "priority": {
+          "enum": ["must", "should", "could"],
+          "description": "MoSCoW priority"
+        },
+        "automated": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether this check can be automated"
+        },
+        "testIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Test case IDs that verify this check"
+        },
+        "evidenceType": {
+          "enum": ["test-result", "code-review", "manual-verification", "screenshot", "log"],
+          "description": "Type of evidence required"
+        }
+      }
+    },
+    "suiteRequirements": {
+      "type": "object",
+      "required": ["membership"],
+      "properties": {
+        "membership": {
+          "type": "array",
+          "items": {
+            "enum": ["smoke", "sanity", "regression"]
+          },
+          "minItems": 1,
+          "description": "Which test suites this work's tests belong to"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Test tags for categorization"
+        },
+        "targetedTests": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Specific test files/patterns for this work"
+        }
+      }
+    },
+    "evidenceRequirements": {
+      "type": "object",
+      "required": ["required"],
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {
+            "enum": ["test-results", "coverage-report", "visual-diff", "schema-validation", "lint-results", "build-log", "manual-sign-off"]
+          },
+          "minItems": 1
+        },
+        "optional": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "path"],
+            "properties": {
+              "name": { "type": "string" },
+              "path": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "externalLinks": {
+      "type": "object",
+      "properties": {
+        "ticket": {
+          "type": "string",
+          "format": "uri"
+        },
+        "design": {
+          "type": "string",
+          "format": "uri"
+        },
+        "documentation": {
+          "type": "string",
+          "format": "uri"
+        },
+        "figma": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

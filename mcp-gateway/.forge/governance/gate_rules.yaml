@@ -1,0 +1,207 @@
+# FORGE Gate Rules
+# Quality gate policies for CI/CD pipeline stages
+# Reference: human-review-gates.md, CARS framework
+
+version: "1.0.0"
+
+gates:
+  pr:
+    name: "Pull Request Gate"
+    description: |
+      Fast feedback gate for PR creation.
+      Must pass before code review begins.
+    requiredSuites:
+      - smoke
+    requireTargetedTests: true
+    requireCheckerSpec: true
+    denyIf:
+      - condition: "smoke.failed > 0"
+        reason: "Smoke tests must pass before review"
+        overridable: false
+      - condition: "checkerSpec.missing"
+        reason: "CheckerSpec required for all work items"
+        overridable: false
+      - condition: "lintErrors > 0"
+        reason: "Lint errors must be resolved"
+        overridable: false
+    warnIf:
+      - condition: "coverage.delta < -2"
+        message: "Coverage decreased by more than 2%"
+      - condition: "targetedTests.missing"
+        message: "No targeted tests found for changed files"
+    requireApproval:
+      required: false
+    additionalChecks:
+      - name: "TypeScript Compile"
+        command: "npm run build"
+        timeout: "5m"
+        required: true
+      - name: "Lint"
+        command: "npm run lint"
+        timeout: "2m"
+        required: true
+
+  pre_merge:
+    name: "Pre-Merge Gate"
+    description: |
+      Gate before merging to main branch.
+      Requires passing tests and code review approval.
+    requiredSuites:
+      - smoke
+    requireTargetedTests: true
+    requireCheckerSpec: true
+    denyIf:
+      - condition: "smoke.failed > 0"
+        reason: "Smoke tests must pass before merge"
+        overridable: false
+      - condition: "quarantine.inCriticalPath"
+        reason: "Quarantined test in critical path blocks merge"
+        overridable: true
+        overrideRequires: ["tech-lead-approval"]
+      - condition: "verificationChecks.mustFailed > 0"
+        reason: "All must-priority verification checks must pass"
+        overridable: false
+    warnIf:
+      - condition: "verificationChecks.shouldFailed > 0"
+        message: "Some should-priority verification checks failed"
+    requireApproval:
+      required: true
+      minReviewers: 1
+      requireCodeOwner: true
+      requireSecurityReview: false
+
+  release_candidate:
+    name: "Release Candidate Gate"
+    description: |
+      Gate for promoting to release candidate.
+      Conditional sanity suite based on risk level.
+    requiredSuites:
+      - smoke
+    requireTargetedTests: true
+    requireCheckerSpec: true
+    denyIf:
+      - condition: "smoke.failed > 0"
+        reason: "Smoke tests must pass for release candidate"
+        overridable: false
+      - condition: "risk.level == 'high' && sanity.notRun"
+        reason: "High-risk work requires sanity suite"
+        overridable: false
+      - condition: "risk.level == 'critical' && sanity.failed > 0"
+        reason: "Critical-risk work requires passing sanity suite"
+        overridable: false
+    warnIf:
+      - condition: "risk.level == 'medium' && sanity.notRun"
+        message: "Consider running sanity suite for medium-risk work"
+    requireApproval:
+      required: true
+      minReviewers: 1
+      requireCodeOwner: true
+      requireSecurityReview: false
+    additionalChecks:
+      - name: "Security Scan"
+        command: "npm run security:scan"
+        timeout: "10m"
+        required: true
+
+  release:
+    name: "Release Gate"
+    description: |
+      Final gate before production release.
+      Requires full regression and provenance verification.
+    requiredSuites:
+      - smoke
+      - sanity
+      - regression
+    requireTargetedTests: true
+    requireCheckerSpec: true
+    denyIf:
+      - condition: "regression.failed > 0"
+        reason: "Full regression must pass for release"
+        overridable: true
+        overrideRequires: ["cto-approval", "documented-exception"]
+      - condition: "provenance.unverified"
+        reason: "Supply chain provenance must be verified"
+        overridable: false
+      - condition: "validationChecks.mustFailed > 0"
+        reason: "All must-priority validation checks must pass"
+        overridable: false
+    warnIf:
+      - condition: "regression.timeBudgetExceeded"
+        message: "Regression suite exceeded time budget"
+      - condition: "validationChecks.shouldFailed > 0"
+        message: "Some should-priority validation checks failed"
+    requireApproval:
+      required: true
+      minReviewers: 2
+      requireCodeOwner: true
+      requireSecurityReview: true
+    additionalChecks:
+      - name: "Provenance Verification"
+        command: "npm run verify:provenance"
+        timeout: "5m"
+        required: true
+      - name: "License Check"
+        command: "npm run license:check"
+        timeout: "2m"
+        required: true
+
+  pre_dispatch:
+    name: "Pre-Dispatch Gate"
+    description: |
+      Gate before dispatching convoy to workers.
+      Ensures CheckerSpec exists and basic requirements met.
+    requiredSuites: []
+    requireTargetedTests: false
+    requireCheckerSpec: true
+    denyIf:
+      - condition: "checkerSpec.missing"
+        reason: "CheckerSpec required before dispatch"
+        overridable: false
+      - condition: "checkerSpec.invalid"
+        reason: "CheckerSpec must validate against schema"
+        overridable: false
+      - condition: "workItem.storyPoints >= 13 && decomposition.missing"
+        reason: "Large work items (≥13 points) require decomposition"
+        overridable: false
+    warnIf:
+      - condition: "workItem.touchedModules >= 3"
+        message: "Work touches 3+ modules - consider decomposition"
+    requireApproval:
+      required: false
+
+complexity:
+  maxActiveWorkItemsPerRun: 2
+  requireDecompositionIf:
+    storyPointsAtLeast: 13
+    touchedModulesAtLeast: 5
+  requireIntegrationPlanIfDecomposed: true
+
+communication:
+  riskLevelTriggers:
+    high:
+      requireRichReview: true
+      notifyStakeholders: true
+      channels:
+        - "#forge-alerts"
+    critical:
+      requireRichReview: true
+      notifyStakeholders: true
+      channels:
+        - "#forge-alerts"
+        - "#engineering-leads"
+  escalationPath:
+    - role: "Tech Lead"
+      contact: "@tech-lead"
+    - role: "Engineering Manager"
+      contact: "@eng-manager"
+    - role: "CTO"
+      contact: "@cto"
+
+audit:
+  enabled: true
+  randomAuditRate: 0.1
+  alwaysAuditIf:
+    - "risk.level == 'critical'"
+    - "touchesSecurityCode"
+    - "touchesPaymentCode"
+    - "modifiesPublicAPI"

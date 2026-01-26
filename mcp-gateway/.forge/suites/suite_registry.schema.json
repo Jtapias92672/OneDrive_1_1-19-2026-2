@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcfoundry.com/forge/suite-registry.schema.json",
+  "title": "FORGE Suite Registry",
+  "description": "Test suite definitions with time budgets and trigger contexts (smoke/sanity/regression)",
+  "type": "object",
+  "required": ["version", "suites", "tagging"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "suites": {
+      "type": "object",
+      "required": ["smoke", "sanity", "regression"],
+      "additionalProperties": { "$ref": "#/$defs/suite" }
+    },
+    "tagging": {
+      "$ref": "#/$defs/taggingPolicy"
+    },
+    "quarantine": {
+      "$ref": "#/$defs/quarantinePolicy"
+    }
+  },
+  "$defs": {
+    "suite": {
+      "type": "object",
+      "required": ["name", "description", "timeBudget", "triggers", "include"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "timeBudget": {
+          "$ref": "#/$defs/timeBudget"
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "enum": ["pr", "merge", "release", "manual", "schedule"]
+          },
+          "minItems": 1
+        },
+        "include": {
+          "$ref": "#/$defs/testSelection"
+        },
+        "exclude": {
+          "$ref": "#/$defs/testSelection"
+        },
+        "parallelism": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32,
+          "default": 4
+        },
+        "retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3,
+          "default": 1
+        },
+        "failFast": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "timeBudget": {
+      "type": "object",
+      "required": ["target", "max"],
+      "properties": {
+        "target": {
+          "type": "string",
+          "pattern": "^\\d+[mh]$",
+          "description": "Target duration (e.g., '5m', '1h')"
+        },
+        "max": {
+          "type": "string",
+          "pattern": "^\\d+[mh]$",
+          "description": "Maximum allowed duration"
+        },
+        "enforced": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to fail if max exceeded"
+        }
+      }
+    },
+    "testSelection": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "patterns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Glob patterns for test files"
+        },
+        "directories": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "taggingPolicy": {
+      "type": "object",
+      "required": ["required", "conventions"],
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "description": "Whether all tests must have tags"
+        },
+        "conventions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["prefix", "description"],
+            "properties": {
+              "prefix": { "type": "string" },
+              "description": { "type": "string" },
+              "examples": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        },
+        "forbidden": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tags that should not be used"
+        }
+      }
+    },
+    "quarantinePolicy": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "tag": {
+          "type": "string",
+          "default": "quarantine"
+        },
+        "maxAge": {
+          "type": "string",
+          "pattern": "^\\d+d$",
+          "description": "Max days a test can stay quarantined"
+        },
+        "requiresTicket": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether quarantine requires linked issue"
+        },
+        "blockCriticalPath": {
+          "type": "boolean",
+          "default": true,
+          "description": "Block merge if quarantined test in critical path"
+        }
+      }
+    }
+  }
+}

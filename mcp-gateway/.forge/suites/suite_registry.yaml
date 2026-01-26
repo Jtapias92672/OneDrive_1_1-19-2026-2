@@ -1,0 +1,132 @@
+# FORGE Suite Registry
+# Test suite definitions with time budgets and triggers
+# Based on test pyramid (Martin Fowler) + SMURF (Google Testing Blog)
+
+version: "1.0.0"
+
+suites:
+  smoke:
+    name: "Smoke Tests"
+    description: |
+      Critical path tests that must pass for any deployment.
+      Fast feedback loop for PR validation.
+    timeBudget:
+      target: "5m"
+      max: "30m"
+      enforced: true
+    triggers:
+      - pr
+      - merge
+      - release
+    include:
+      tags:
+        - "smoke"
+        - "critical"
+      patterns:
+        - "**/*.smoke.test.ts"
+        - "**/smoke/**/*.test.ts"
+    exclude:
+      tags:
+        - "slow"
+        - "integration"
+        - "e2e"
+    parallelism: 8
+    retries: 1
+    failFast: true
+
+  sanity:
+    name: "Sanity Tests"
+    description: |
+      Broader coverage tests for release candidate validation.
+      Includes integration tests and cross-module scenarios.
+    timeBudget:
+      target: "1h"
+      max: "3h"
+      enforced: true
+    triggers:
+      - merge
+      - release
+      - manual
+    include:
+      tags:
+        - "smoke"
+        - "sanity"
+        - "integration"
+      patterns:
+        - "**/*.test.ts"
+        - "**/*.integration.test.ts"
+    exclude:
+      tags:
+        - "regression-only"
+        - "e2e"
+        - "performance"
+    parallelism: 4
+    retries: 2
+    failFast: false
+
+  regression:
+    name: "Full Regression"
+    description: |
+      Complete test suite for release validation.
+      Includes E2E, performance, and edge case tests.
+    timeBudget:
+      target: "4h"
+      max: "8h"
+      enforced: false
+    triggers:
+      - release
+      - schedule
+      - manual
+    include:
+      tags:
+        - "smoke"
+        - "sanity"
+        - "regression"
+        - "e2e"
+      patterns:
+        - "**/*.test.ts"
+        - "**/*.e2e.test.ts"
+    exclude:
+      tags:
+        - "quarantine"
+        - "experimental"
+    parallelism: 2
+    retries: 3
+    failFast: false
+
+tagging:
+  required: true
+  conventions:
+    - prefix: "smoke"
+      description: "Critical path test, must be fast (<10s)"
+      examples: ["smoke", "smoke-auth", "smoke-api"]
+    - prefix: "sanity"
+      description: "Important but not critical, moderate speed"
+      examples: ["sanity", "sanity-db", "sanity-integration"]
+    - prefix: "regression"
+      description: "Full coverage, can be slow"
+      examples: ["regression", "regression-edge-cases"]
+    - prefix: "e2e"
+      description: "End-to-end browser/UI tests"
+      examples: ["e2e", "e2e-checkout", "e2e-login"]
+    - prefix: "perf"
+      description: "Performance and load tests"
+      examples: ["perf", "perf-api", "perf-db"]
+    - prefix: "module:"
+      description: "Module-specific tests"
+      examples: ["module:auth", "module:api", "module:parser"]
+    - prefix: "feature:"
+      description: "Feature-specific tests"
+      examples: ["feature:login", "feature:export"]
+  forbidden:
+    - "skip"
+    - "todo"
+    - "fixme"
+    - "broken"
+
+quarantine:
+  enabled: true
+  tag: "quarantine"
+  maxAge: "14d"
+  requiresTicket: true
+  blockCriticalPath: true
