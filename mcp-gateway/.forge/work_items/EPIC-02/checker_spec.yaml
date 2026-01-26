@@ -1,0 +1,101 @@
+# Epic 02 CheckerSpec: Answer Contract Specification
+# V&V audit using Epic 7.5 framework
+
+version: "1.0.0"
+
+workItem:
+  id: "EPIC-02"
+  title: "Answer Contract - Specification Package"
+  type: specification
+  storyPoints: 5
+  touchedModules:
+    - "../answer-contract"
+
+intent:
+  summary: |
+    Define "correct output" contracts for FORGE's iterative convergence.
+    Provides schema definitions, validators, and templates.
+  acceptanceCriteria:
+    - "Contract schema types defined"
+    - "6 validator types (JsonSchema, Custom, LLMJudge, Regex, Computational, Composite)"
+    - "YAML/JSON contract parsing"
+    - "Built-in templates"
+    - "ContractValidator class"
+  context: |
+    Specification package defining what "done" looks like for generated code.
+    Used by convergence engine for quality validation.
+
+risk:
+  level: low
+  changeSurface: module
+  factors:
+    - "Schema-only package"
+    - "No runtime dependencies"
+  mitigations:
+    - "Type definitions enforce structure"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "index.ts exports all types and functions"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-2"
+      description: "All 6 validator types defined"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-3"
+      description: "Parser functions exist (parseYamlContract, parseJsonContract)"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-4"
+      description: "Templates directory exists"
+      priority: must
+      automated: true
+      evidenceType: code-review
+  notes: |
+    Specification package - no Jest tests needed.
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "ContractValidator can validate output"
+      priority: must
+      automated: false
+      evidenceType: code-review
+    - id: "B-2"
+      description: "Templates cover common use cases"
+      priority: should
+      automated: true
+      evidenceType: code-review
+  notes: |
+    Specification for use by convergence engine.
+
+testSuites:
+  membership:
+    - smoke
+  tags:
+    - "epic-02"
+    - "specification"
+    - "contract"
+  targetedTests: []
+
+evidence:
+  required:
+    - documentation-review
+  artifacts:
+    - name: "Answer Contract Index"
+      path: "../answer-contract/index.ts"
+
+definitionOfDone:
+  - "Types exported"
+  - "Validators defined"
+  - "Parser working"
+  - "Templates available"
+
+nonGoals:
+  - "Runtime validation"
+  - "LLM integration"
