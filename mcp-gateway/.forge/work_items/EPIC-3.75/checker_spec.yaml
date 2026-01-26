@@ -1,0 +1,116 @@
+# Epic 3.75 CheckerSpec: Code Execution
+# V&V audit using Epic 7.5 framework
+
+version: "1.0.0"
+
+workItem:
+  id: "EPIC-3.75"
+  title: "Code Execution - PII/Secrets/Sandbox"
+  type: feature
+  storyPoints: 8
+  touchedModules:
+    - "execution"
+    - "privacy"
+
+intent:
+  summary: |
+    Implement secure code execution with PII detection (100% recall),
+    secret detection (100% recall), approval workflows, and sandboxed execution.
+  acceptanceCriteria:
+    - "PII detection with 100% recall"
+    - "Secret detection with 100% recall"
+    - "Approval workflow (not auto-deny)"
+    - "Sandboxed execution based on risk"
+    - "Privacy filter with tokenization"
+  context: |
+    Sub-epic of Epic 3.5. Critical for protecting sensitive data
+    during code execution.
+
+risk:
+  level: high
+  changeSurface: cross-module
+  factors:
+    - "PII/secrets handling"
+    - "Code execution sandboxing"
+  mitigations:
+    - "100% recall verified for PII/secrets"
+    - "Risk-based sandbox selection"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "TypeScript compiles without errors"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "PII detection patterns exist"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-3"
+      description: "Secret detection patterns exist"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-4"
+      description: "Safe execution sandbox implemented"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-5"
+      description: "Tests pass (PII, secrets, execution)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+  notes: |
+    Verification confirms 100% recall for sensitive data detection.
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "Privacy filter tokenizes PII"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "B-2"
+      description: "Approval workflow not auto-deny"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "B-3"
+      description: "Risk-based sandbox selection"
+      priority: should
+      automated: true
+      evidenceType: code-review
+  notes: |
+    Business validation ensures data protection during execution.
+
+testSuites:
+  membership:
+    - smoke
+    - sanity
+  tags:
+    - "epic-3.75"
+    - "execution"
+    - "privacy"
+  targetedTests:
+    - "tests/unit/pii-detection.test.ts"
+    - "tests/unit/secret-metrics.test.ts"
+
+evidence:
+  required:
+    - test-results
+  artifacts:
+    - name: "Execution Test Results"
+      path: ".forge/evidence/EPIC-3.75/test-results.json"
+
+definitionOfDone:
+  - "100% PII recall"
+  - "100% secret recall"
+  - "Sandbox execution working"
+  - "Tests passing"
+
+nonGoals:
+  - "Custom PII patterns"
+  - "External sandbox providers"
