@@ -1,0 +1,117 @@
+# Epic 10b CheckerSpec: Platform UI Dashboard
+# V&V audit using Epic 7.5 framework
+
+version: "1.0.0"
+
+workItem:
+  id: "EPIC-10b"
+  title: "Platform UI Dashboard - Next.js Dashboard"
+  type: feature
+  storyPoints: 8
+  touchedModules:
+    - "packages/platform-ui"
+
+intent:
+  summary: |
+    Next.js dashboard for FORGE platform monitoring.
+    Displays evidence packs, CARS autonomy, supply chain, agent memory,
+    and verification status.
+  acceptanceCriteria:
+    - "Dashboard page with collapsible sections"
+    - "Evidence Packs card (CMMC/DFARS)"
+    - "CARS Autonomy card (risk levels)"
+    - "Supply Chain card (SLSA)"
+    - "Agent Memory card (token gauge)"
+    - "Verification card (test status)"
+    - "7 API endpoints"
+    - "Export functionality"
+  context: |
+    UI dashboard for monitoring FORGE platform health and compliance.
+
+risk:
+  level: medium
+  changeSurface: module
+  factors:
+    - "UI component complexity"
+    - "Multiple API integrations"
+  mitigations:
+    - "Comprehensive test coverage (85 tests)"
+    - "Mock data for development"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "npm run build succeeds"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "All tests pass (85 tests)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-3"
+      description: "Dashboard page exports"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-4"
+      description: "API routes exist"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-5"
+      description: "Components export correctly"
+      priority: must
+      automated: true
+      evidenceType: code-review
+  notes: |
+    85 tests exceed the 54 expected per progress.md.
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "Dashboard displays all 5 sections"
+      priority: must
+      automated: false
+      evidenceType: code-review
+    - id: "B-2"
+      description: "Export functionality works"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "B-3"
+      description: "Mock data provides development fallback"
+      priority: should
+      automated: true
+      evidenceType: test-result
+  notes: |
+    UI validation requires visual inspection for full coverage.
+
+testSuites:
+  membership:
+    - smoke
+    - sanity
+  tags:
+    - "epic-10b"
+    - "platform-ui"
+    - "dashboard"
+  targetedTests:
+    - "packages/platform-ui/src/__tests__/*.test.ts"
+
+evidence:
+  required:
+    - test-results
+  artifacts:
+    - name: "Platform UI Test Results"
+      path: ".forge/evidence/EPIC-10b/test-results.json"
+
+definitionOfDone:
+  - "Build passes"
+  - "85 tests passing"
+  - "API endpoints responding"
+  - "Export functionality working"
+
+nonGoals:
+  - "Production deployment"
+  - "Authentication integration"
