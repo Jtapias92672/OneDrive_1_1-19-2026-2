@@ -1,0 +1,91 @@
+# FORGE Platform - ConfigMaps and Secrets
+# @epic 09 - Cloud Deployment
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: forge-config
+  namespace: forge
+data:
+  evidence-bucket: "${EVIDENCE_BUCKET}"
+  artifacts-bucket: "${ARTIFACTS_BUCKET}"
+  aws-region: "${AWS_REGION}"
+  log-level: "info"
+  mcp-gateway-url: "http://mcp-gateway.forge.svc.cluster.local:8081"
+  governance-url: "http://governance-gateway.forge.svc.cluster.local:8082"
+---
+# Bedrock-specific configuration (Epic 09A)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: forge-bedrock-config
+  namespace: forge
+data:
+  # Primary model for convergence engine
+  primary-model-id: "${BEDROCK_PRIMARY_MODEL}"
+  # Comma-separated list of allowed models
+  allowed-models: "${BEDROCK_ALLOWED_MODELS}"
+  # Region for Bedrock API calls
+  bedrock-region: "${AWS_REGION}"
+  # Enable private endpoint (VPC endpoint)
+  use-private-endpoint: "true"
+  # Inference configuration
+  max-tokens: "4096"
+  temperature: "0.7"
+  # Rate limiting (tokens per minute)
+  rate-limit-tpm: "100000"
+  # Rate limiting (requests per minute)  
+  rate-limit-rpm: "100"
+  # Retry configuration
+  max-retries: "3"
+  retry-base-delay-ms: "1000"
+  retry-max-delay-ms: "30000"
+  # Guardrail configuration (if enabled)
+  guardrail-id: "${BEDROCK_GUARDRAIL_ID}"
+  guardrail-version: "${BEDROCK_GUARDRAIL_VERSION}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: forge-database
+  namespace: forge
+type: Opaque
+stringData:
+  url: "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}?sslmode=require"
+  host: "${DB_HOST}"
+  port: "5432"
+  database: "${DB_NAME}"
+  username: "${DB_USER}"
+  password: "${DB_PASSWORD}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: forge-redis
+  namespace: forge
+type: Opaque
+stringData:
+  url: "rediss://:${REDIS_AUTH_TOKEN}@${REDIS_HOST}:6379"
+  host: "${REDIS_HOST}"
+  port: "6379"
+  auth-token: "${REDIS_AUTH_TOKEN}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: forge-jwt
+  namespace: forge
+type: Opaque
+stringData:
+  secret: "${JWT_SECRET}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: forge-github
+  namespace: forge
+type: Opaque
+stringData:
+  app-id: "${GITHUB_APP_ID}"
+  private-key: "${GITHUB_PRIVATE_KEY}"
+  webhook-secret: "${GITHUB_WEBHOOK_SECRET}"

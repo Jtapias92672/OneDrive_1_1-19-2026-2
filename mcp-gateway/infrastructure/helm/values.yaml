@@ -1,0 +1,253 @@
+# FORGE Platform - Helm Values
+# Epic 9: Infrastructure
+# Default configuration values
+
+# ==============================================================================
+# Global Settings
+# ==============================================================================
+global:
+  environment: production
+  region: us-east-1
+  domain: forge.arcfoundry.ai
+
+# ==============================================================================
+# FORGE API Configuration
+# ==============================================================================
+forgeApi:
+  enabled: true
+  name: forge-api
+
+  # Image
+  image:
+    repository: forge-api
+    tag: latest
+    pullPolicy: Always
+
+  # Replicas
+  replicaCount: 3
+
+  # Resources
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  # Autoscaling
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilization: 70
+    targetMemoryUtilization: 80
+
+  # Service
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+
+  # Ingress
+  ingress:
+    enabled: true
+    className: alb
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/healthcheck-path: /health
+    hosts:
+      - host: api.forge.arcfoundry.ai
+        paths:
+          - path: /
+            pathType: Prefix
+
+  # Health checks
+  livenessProbe:
+    enabled: true
+    path: /health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  readinessProbe:
+    enabled: true
+    path: /health/ready
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+  # Environment variables
+  env:
+    NODE_ENV: production
+    FORGE_RUNTIME: kubernetes
+    BEDROCK_ENABLED: "true"
+    LOG_LEVEL: info
+
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+    fsGroup: 1001
+
+  # Service account
+  serviceAccount:
+    create: true
+    annotations:
+      eks.amazonaws.com/role-arn: ""  # Set in environment-specific values
+
+# ==============================================================================
+# Bedrock Configuration
+# ==============================================================================
+bedrock:
+  enabled: true
+  region: us-east-1
+
+  # Model configurations
+  models:
+    sonnet:
+      id: anthropic.claude-3-5-sonnet-20241022-v2:0
+      maxTokens: 8192
+      enabled: true
+    haiku:
+      id: anthropic.claude-3-5-haiku-20241022-v1:0
+      maxTokens: 8192
+      enabled: true
+    opus:
+      id: anthropic.claude-3-opus-20240229-v1:0
+      maxTokens: 4096
+      enabled: true
+
+  # VPC Endpoint
+  vpcEndpoint:
+    enabled: true
+    serviceName: com.amazonaws.us-east-1.bedrock-runtime
+
+# ==============================================================================
+# Lambda Workers Configuration
+# ==============================================================================
+lambda:
+  enabled: true
+
+  workers:
+    convergence:
+      name: forge-convergence-worker
+      runtime: nodejs20.x
+      handler: index.handler
+      timeout: 300
+      memorySize: 1024
+      provisionedConcurrency: 2
+
+    parser:
+      name: forge-parser-worker
+      runtime: nodejs20.x
+      handler: index.handler
+      timeout: 60
+      memorySize: 512
+      provisionedConcurrency: 0
+
+  # VPC Configuration
+  vpc:
+    enabled: true
+    usePrivateSubnets: true
+
+# ==============================================================================
+# Database (PostgreSQL)
+# ==============================================================================
+postgresql:
+  enabled: true
+  auth:
+    database: forge
+    username: forge
+    existingSecret: forge-db-credentials
+  primary:
+    persistence:
+      size: 100Gi
+      storageClass: gp3
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 2
+        memory: 4Gi
+
+# ==============================================================================
+# Cache (Redis)
+# ==============================================================================
+redis:
+  enabled: true
+  architecture: replication
+  auth:
+    enabled: true
+    existingSecret: forge-redis-credentials
+  master:
+    persistence:
+      size: 10Gi
+      storageClass: gp3
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1
+        memory: 2Gi
+  replica:
+    replicaCount: 2
+
+# ==============================================================================
+# Monitoring
+# ==============================================================================
+monitoring:
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+  grafana:
+    enabled: true
+    adminPassword: ""  # Set via secret
+
+  alerts:
+    enabled: true
+    slackWebhook: ""  # Set via secret
+
+# ==============================================================================
+# Security
+# ==============================================================================
+security:
+  # Pod Security Standards
+  podSecurityPolicy:
+    enabled: true
+    level: restricted
+
+  # Network Policies
+  networkPolicy:
+    enabled: true
+
+  # Secrets management
+  externalSecrets:
+    enabled: true
+    secretStore: aws-secrets-manager
+
+# ==============================================================================
+# CARS Integration
+# ==============================================================================
+cars:
+  enabled: true
+  approvalThreshold: 0.5
+  blockThreshold: 0.9
+  auditEnabled: true
+
+# ==============================================================================
+# Resource Quotas
+# ==============================================================================
+resourceQuota:
+  enabled: true
+  requests:
+    cpu: "10"
+    memory: 20Gi
+  limits:
+    cpu: "20"
+    memory: 40Gi
+  pods: "50"

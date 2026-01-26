@@ -1,0 +1,128 @@
+# MCP Gateway - Reward Integrity Workflow
+# Task 3.7.15: Verification Pillar 10 - Reward Signal Integrity
+# Reference: Anthropic "From Shortcuts to Sabotage" (Nov 2025)
+
+name: Reward Signal Integrity Gate (Pillar 10)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  reward-integrity-check:
+    runs-on: ubuntu-latest
+    name: Reward Integrity Verification
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect Test Bypass Patterns
+        run: |
+          echo "## Test Bypass Detection" >> $GITHUB_STEP_SUMMARY
+
+          # Check for suspicious exit patterns (Python)
+          if grep -rn "sys.exit(0)" --include="*.py" . 2>/dev/null | grep -v "test_" | grep -v "if __name__"; then
+            echo "::error::Suspicious sys.exit(0) found outside test files"
+            echo " sys.exit(0) bypass detected" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+          # Check for forced test returns
+          if grep -rn "return True.*#.*test\|return.*mock" --include="*.py" . 2>/dev/null; then
+            echo "::warning::Possible test bypass pattern detected"
+            echo " Possible test bypass pattern" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check for os._exit bypasses
+          if grep -rn "os._exit(" --include="*.py" . 2>/dev/null; then
+            echo "::error::os._exit() detected - potential test bypass"
+            echo " os._exit() bypass detected" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+          echo " No test bypass patterns detected" >> $GITHUB_STEP_SUMMARY
+
+      - name: Verify Test Infrastructure Unchanged
+        run: |
+          echo "## Test Infrastructure Check" >> $GITHUB_STEP_SUMMARY
+          CODE_CHANGES=$(git diff --name-only HEAD~1 2>/dev/null | grep -E "\.(py|ts|js)$" | grep -v -iE "test|spec" | wc -l || echo 0)
+          TEST_CHANGES=$(git diff --name-only HEAD~1 2>/dev/null | grep -iE "test|spec" | wc -l || echo 0)
+
+          if [ "$CODE_CHANGES" -gt 0 ] && [ "$TEST_CHANGES" -gt 0 ]; then
+            echo "::warning::Code and tests modified together - verify tests weren't weakened"
+            echo " Code and tests modified together" >> $GITHUB_STEP_SUMMARY
+          else
+            echo " Test infrastructure appears unchanged" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for Assertion Removals
+        run: |
+          echo "## Assertion Removal Check" >> $GITHUB_STEP_SUMMARY
+          REMOVED_ASSERTS=$(git diff HEAD~1 --unified=0 2>/dev/null | grep "^-.*assert\|^-.*expect\|^-.*should" | wc -l || echo 0)
+          if [ "$REMOVED_ASSERTS" -gt 0 ]; then
+            echo "::error::$REMOVED_ASSERTS assertion(s) removed in this commit!"
+            echo " $REMOVED_ASSERTS assertion(s) removed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          echo " No assertions removed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Detect Tautological Tests
+        run: |
+          echo "## Tautological Test Detection" >> $GITHUB_STEP_SUMMARY
+
+          # Python tautological tests
+          if grep -rn "assert True\s*$" --include="*.py" test/ tests/ 2>/dev/null; then
+            echo "::warning::Possible tautological test: assert True"
+            echo " Tautological test detected" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Self-referential assertions
+          if grep -rn "assertEqual.*,.*,.*same\|expect.*toBe.*actual" --include="*.py" --include="*.ts" test/ tests/ 2>/dev/null; then
+            echo "::warning::Possible self-referential assertion"
+            echo " Self-referential assertion detected" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo " No obvious tautological tests" >> $GITHUB_STEP_SUMMARY
+
+      - name: Detect Mock Manipulation
+        run: |
+          echo "## Mock Manipulation Check" >> $GITHUB_STEP_SUMMARY
+
+          # Mock always returning True/expected
+          if grep -rn "mock\.return_value\s*=\s*True\|return_value\s*=\s*expected" --include="*.py" . 2>/dev/null; then
+            echo "::warning::Mock may be configured to always return expected values"
+            echo " Suspicious mock configuration" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo " No obvious mock manipulation" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check for Skip Patterns
+        run: |
+          echo "## Skip Pattern Check" >> $GITHUB_STEP_SUMMARY
+
+          # Skipped tests without reason
+          if grep -rn "@pytest.mark.skip\s*$\|@unittest.skip\s*$" --include="*.py" test/ tests/ 2>/dev/null; then
+            echo "::warning::Tests skipped without reason"
+            echo " Tests skipped without reason" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Excessive pragma: no cover
+          PRAGMA_COUNT=$(grep -rn "pragma:\s*no\s*cover" --include="*.py" . 2>/dev/null | wc -l || echo 0)
+          if [ "$PRAGMA_COUNT" -gt 10 ]; then
+            echo "::warning::Excessive use of pragma: no cover ($PRAGMA_COUNT occurrences)"
+            echo " $PRAGMA_COUNT pragma: no cover occurrences" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo " Skip patterns check complete" >> $GITHUB_STEP_SUMMARY
+
+      - name: Summary
+        if: always()
+        run: |
+          echo ""
+          echo "::notice::Reward integrity verification complete"
+          echo "Reference: Anthropic 'From Shortcuts to Sabotage' (Nov 2025)"

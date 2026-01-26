@@ -1,0 +1,40 @@
+{
+  "name": "@forge/lambda-worker",
+  "version": "1.0.0",
+  "description": "FORGE Lambda worker with Bedrock integration",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:prod": "tsc && npm prune --production",
+    "package": "npm run build:prod && zip -r ../forge-worker.zip .",
+    "clean": "rm -rf dist node_modules",
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.500.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.134",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.11"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arcfoundry/forge"
+  },
+  "keywords": [
+    "forge",
+    "lambda",
+    "bedrock",
+    "claude",
+    "anthropic"
+  ]
+}

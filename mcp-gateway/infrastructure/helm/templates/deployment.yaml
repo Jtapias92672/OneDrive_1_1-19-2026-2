@@ -1,0 +1,206 @@
+{{/*
+FORGE Platform - Helm Deployment Template
+Epic 9: Infrastructure
+*/}}
+
+{{- if .Values.forgeApi.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.forgeApi.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "forge.labels" . | nindent 4 }}
+    component: api
+  annotations:
+    deployment.kubernetes.io/revision: {{ .Release.Revision | quote }}
+spec:
+  replicas: {{ .Values.forgeApi.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "forge.selectorLabels" . | nindent 6 }}
+      component: api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        {{- include "forge.selectorLabels" . | nindent 8 }}
+        component: api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      {{- if .Values.forgeApi.serviceAccount.create }}
+      serviceAccountName: {{ .Values.forgeApi.name }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.forgeApi.securityContext | nindent 8 }}
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "forge.selectorLabels" . | nindent 20 }}
+                topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: {{ .Values.forgeApi.name }}
+          image: "{{ .Values.forgeApi.image.repository }}:{{ .Values.forgeApi.image.tag }}"
+          imagePullPolicy: {{ .Values.forgeApi.image.pullPolicy }}
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.forgeApi.service.targetPort }}
+              protocol: TCP
+
+          env:
+            {{- range $key, $value := .Values.forgeApi.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: forge-secrets
+                  key: database-url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: forge-secrets
+                  key: redis-url
+            {{- if .Values.bedrock.enabled }}
+            - name: BEDROCK_REGION
+              value: {{ .Values.bedrock.region | quote }}
+            - name: BEDROCK_MODEL_SONNET
+              value: {{ .Values.bedrock.models.sonnet.id | quote }}
+            - name: BEDROCK_MODEL_HAIKU
+              value: {{ .Values.bedrock.models.haiku.id | quote }}
+            - name: BEDROCK_MODEL_OPUS
+              value: {{ .Values.bedrock.models.opus.id | quote }}
+            {{- end }}
+
+          resources:
+            {{- toYaml .Values.forgeApi.resources | nindent 12 }}
+
+          {{- if .Values.forgeApi.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.forgeApi.livenessProbe.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.forgeApi.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.forgeApi.livenessProbe.periodSeconds }}
+          {{- end }}
+
+          {{- if .Values.forgeApi.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.forgeApi.readinessProbe.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.forgeApi.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.forgeApi.readinessProbe.periodSeconds }}
+          {{- end }}
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/.cache
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
+
+      terminationGracePeriodSeconds: 30
+
+---
+{{- if .Values.forgeApi.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Values.forgeApi.name }}-hpa
+  namespace: {{ .Release.Namespace }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.forgeApi.name }}
+  minReplicas: {{ .Values.forgeApi.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.forgeApi.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.forgeApi.autoscaling.targetCPUUtilization }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.forgeApi.autoscaling.targetMemoryUtilization }}
+{{- end }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.forgeApi.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "forge.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.forgeApi.service.type }}
+  selector:
+    {{- include "forge.selectorLabels" . | nindent 4 }}
+    component: api
+  ports:
+    - name: http
+      port: {{ .Values.forgeApi.service.port }}
+      targetPort: {{ .Values.forgeApi.service.targetPort }}
+
+{{- if .Values.forgeApi.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.forgeApi.name }}-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- toYaml .Values.forgeApi.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.forgeApi.ingress.className }}
+  rules:
+    {{- range .Values.forgeApi.ingress.hosts }}
+    - host: {{ .host }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ $.Values.forgeApi.name }}
+                port:
+                  number: {{ $.Values.forgeApi.service.port }}
+          {{- end }}
+    {{- end }}
+{{- end }}
+{{- end }}

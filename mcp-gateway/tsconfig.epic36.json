@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "oauth/**/*.ts",
+    "tenant/**/*.ts",
+    "sanitization/**/*.ts",
+    "alerting/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts"
+  ]
+}

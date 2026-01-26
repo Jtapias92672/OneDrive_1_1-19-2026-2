@@ -1,0 +1,368 @@
+# FORGE Platform - MCP Server Deployment Template
+# @epic 09 - Cloud Deployment
+#
+# Template for deploying individual MCP servers
+# Each MCP server is independently deployable/scalable/rollbackable
+---
+# Example: MCP Filesystem Server
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcp-filesystem
+  namespace: mcp-system
+  annotations:
+    # Dedicated IRSA role - least privilege per MCP server
+    eks.amazonaws.com/role-arn: "${MCP_FILESYSTEM_ROLE_ARN}"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-filesystem
+  namespace: mcp-system
+  labels:
+    app.kubernetes.io/name: mcp-filesystem
+    app.kubernetes.io/component: mcp-server
+    app.kubernetes.io/part-of: forge-platform
+    forge.dev/mcp-server: "true"
+    forge.dev/trust-level: high
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mcp-filesystem
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mcp-filesystem
+        app.kubernetes.io/component: mcp-server
+        app.kubernetes.io/part-of: forge-platform
+        forge.dev/mcp-server: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      serviceAccountName: mcp-filesystem
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+      - name: server
+        image: forge/mcp-filesystem:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8080
+        - name: metrics
+          containerPort: 9090
+        env:
+        - name: MCP_SERVER_NAME
+          value: "filesystem"
+        - name: MCP_TRUST_LEVEL
+          value: "high"
+        - name: S3_BUCKET
+          valueFrom:
+            configMapKeyRef:
+              name: mcp-config
+              key: evidence-bucket
+        - name: AWS_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: mcp-config
+              key: aws-region
+        # mTLS configuration
+        - name: TLS_CERT_FILE
+          value: "/etc/mcp-tls/tls.crt"
+        - name: TLS_KEY_FILE
+          value: "/etc/mcp-tls/tls.key"
+        - name: TLS_CA_FILE
+          value: "/etc/mcp-tls/ca.crt"
+        - name: REQUIRE_CLIENT_CERT
+          value: "true"
+        # Audit configuration
+        - name: AUDIT_ENABLED
+          value: "true"
+        - name: AUDIT_EVIDENCE_PLANE
+          value: "true"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+            scheme: HTTPS
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+            scheme: HTTPS
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tls
+          mountPath: /etc/mcp-tls
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tls
+        secret:
+          secretName: mcp-server-tls
+      - name: tmp
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: mcp-filesystem
+              topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-filesystem
+  namespace: mcp-system
+  labels:
+    app.kubernetes.io/name: mcp-filesystem
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8080
+    targetPort: http
+  - name: metrics
+    port: 9090
+    targetPort: metrics
+  selector:
+    app.kubernetes.io/name: mcp-filesystem
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mcp-filesystem
+  namespace: mcp-system
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: mcp-filesystem
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Pods
+    pods:
+      metric:
+        name: mcp_active_requests
+      target:
+        type: AverageValue
+        averageValue: "10"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mcp-filesystem
+  namespace: mcp-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mcp-filesystem
+---
+# Example: MCP GitHub Server (different trust level, different IRSA)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcp-github
+  namespace: mcp-system
+  annotations:
+    eks.amazonaws.com/role-arn: "${MCP_GITHUB_ROLE_ARN}"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-github
+  namespace: mcp-system
+  labels:
+    app.kubernetes.io/name: mcp-github
+    app.kubernetes.io/component: mcp-server
+    app.kubernetes.io/part-of: forge-platform
+    forge.dev/mcp-server: "true"
+    forge.dev/trust-level: medium
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mcp-github
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mcp-github
+        app.kubernetes.io/component: mcp-server
+        app.kubernetes.io/part-of: forge-platform
+        forge.dev/mcp-server: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      serviceAccountName: mcp-github
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+      - name: server
+        image: forge/mcp-github:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8080
+        - name: metrics
+          containerPort: 9090
+        env:
+        - name: MCP_SERVER_NAME
+          value: "github"
+        - name: MCP_TRUST_LEVEL
+          value: "medium"
+        - name: GITHUB_APP_ID
+          valueFrom:
+            secretKeyRef:
+              name: mcp-github-credentials
+              key: app-id
+        - name: GITHUB_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mcp-github-credentials
+              key: private-key
+        - name: TLS_CERT_FILE
+          value: "/etc/mcp-tls/tls.crt"
+        - name: TLS_KEY_FILE
+          value: "/etc/mcp-tls/tls.key"
+        - name: TLS_CA_FILE
+          value: "/etc/mcp-tls/ca.crt"
+        - name: REQUIRE_CLIENT_CERT
+          value: "true"
+        - name: AUDIT_ENABLED
+          value: "true"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+            scheme: HTTPS
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+            scheme: HTTPS
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tls
+          mountPath: /etc/mcp-tls
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tls
+        secret:
+          secretName: mcp-server-tls
+      - name: tmp
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-github
+  namespace: mcp-system
+  labels:
+    app.kubernetes.io/name: mcp-github
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8080
+    targetPort: http
+  - name: metrics
+    port: 9090
+    targetPort: metrics
+  selector:
+    app.kubernetes.io/name: mcp-github
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mcp-github
+  namespace: mcp-system
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: mcp-github
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+# MCP Config shared across servers
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-config
+  namespace: mcp-system
+data:
+  aws-region: "${AWS_REGION}"
+  evidence-bucket: "${EVIDENCE_BUCKET}"
+  audit-log-group: "/forge/${ENVIRONMENT}/mcp"
+  rate-limit-default-rpm: "60"
+  circuit-breaker-threshold: "5"
+  circuit-breaker-timeout-ms: "30000"

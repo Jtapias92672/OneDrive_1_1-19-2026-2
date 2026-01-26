@@ -1,0 +1,173 @@
+# FORGE Platform - Docker Compose
+# Epic 9: Infrastructure
+# Local development environment with all dependencies
+#
+# Usage:
+#   docker-compose up -d
+#   docker-compose logs -f forge-api
+
+version: "3.9"
+
+services:
+  # ===========================================================================
+  # FORGE Platform API
+  # ===========================================================================
+  forge-api:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    container_name: forge-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_URL=postgresql://forge:forge_dev@postgres:5432/forge
+      - REDIS_URL=redis://redis:6379
+      - BEDROCK_ENABLED=false
+      - LOG_LEVEL=debug
+      - CORS_ORIGIN=http://localhost:3001
+    volumes:
+      - ../../skills:/app/skills:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - forge-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ===========================================================================
+  # PostgreSQL Database
+  # ===========================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: forge-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=forge
+      - POSTGRES_PASSWORD=forge_dev
+      - POSTGRES_DB=forge
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - forge-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forge -d forge"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # Redis Cache
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: forge-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - forge-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # LocalStack (AWS Emulation for local development)
+  # ===========================================================================
+  localstack:
+    image: localstack/localstack:latest
+    container_name: forge-localstack
+    ports:
+      - "4566:4566"    # LocalStack Gateway
+      - "4510-4559:4510-4559"  # External services port range
+    environment:
+      - SERVICES=lambda,s3,sqs,secretsmanager,iam
+      - DEBUG=1
+      - DATA_DIR=/var/lib/localstack/data
+      - LAMBDA_EXECUTOR=docker
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - forge-network
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Prometheus (Metrics)
+  # ===========================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: forge-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    networks:
+      - forge-network
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Grafana (Dashboards)
+  # ===========================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: forge-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=forge_admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/forge-dashboard.json
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - forge-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+# ===========================================================================
+# Networks
+# ===========================================================================
+networks:
+  forge-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ===========================================================================
+# Volumes
+# ===========================================================================
+volumes:
+  postgres-data:
+  redis-data:
+  localstack-data:
+  prometheus-data:
+  grafana-data:

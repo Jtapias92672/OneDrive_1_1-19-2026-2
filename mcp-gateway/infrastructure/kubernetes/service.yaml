@@ -1,0 +1,147 @@
+# FORGE Platform - Kubernetes Service
+# Epic 9: Infrastructure
+# Target: AWS EKS with ALB Ingress
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forge-api
+  namespace: forge
+  labels:
+    app: forge
+    component: api
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app: forge
+    component: api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 3000
+      protocol: TCP
+
+---
+# Headless Service for StatefulSet discovery
+apiVersion: v1
+kind: Service
+metadata:
+  name: forge-api-headless
+  namespace: forge
+  labels:
+    app: forge
+    component: api
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: forge
+    component: api
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+
+---
+# Ingress for external access
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: forge-api-ingress
+  namespace: forge
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+    alb.ingress.kubernetes.io/success-codes: "200"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/certificate-arn: ${ACM_CERTIFICATE_ARN}
+    alb.ingress.kubernetes.io/wafv2-acl-arn: ${WAF_ACL_ARN}
+    alb.ingress.kubernetes.io/security-groups: ${ALB_SECURITY_GROUP}
+spec:
+  ingressClassName: alb
+  rules:
+    - host: api.forge.arcfoundry.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: forge-api
+                port:
+                  number: 80
+
+---
+# Network Policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: forge-api-network-policy
+  namespace: forge
+spec:
+  podSelector:
+    matchLabels:
+      app: forge
+      component: api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from ALB/Ingress
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: TCP
+          port: 3000
+    # Allow from other forge pods
+    - from:
+        - podSelector:
+            matchLabels:
+              app: forge
+      ports:
+        - protocol: TCP
+          port: 3000
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow AWS services (Bedrock, S3, etc.)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443

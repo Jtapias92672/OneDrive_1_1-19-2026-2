@@ -1,0 +1,1401 @@
+openapi: 3.1.0
+info:
+  title: FORGE B-D Platform API
+  description: |
+    Contract-driven AI code generation platform with convergence validation.
+    
+    ## Overview
+    FORGE provides a complete pipeline from Figma designs to production-ready 
+    React and Mendix components with full audit trails for DCMA/DFARS/CMMC compliance.
+    
+    ## Pipeline Flow
+    ```
+    Figma → figma-parser → react-generator → mendix-integration
+                               ↓
+                         answer-contract
+                               ↓
+                       convergence-engine ← validators
+                               ↓
+                         evidence-packs
+    ```
+    
+    ## Authentication
+    All endpoints require Bearer token authentication using Anthropic API keys.
+  version: 1.0.0
+  contact:
+    name: ArcFoundry
+    email: support@arcfoundry.io
+  license:
+    name: Proprietary
+    identifier: LicenseRef-ArcFoundry
+
+servers:
+  - url: https://api.forge.arcfoundry.io/v1
+    description: Production
+  - url: https://staging-api.forge.arcfoundry.io/v1
+    description: Staging
+  - url: http://localhost:3000/v1
+    description: Local Development
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Contracts
+    description: Answer Contract management (Epic 02)
+  - name: Convergence
+    description: Convergence engine sessions (Epic 04)
+  - name: Figma
+    description: Figma design parsing (Epic 05)
+  - name: React
+    description: React component generation (Epic 06)
+  - name: Mendix
+    description: Mendix integration (Epic 07)
+  - name: Evidence
+    description: Evidence pack generation (Epic 08)
+  - name: Validation
+    description: Computational validation (Epic 14.1)
+  - name: MCP
+    description: MCP Gateway operations (Epic 2.5)
+
+paths:
+  # ============================================================
+  # CONTRACTS (Epic 02)
+  # ============================================================
+  /contracts:
+    get:
+      tags: [Contracts]
+      summary: List all contracts
+      operationId: listContracts
+      parameters:
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/PageToken'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, active, archived]
+      responses:
+        '200':
+          description: List of contracts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    
+    post:
+      tags: [Contracts]
+      summary: Create a new contract
+      operationId: createContract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractCreate'
+          text/markdown:
+            schema:
+              type: string
+              description: Markdown-formatted contract
+          application/x-yaml:
+            schema:
+              type: string
+              description: YAML-formatted contract
+      responses:
+        '201':
+          description: Contract created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /contracts/{contractId}:
+    parameters:
+      - $ref: '#/components/parameters/ContractId'
+    
+    get:
+      tags: [Contracts]
+      summary: Get contract by ID
+      operationId: getContract
+      responses:
+        '200':
+          description: Contract details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    put:
+      tags: [Contracts]
+      summary: Update contract
+      operationId: updateContract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractUpdate'
+      responses:
+        '200':
+          description: Contract updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    delete:
+      tags: [Contracts]
+      summary: Archive contract
+      operationId: archiveContract
+      responses:
+        '204':
+          description: Contract archived
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /contracts/{contractId}/validate:
+    parameters:
+      - $ref: '#/components/parameters/ContractId'
+    
+    post:
+      tags: [Contracts]
+      summary: Validate content against contract
+      operationId: validateAgainstContract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationRequest'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  # ============================================================
+  # CONVERGENCE (Epic 04)
+  # ============================================================
+  /convergence/sessions:
+    post:
+      tags: [Convergence]
+      summary: Start a convergence session
+      operationId: startConvergenceSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConvergenceSessionCreate'
+      responses:
+        '201':
+          description: Session started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConvergenceSession'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /convergence/sessions/{sessionId}:
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    
+    get:
+      tags: [Convergence]
+      summary: Get session status and metrics
+      operationId: getConvergenceSession
+      responses:
+        '200':
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConvergenceSession'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /convergence/sessions/{sessionId}/iterate:
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    
+    post:
+      tags: [Convergence]
+      summary: Run iteration in convergence loop
+      operationId: iterateConvergence
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IterationRequest'
+      responses:
+        '200':
+          description: Iteration result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IterationResult'
+        '400':
+          description: Max iterations reached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /convergence/sessions/{sessionId}/metrics:
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    
+    get:
+      tags: [Convergence]
+      summary: Get detailed session metrics
+      operationId: getSessionMetrics
+      responses:
+        '200':
+          description: Session metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConvergenceMetrics'
+
+  # ============================================================
+  # FIGMA (Epic 05)
+  # ============================================================
+  /figma/parse:
+    post:
+      tags: [Figma]
+      summary: Parse Figma design JSON
+      operationId: parseFigmaDesign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FigmaParseRequest'
+      responses:
+        '200':
+          description: Parsed design tree
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FigmaParseResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /figma/import:
+    post:
+      tags: [Figma]
+      summary: Import design from Figma API
+      operationId: importFigmaDesign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fileKey]
+              properties:
+                fileKey:
+                  type: string
+                  description: Figma file key
+                nodeIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Specific node IDs to import
+      responses:
+        '200':
+          description: Imported design
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FigmaParseResult'
+        '401':
+          description: Invalid Figma token
+        '404':
+          description: File not found
+
+  # ============================================================
+  # REACT GENERATION (Epic 06)
+  # ============================================================
+  /react/generate:
+    post:
+      tags: [React]
+      summary: Generate React components from parsed Figma
+      operationId: generateReactComponents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReactGenerateRequest'
+      responses:
+        '200':
+          description: Generated React components
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReactGenerateResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /react/preview:
+    post:
+      tags: [React]
+      summary: Generate preview URL for components
+      operationId: previewReactComponents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [components]
+              properties:
+                components:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ReactComponent'
+      responses:
+        '200':
+          description: Preview URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  previewUrl:
+                    type: string
+                    format: uri
+                  expiresAt:
+                    type: string
+                    format: date-time
+
+  # ============================================================
+  # MENDIX INTEGRATION (Epic 07)
+  # ============================================================
+  /mendix/generate:
+    post:
+      tags: [Mendix]
+      summary: Generate Mendix pages from React components
+      operationId: generateMendixPages
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MendixGenerateRequest'
+      responses:
+        '200':
+          description: Generated Mendix artifacts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MendixGenerateResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /mendix/deploy:
+    post:
+      tags: [Mendix]
+      summary: Deploy to Mendix Team Server
+      operationId: deployToMendix
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [projectId, branch, artifacts]
+              properties:
+                projectId:
+                  type: string
+                branch:
+                  type: string
+                artifacts:
+                  $ref: '#/components/schemas/MendixGenerateResult'
+                commitMessage:
+                  type: string
+      responses:
+        '200':
+          description: Deployment result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  commitId:
+                    type: string
+                  deploymentUrl:
+                    type: string
+                    format: uri
+
+  # ============================================================
+  # EVIDENCE PACKS (Epic 08)
+  # ============================================================
+  /evidence:
+    post:
+      tags: [Evidence]
+      summary: Create evidence pack
+      operationId: createEvidencePack
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvidencePackCreate'
+      responses:
+        '201':
+          description: Evidence pack created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidencePack'
+
+  /evidence/{evidenceId}:
+    parameters:
+      - name: evidenceId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    
+    get:
+      tags: [Evidence]
+      summary: Get evidence pack
+      operationId: getEvidencePack
+      responses:
+        '200':
+          description: Evidence pack details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidencePack'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /evidence/{evidenceId}/export:
+    parameters:
+      - name: evidenceId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    
+    get:
+      tags: [Evidence]
+      summary: Export evidence pack
+      operationId: exportEvidencePack
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [pdf, json, zip]
+            default: pdf
+      responses:
+        '200':
+          description: Exported evidence pack
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidencePack'
+            application/zip:
+              schema:
+                type: string
+                format: binary
+
+  # ============================================================
+  # VALIDATION (Epic 14.1)
+  # ============================================================
+  /validate/compute:
+    post:
+      tags: [Validation]
+      summary: Validate computational accuracy via Wolfram
+      operationId: validateComputation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComputeValidationRequest'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComputeValidationResult'
+
+  /validate/units:
+    post:
+      tags: [Validation]
+      summary: Validate and convert units
+      operationId: validateUnits
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [value, fromUnit, toUnit]
+              properties:
+                value:
+                  type: number
+                fromUnit:
+                  type: string
+                toUnit:
+                  type: string
+      responses:
+        '200':
+          description: Conversion result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: number
+                  formatted:
+                    type: string
+                  confidence:
+                    type: number
+
+  # ============================================================
+  # MCP GATEWAY (Epic 2.5)
+  # ============================================================
+  /mcp/tools:
+    get:
+      tags: [MCP]
+      summary: List available MCP tools
+      operationId: listMcpTools
+      responses:
+        '200':
+          description: Available tools
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/McpTool'
+
+  /mcp/execute:
+    post:
+      tags: [MCP]
+      summary: Execute MCP tool
+      operationId: executeMcpTool
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/McpExecuteRequest'
+      responses:
+        '200':
+          description: Tool execution result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/McpExecuteResult'
+        '403':
+          description: Tool not in allowlist
+        '429':
+          description: Rate limit exceeded
+
+  /mcp/audit:
+    get:
+      tags: [MCP]
+      summary: Get MCP audit log
+      operationId: getMcpAuditLog
+      parameters:
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/PageToken'
+        - name: toolName
+          in: query
+          schema:
+            type: string
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuditLogEntry'
+                  nextPageToken:
+                    type: string
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+
+  parameters:
+    ContractId:
+      name: contractId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    
+    PageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    
+    PageToken:
+      name: pageToken
+      in: query
+      schema:
+        type: string
+
+  schemas:
+    # ============================================================
+    # CONTRACTS
+    # ============================================================
+    Contract:
+      type: object
+      required: [id, name, version, schema, status, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+        schema:
+          $ref: '#/components/schemas/ContractSchema'
+        status:
+          type: string
+          enum: [draft, active, archived]
+        tags:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ContractCreate:
+      type: object
+      required: [name, schema]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+        schema:
+          $ref: '#/components/schemas/ContractSchema'
+        tags:
+          type: array
+          items:
+            type: string
+
+    ContractUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        schema:
+          $ref: '#/components/schemas/ContractSchema'
+        status:
+          type: string
+          enum: [draft, active, archived]
+
+    ContractSchema:
+      type: object
+      required: [sections]
+      properties:
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContractSection'
+        validationRules:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationRule'
+
+    ContractSection:
+      type: object
+      required: [id, type]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [text, code, component, data, image]
+        required:
+          type: boolean
+          default: true
+        constraints:
+          type: object
+          additionalProperties: true
+
+    ValidationRule:
+      type: object
+      required: [id, type, expression]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [regex, schema, custom, wolfram]
+        expression:
+          type: string
+        errorMessage:
+          type: string
+
+    ContractList:
+      type: object
+      properties:
+        contracts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contract'
+        nextPageToken:
+          type: string
+        totalCount:
+          type: integer
+
+    ValidationRequest:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: object
+          additionalProperties: true
+        strict:
+          type: boolean
+          default: false
+
+    ValidationResult:
+      type: object
+      required: [valid, score]
+      properties:
+        valid:
+          type: boolean
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+        violations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Violation'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Violation'
+
+    Violation:
+      type: object
+      required: [ruleId, message, path]
+      properties:
+        ruleId:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+        severity:
+          type: string
+          enum: [error, warning, info]
+
+    # ============================================================
+    # CONVERGENCE
+    # ============================================================
+    ConvergenceSessionCreate:
+      type: object
+      required: [contractId, initialInput]
+      properties:
+        contractId:
+          type: string
+          format: uuid
+        initialInput:
+          type: object
+          additionalProperties: true
+        maxIterations:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 10
+        convergenceThreshold:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.95
+
+    ConvergenceSession:
+      type: object
+      required: [id, contractId, status, currentIteration, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        contractId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [running, converged, failed, max_iterations]
+        currentIteration:
+          type: integer
+        maxIterations:
+          type: integer
+        convergenceThreshold:
+          type: number
+        currentScore:
+          type: number
+        currentOutput:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+
+    IterationRequest:
+      type: object
+      properties:
+        feedback:
+          type: string
+        adjustments:
+          type: object
+          additionalProperties: true
+
+    IterationResult:
+      type: object
+      required: [iteration, score, output, converged]
+      properties:
+        iteration:
+          type: integer
+        score:
+          type: number
+        output:
+          type: object
+          additionalProperties: true
+        converged:
+          type: boolean
+        improvements:
+          type: array
+          items:
+            type: string
+
+    ConvergenceMetrics:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        iterations:
+          type: array
+          items:
+            type: object
+            properties:
+              number:
+                type: integer
+              score:
+                type: number
+              duration:
+                type: integer
+              tokensUsed:
+                type: integer
+        totalDuration:
+          type: integer
+        totalTokens:
+          type: integer
+        scoreHistory:
+          type: array
+          items:
+            type: number
+
+    # ============================================================
+    # FIGMA
+    # ============================================================
+    FigmaParseRequest:
+      type: object
+      required: [figmaJson]
+      properties:
+        figmaJson:
+          type: object
+          description: Raw Figma JSON export
+        options:
+          type: object
+          properties:
+            includeStyles:
+              type: boolean
+              default: true
+            flattenGroups:
+              type: boolean
+              default: false
+
+    FigmaParseResult:
+      type: object
+      required: [nodes, styles]
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FigmaNode'
+        styles:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FigmaStyle'
+        componentSets:
+          type: array
+          items:
+            type: string
+
+    FigmaNode:
+      type: object
+      required: [id, type, name]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [FRAME, GROUP, COMPONENT, INSTANCE, TEXT, RECTANGLE, ELLIPSE, VECTOR, LINE]
+        name:
+          type: string
+        bounds:
+          $ref: '#/components/schemas/Bounds'
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/FigmaNode'
+        styles:
+          type: object
+          additionalProperties: true
+
+    FigmaStyle:
+      type: object
+      properties:
+        fill:
+          type: string
+        stroke:
+          type: string
+        fontSize:
+          type: number
+        fontFamily:
+          type: string
+        fontWeight:
+          type: integer
+
+    Bounds:
+      type: object
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+        width:
+          type: number
+        height:
+          type: number
+
+    # ============================================================
+    # REACT
+    # ============================================================
+    ReactGenerateRequest:
+      type: object
+      required: [figmaNodes]
+      properties:
+        figmaNodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FigmaNode'
+        options:
+          type: object
+          properties:
+            framework:
+              type: string
+              enum: [react, react-native]
+              default: react
+            styling:
+              type: string
+              enum: [tailwind, css-modules, styled-components]
+              default: tailwind
+            typescript:
+              type: boolean
+              default: true
+
+    ReactGenerateResult:
+      type: object
+      required: [components]
+      properties:
+        components:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReactComponent'
+        sharedStyles:
+          type: string
+        index:
+          type: string
+
+    ReactComponent:
+      type: object
+      required: [name, code]
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        props:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+              required:
+                type: boolean
+        dependencies:
+          type: array
+          items:
+            type: string
+
+    # ============================================================
+    # MENDIX
+    # ============================================================
+    MendixGenerateRequest:
+      type: object
+      required: [components]
+      properties:
+        components:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReactComponent'
+        targetModule:
+          type: string
+        layoutTemplate:
+          type: string
+
+    MendixGenerateResult:
+      type: object
+      required: [pages, widgets]
+      properties:
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/MendixPage'
+        widgets:
+          type: array
+          items:
+            $ref: '#/components/schemas/MendixWidget'
+        mpkChanges:
+          type: object
+          additionalProperties: true
+
+    MendixPage:
+      type: object
+      required: [name, xml]
+      properties:
+        name:
+          type: string
+        xml:
+          type: string
+        layoutId:
+          type: string
+
+    MendixWidget:
+      type: object
+      required: [id, type]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        properties:
+          type: object
+          additionalProperties: true
+
+    # ============================================================
+    # EVIDENCE
+    # ============================================================
+    EvidencePackCreate:
+      type: object
+      required: [sessionId, type]
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [convergence, validation, deployment, audit]
+        metadata:
+          type: object
+          additionalProperties: true
+
+    EvidencePack:
+      type: object
+      required: [id, sessionId, type, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        sessionId:
+          type: string
+          format: uuid
+        type:
+          type: string
+        artifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceArtifact'
+        hash:
+          type: string
+          description: SHA-256 hash for integrity
+        signature:
+          type: string
+          description: Digital signature
+        createdAt:
+          type: string
+          format: date-time
+
+    EvidenceArtifact:
+      type: object
+      required: [id, type, content]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [log, metric, screenshot, diff, approval]
+        content:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+
+    # ============================================================
+    # VALIDATION
+    # ============================================================
+    ComputeValidationRequest:
+      type: object
+      required: [expressions]
+      properties:
+        expressions:
+          type: array
+          items:
+            type: object
+            required: [id, expression, expected]
+            properties:
+              id:
+                type: string
+              expression:
+                type: string
+              expected:
+                type: string
+              tolerance:
+                type: number
+
+    ComputeValidationResult:
+      type: object
+      required: [results, allValid]
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              valid:
+                type: boolean
+              computed:
+                type: string
+              expected:
+                type: string
+              difference:
+                type: number
+        allValid:
+          type: boolean
+        wolframSessionId:
+          type: string
+
+    # ============================================================
+    # MCP
+    # ============================================================
+    McpTool:
+      type: object
+      required: [name, description, inputSchema]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        inputSchema:
+          type: object
+          additionalProperties: true
+        riskLevel:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+        requiresApproval:
+          type: boolean
+
+    McpExecuteRequest:
+      type: object
+      required: [tool, input]
+      properties:
+        tool:
+          type: string
+        input:
+          type: object
+          additionalProperties: true
+        approvalToken:
+          type: string
+
+    McpExecuteResult:
+      type: object
+      required: [success, output]
+      properties:
+        success:
+          type: boolean
+        output:
+          type: object
+          additionalProperties: true
+        executionTime:
+          type: integer
+        auditId:
+          type: string
+
+    AuditLogEntry:
+      type: object
+      required: [id, timestamp, tool, action]
+      properties:
+        id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        tool:
+          type: string
+        action:
+          type: string
+        userId:
+          type: string
+        input:
+          type: object
+          additionalProperties: true
+          description: Redacted input
+        output:
+          type: object
+          additionalProperties: true
+          description: Redacted output
+        duration:
+          type: integer
+
+    # ============================================================
+    # COMMON
+    # ============================================================
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        requestId:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: UNAUTHORIZED
+            message: Invalid or missing API key
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: NOT_FOUND
+            message: Resource not found
+
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: VALIDATION_ERROR
+            message: Request validation failed
+            details:
+              fields:
+                - field: name
+                  error: Required field missing
