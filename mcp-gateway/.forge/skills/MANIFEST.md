@@ -1,5 +1,30 @@
 # ArcFoundry Skills Manifest
 
+## MANDATORY AT SESSION START
+
+**Before ANY work, execute:**
+```bash
+cat .forge/session-start.md  # Read checklist
+cat CLAUDE.md | head -50      # Load protocols
+```
+
+**Confirm in first response:**
+```
+=== SESSION START ===
+Turn: 0
+Protocols: CLAUDE.md ✅, MANIFEST.md ✅
+10-turn rule: Acknowledged
+Slop tests: Will run after code gen
+Task: [description]
+```
+
+## MANDATORY DURING SESSION
+
+1. **Track turns:** Include `[Turn N/10]` in every response
+2. **At Turn 10:** Execute compaction, reset to Turn 0
+3. **After code gen:** Run `bash .forge/slop-tests.sh`
+4. **Before COMPLETE:** Show coverage + classify uncovered lines
+
 ## Session Start Checklist
 1. Read this manifest
 2. Acknowledge protocols

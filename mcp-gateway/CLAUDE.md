@@ -100,6 +100,30 @@ This project uses the TRUE-RALPH Build System:
 - ❌ Hardcoded return values in security code
 - ❌ Claiming "complete" without test evidence
 
+## Mandatory Enforcement
+
+### Session Start
+Every session MUST begin with session-start checklist:
+```bash
+cat .forge/session-start.md
+```
+
+### Turn Counting
+Track turns in every response: `[Turn N/10]`
+At Turn 10: Execute compaction, reset to Turn 0.
+
+### Slop Tests
+After ANY code generation:
+```bash
+bash .forge/slop-tests.sh
+```
+
+### Anti-Patterns (Immediate Stop)
+- ❌ "Tests pass" without showing output
+- ❌ Claim complete without coverage check
+- ❌ Turn >10 without compaction
+- ❌ Skip slop tests after code gen
+
 ## Contacts
 - Owner: JT
 - Org: ArcFoundry
