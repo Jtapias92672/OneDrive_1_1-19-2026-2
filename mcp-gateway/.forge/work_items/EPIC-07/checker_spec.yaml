@@ -1,0 +1,132 @@
+# Epic 07 CheckerSpec: Agent Orchestration
+# Retroactive V&V audit using Epic 7.5 framework
+
+version: "1.0.0"
+
+workItem:
+  id: "EPIC-07"
+  title: "Agent Orchestration - Mayor-Worker Pattern"
+  type: feature
+  storyPoints: 8
+  touchedModules:
+    - ".forge/lib"
+    - ".forge/roles"
+
+intent:
+  summary: |
+    Implement the Mayor-Worker orchestration pattern for FORGE agents.
+    Provides task tracking via append-only ledger, hook lifecycle management,
+    and convoy-based work bundling for parallel dispatch.
+  acceptanceCriteria:
+    - "Tasks tracked via JSONL append-only ledger"
+    - "Hooks provide execution lifecycle (pending → active → complete)"
+    - "Convoys bundle tasks with dependency management"
+    - "Mayor (Orchestrator) delegates, never executes directly"
+    - "Workers isolated from each other"
+  context: |
+    Foundation for multi-agent coordination in FORGE platform.
+    Enables safe parallel execution with human-in-the-loop approval.
+
+risk:
+  level: medium
+  changeSurface: module
+  factors:
+    - "New coordination infrastructure"
+    - "Cross-role communication pattern"
+  mitigations:
+    - "Integration tests cover full lifecycle"
+    - "Append-only ledger prevents state corruption"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "TypeScript compiles without errors"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "All core interfaces exported from types.ts (10+)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-3"
+      description: "Ledger JSONL operations work (append, read, query)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-4"
+      description: "Hook lifecycle transitions correctly (pending → active → complete)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-5"
+      description: "Convoy creates with proper task dependencies"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-6"
+      description: "Integration tests pass"
+      priority: must
+      automated: true
+      testIds: ["integration.test.ts"]
+      evidenceType: test-result
+  notes: |
+    Technical verification focuses on runtime correctness
+    of the orchestration infrastructure.
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "Mayor-Worker pattern implemented (Orchestrator delegates, never executes)"
+      priority: must
+      automated: false
+      evidenceType: code-review
+    - id: "B-2"
+      description: "Worker isolation enforced (Workers unaware of each other)"
+      priority: must
+      automated: false
+      evidenceType: code-review
+    - id: "B-3"
+      description: "GUPP compliance (hooks trigger execution)"
+      priority: should
+      automated: true
+      evidenceType: test-result
+    - id: "B-4"
+      description: "MVC builder provides minimum viable context per role"
+      priority: should
+      automated: true
+      evidenceType: test-result
+  notes: |
+    Business validation ensures the Mayor-Worker pattern
+    is correctly implemented per FORGE architecture.
+
+testSuites:
+  membership:
+    - smoke
+  tags:
+    - "epic-07"
+    - "orchestration"
+    - "mayor-worker"
+  targetedTests:
+    - ".forge/lib/integration.test.ts"
+
+evidence:
+  required:
+    - test-results
+  optional:
+    - coverage-report
+  artifacts:
+    - name: "Integration Test Results"
+      path: ".forge/evidence/EPIC-07/integration-results.json"
+      description: "Epic 07 integration test output"
+
+definitionOfDone:
+  - "All V-* checks with priority 'must' pass"
+  - "All B-* checks with priority 'must' pass"
+  - "Integration tests demonstrate full lifecycle"
+  - "Role CLAUDE.md files document patterns"
+
+nonGoals:
+  - "UI for orchestration"
+  - "Production deployment configuration"
+  - "Performance optimization"
