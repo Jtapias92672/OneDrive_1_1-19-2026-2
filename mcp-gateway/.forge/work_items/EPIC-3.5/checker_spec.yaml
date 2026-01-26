@@ -1,0 +1,137 @@
+# Epic 3.5 CheckerSpec: Gateway Foundation
+# V&V audit using Epic 7.5 framework
+
+version: "1.0.0"
+
+workItem:
+  id: "EPIC-3.5"
+  title: "Gateway Foundation - Multi-tenant Security"
+  type: feature
+  storyPoints: 13
+  touchedModules:
+    - "tenant"
+    - "oauth"
+    - "sanitization"
+    - "approval"
+
+intent:
+  summary: |
+    Implement gateway foundation with multi-tenant isolation, OAuth 2.1 + PKCE,
+    output sanitization, PII detection, and approval workflows.
+  acceptanceCriteria:
+    - "Multi-tenant isolation (same-tenant allowed, cross-tenant blocked)"
+    - "Tenant context extraction from params/headers/user defaults"
+    - "OAuth 2.1 + PKCE with RFC 7636 compliance"
+    - "Output sanitization (SQL/command/prompt injection detection)"
+    - "PII detection (email, phone, SSN patterns)"
+    - "Approval flow (create→approve/deny, fail-closed timeout)"
+    - "Gateway 10-step pipeline integration"
+  context: |
+    Core security gateway layer providing tenant isolation and
+    input/output security controls.
+
+risk:
+  level: high
+  changeSurface: cross-module
+  factors:
+    - "Security-critical tenant isolation"
+    - "OAuth authentication flows"
+    - "PII handling requirements"
+  mitigations:
+    - "Comprehensive test coverage (762 tests)"
+    - "RFC compliance verification"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "TypeScript compiles without errors"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "Tenant isolation enforced (same-tenant allowed, cross-tenant blocked)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-3"
+      description: "OAuth 2.1 + PKCE implemented (RFC 7636)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-4"
+      description: "Sanitization detects SQL/command/prompt injection"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-5"
+      description: "PII detection works (email, phone, SSN)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-6"
+      description: "Tests pass (tenant, oauth, sanitization)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+  notes: |
+    Verification confirms core security controls function correctly.
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "Tenant context extraction from multiple sources"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "B-2"
+      description: "Approval flow supports create/approve/deny/timeout"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "B-3"
+      description: "Alerting types cover severity levels"
+      priority: should
+      automated: true
+      evidenceType: test-result
+    - id: "B-4"
+      description: "OAuth-tenant integration with session isolation"
+      priority: should
+      automated: true
+      evidenceType: code-review
+  notes: |
+    Business validation ensures gateway meets operational requirements.
+
+testSuites:
+  membership:
+    - smoke
+    - sanity
+    - regression
+  tags:
+    - "epic-3.5"
+    - "gateway"
+    - "security"
+  targetedTests:
+    - "tests/unit/tenant.test.ts"
+    - "tests/unit/oauth.test.ts"
+    - "tests/unit/sanitization.test.ts"
+    - "tests/unit/alerting.test.ts"
+
+evidence:
+  required:
+    - test-results
+  optional:
+    - coverage-report
+  artifacts:
+    - name: "Gateway Test Results"
+      path: ".forge/evidence/EPIC-3.5/test-results.json"
+      description: "Epic 3.5 test output"
+
+definitionOfDone:
+  - "All V-* checks with priority 'must' pass"
+  - "All B-* checks with priority 'must' pass"
+  - "762 tests passing"
+  - "Tenant isolation verified"
+
+nonGoals:
+  - "External identity provider integration"
+  - "Custom OAuth flows"
