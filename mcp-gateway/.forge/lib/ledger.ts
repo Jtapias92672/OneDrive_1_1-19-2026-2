@@ -19,7 +19,7 @@ import {
   Convoy,
   ConvoyProgress,
   HookResult,
-} from './types';
+} from './types.js';
 
 // =============================================================================
 // Configuration

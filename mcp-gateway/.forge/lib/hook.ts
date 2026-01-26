@@ -20,8 +20,8 @@ import {
   Evidence,
   DiscoveredTask,
   TaskError,
-} from './types';
-import { generateId, hashContent, logEvent, updateTaskStatus } from './ledger';
+} from './types.js';
+import { generateId, hashContent, logEvent, updateTaskStatus } from './ledger.js';
 
 // =============================================================================
 // Configuration

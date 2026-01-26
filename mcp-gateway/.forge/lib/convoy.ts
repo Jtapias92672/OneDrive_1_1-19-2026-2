@@ -16,7 +16,7 @@ import {
   WorkerRole,
   SlingRequest,
   SlingResult,
-} from './types';
+} from './types.js';
 import {
   createTask,
   createConvoy as ledgerCreateConvoy,
@@ -28,8 +28,8 @@ import {
   getReadyTasks,
   updateTaskStatus,
   generateId,
-} from './ledger';
-import { createHook } from './hook';
+} from './ledger.js';
+import { createHook } from './hook.js';
 
 // =============================================================================
 // Convoy Creation
