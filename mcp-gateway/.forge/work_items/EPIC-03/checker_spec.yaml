@@ -1,0 +1,136 @@
+# Epic 03 CheckerSpec: FORGE-C Core
+# V&V audit using Epic 7.5 framework
+
+version: "1.0.0"
+
+workItem:
+  id: "EPIC-03"
+  title: "FORGE-C Core - 10-Step Pipeline"
+  type: feature
+  storyPoints: 13
+  touchedModules:
+    - "server"
+    - "security"
+    - "cars"
+    - "approval"
+
+intent:
+  summary: |
+    Implement the 10-step FORGE-C pipeline: Authentication, Input Sanitization,
+    Tool Registry, Tool Integrity, CARS Risk Assessment, Human Approval,
+    Privacy Tokenization, Sandbox Execution, Response Detokenization, Audit Logging.
+  acceptanceCriteria:
+    - "Authentication via OAuth 2.1 + PKCE"
+    - "Input sanitization blocks dangerous patterns"
+    - "Tool registry with integrity verification"
+    - "CARS risk assessment with blocking"
+    - "Human approval gate with escalation"
+    - "Privacy tokenization with configurable patterns"
+    - "Sandbox execution based on risk level"
+    - "Audit logging for behavioral evidence"
+  context: |
+    Core security pipeline for MCP gateway.
+    Implements defense-in-depth with multiple security layers.
+
+risk:
+  level: high
+  changeSurface: system-wide
+  factors:
+    - "Security-critical pipeline"
+    - "Multiple integration points"
+  mitigations:
+    - "73 tests (47 unit + 26 integration)"
+    - "Capability-driven verification"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "TypeScript compiles without errors"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "Server exports pipeline functions"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-3"
+      description: "CARS risk assessment implemented"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-4"
+      description: "Approval flow with escalation"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-5"
+      description: "Security index exports all controls"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-6"
+      description: "Tests pass (73 total)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+  notes: |
+    Verification confirms 10-step pipeline implementation.
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "10-step pipeline executes in order"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "B-2"
+      description: "Risk assessment blocks high-risk operations"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "B-3"
+      description: "Audit logging captures behavioral evidence"
+      priority: should
+      automated: true
+      evidenceType: test-result
+    - id: "B-4"
+      description: "Tool registry verifies integrity"
+      priority: should
+      automated: true
+      evidenceType: code-review
+  notes: |
+    Business validation ensures pipeline provides defense-in-depth.
+
+testSuites:
+  membership:
+    - smoke
+    - sanity
+    - regression
+  tags:
+    - "epic-03"
+    - "pipeline"
+    - "security"
+  targetedTests:
+    - "tests/unit/gateway.test.ts"
+    - "tests/integration/cars-execution-audit.test.ts"
+
+evidence:
+  required:
+    - test-results
+  optional:
+    - coverage-report
+  artifacts:
+    - name: "Pipeline Test Results"
+      path: ".forge/evidence/EPIC-03/test-results.json"
+      description: "Epic 03 test output"
+
+definitionOfDone:
+  - "All V-* checks with priority 'must' pass"
+  - "All B-* checks with priority 'must' pass"
+  - "10-step pipeline verified"
+  - "73 tests passing"
+
+nonGoals:
+  - "Custom authentication providers"
+  - "External tool registries"
