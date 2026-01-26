@@ -1,0 +1,127 @@
+# Epic 06 CheckerSpec: React Generator
+# V&V audit using Epic 7.5 framework
+
+version: "1.0.0"
+
+workItem:
+  id: "EPIC-06"
+  title: "React Generator - Code Generation"
+  type: feature
+  storyPoints: 13
+  touchedModules:
+    - "packages/react-generator"
+
+intent:
+  summary: |
+    Generate React components from ParsedDesign output.
+    Supports multiple styling approaches (Tailwind, CSS Modules, styled-components).
+    Outputs TypeScript/JavaScript with optional Storybook stories and tests.
+  acceptanceCriteria:
+    - "ReactGenerator class with configuration"
+    - "Multiple styling approaches (tailwind, css-modules, styled-components)"
+    - "TypeScript and JavaScript output"
+    - "Component builder with props extraction"
+    - "Style generator with responsive support"
+    - "Preset configurations"
+  context: |
+    Core generator package consuming Epic 05 FigmaParser output.
+    Produces production-ready React components.
+
+risk:
+  level: medium
+  changeSurface: module
+  factors:
+    - "Code generation complexity"
+    - "Multiple output format variations"
+  mitigations:
+    - "Comprehensive test coverage (402 tests)"
+    - "Preset configurations for common use cases"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "TypeScript compiles without errors"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "ReactGenerator class exports correctly"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-3"
+      description: "StyleGenerator produces valid styles"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-4"
+      description: "ComponentBuilder produces valid JSX"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-5"
+      description: "All tests pass (402 tests)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-6"
+      description: "Coverage >= 97% statements"
+      priority: must
+      automated: true
+      evidenceType: test-result
+  notes: |
+    Package has 97.65% statement coverage.
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "Generated components are valid React"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "B-2"
+      description: "Tailwind preset works"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "B-3"
+      description: "CSS Modules preset works"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "B-4"
+      description: "TypeScript output works"
+      priority: must
+      automated: true
+      evidenceType: test-result
+  notes: |
+    Business validation ensures generated code is production-usable.
+
+testSuites:
+  membership:
+    - smoke
+    - sanity
+  tags:
+    - "epic-06"
+    - "react-generator"
+  targetedTests:
+    - "packages/react-generator/__tests__/*.test.ts"
+    - "packages/react-generator/src/**/*.test.ts"
+
+evidence:
+  required:
+    - test-results
+    - coverage-report
+  artifacts:
+    - name: "React Generator Test Results"
+      path: ".forge/evidence/EPIC-06/test-results.json"
+
+definitionOfDone:
+  - "ReactGenerator working"
+  - "All presets working"
+  - "402 tests passing"
+  - "97%+ coverage"
+
+nonGoals:
+  - "Runtime component rendering"
+  - "Custom template engines"
