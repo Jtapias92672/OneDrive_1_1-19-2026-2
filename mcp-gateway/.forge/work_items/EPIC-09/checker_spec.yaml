@@ -1,0 +1,124 @@
+# Epic 09 CheckerSpec: Infrastructure
+# V&V audit using Epic 7.5 framework
+
+version: "1.0.0"
+
+workItem:
+  id: "EPIC-09"
+  title: "Infrastructure - AWS Terraform Modules"
+  type: feature
+  storyPoints: 8
+  touchedModules:
+    - "infrastructure/terraform/modules/vpc"
+    - "infrastructure/terraform/modules/lambda"
+    - "infrastructure/terraform/modules/bedrock"
+    - "infrastructure/terraform/environments/prod"
+
+intent:
+  summary: |
+    AWS infrastructure as code using Terraform.
+    VPC with multi-AZ subnets, NAT Gateway, VPC Endpoints.
+    Lambda module with security groups and Bedrock integration.
+  acceptanceCriteria:
+    - "VPC module with public/private subnets"
+    - "NAT Gateway for outbound connectivity"
+    - "Bedrock VPC Endpoint for private AI access"
+    - "Lambda module with security group wiring"
+    - "Root module wiring VPC outputs to Lambda"
+    - "Terraform fmt passes"
+  context: |
+    Infrastructure foundation for FORGE platform on AWS.
+    Enables Lambda functions to invoke Bedrock models securely.
+
+risk:
+  level: high
+  changeSurface: cross-module
+  factors:
+    - "Production infrastructure"
+    - "Security group configuration"
+    - "VPC endpoint policies"
+  mitigations:
+    - "terraform fmt validation"
+    - "Module isolation"
+    - "VPC Flow Logs for monitoring"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "Terraform fmt passes on all modules"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "VPC module creates public/private subnets"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-3"
+      description: "NAT Gateway configured"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-4"
+      description: "Bedrock VPC Endpoint configured"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-5"
+      description: "Lambda security groups wired"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-6"
+      description: "Root module wires VPC to Lambda"
+      priority: must
+      automated: true
+      evidenceType: code-review
+  notes: |
+    Actual deployment requires AWS credentials/backend bucket.
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "Lambda can reach Bedrock via VPC Endpoint"
+      priority: must
+      automated: false
+      evidenceType: code-review
+    - id: "B-2"
+      description: "VPC Flow Logs enabled for security monitoring"
+      priority: should
+      automated: true
+      evidenceType: code-review
+    - id: "B-3"
+      description: "Endpoint policy restricts to Bedrock actions"
+      priority: should
+      automated: true
+      evidenceType: code-review
+  notes: |
+    Full deployment validation requires AWS environment.
+
+testSuites:
+  membership:
+    - smoke
+  tags:
+    - "epic-09"
+    - "infrastructure"
+    - "terraform"
+  targetedTests: []
+
+evidence:
+  required:
+    - terraform-fmt
+  artifacts:
+    - name: "Terraform Format Check"
+      path: ".forge/evidence/EPIC-09/terraform-fmt.txt"
+
+definitionOfDone:
+  - "VPC module complete"
+  - "Lambda module complete"
+  - "Bedrock endpoint configured"
+  - "terraform fmt passes"
+
+nonGoals:
+  - "Actual AWS deployment in audit"
+  - "Cost optimization"
