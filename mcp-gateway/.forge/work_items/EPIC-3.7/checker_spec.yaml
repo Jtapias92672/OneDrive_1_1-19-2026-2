@@ -1,0 +1,102 @@
+# Epic 3.7 CheckerSpec: Compliance & Validation
+# V&V audit using Epic 7.5 framework
+
+version: "1.0.0"
+
+workItem:
+  id: "EPIC-3.7"
+  title: "Compliance & Validation - Sigstore/SLSA"
+  type: feature
+  storyPoints: 5
+  touchedModules:
+    - "supply-chain"
+
+intent:
+  summary: |
+    Implement compliance verification using real Sigstore signatures and
+    SLSA provenance. Includes X.509 parsing and strict builder validation.
+  acceptanceCriteria:
+    - "Real Sigstore signature verification"
+    - "Real SLSA provenance verification"
+    - "X.509 certificate parsing"
+    - "Strict builder URL matching"
+  context: |
+    Sub-epic of Epic 3.5. Overlaps with Epic 08 (Evidence Packs).
+    Provides supply chain integrity verification.
+
+risk:
+  level: high
+  changeSurface: module
+  factors:
+    - "Cryptographic verification"
+    - "External API dependencies"
+  mitigations:
+    - "Real sigstore library"
+    - "Fail-closed on verification failure"
+
+verification:
+  checks:
+    - id: "V-1"
+      description: "TypeScript compiles without errors"
+      priority: must
+      automated: true
+      evidenceType: test-result
+    - id: "V-2"
+      description: "Sigstore library used for verification"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-3"
+      description: "SLSA provenance verification implemented"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "V-4"
+      description: "Tests pass (signature + provenance)"
+      priority: must
+      automated: true
+      evidenceType: test-result
+  notes: |
+    Note: Overlaps with Epic 08 audit - same supply-chain module.
+
+validation:
+  checks:
+    - id: "B-1"
+      description: "Integrates with Epic 3.6 security layer"
+      priority: must
+      automated: true
+      evidenceType: code-review
+    - id: "B-2"
+      description: "Strict builder validation (no fuzzy matching)"
+      priority: should
+      automated: true
+      evidenceType: code-review
+  notes: |
+    Business validation ensures compliance requirements met.
+
+testSuites:
+  membership:
+    - smoke
+    - sanity
+  tags:
+    - "epic-3.7"
+    - "compliance"
+    - "sigstore"
+  targetedTests:
+    - "tests/unit/signature-verification.test.ts"
+    - "tests/unit/provenance-verification.test.ts"
+
+evidence:
+  required:
+    - test-results
+  artifacts:
+    - name: "Compliance Test Results"
+      path: ".forge/evidence/EPIC-3.7/test-results.json"
+
+definitionOfDone:
+  - "Real sigstore verification"
+  - "Real SLSA verification"
+  - "Tests passing"
+
+nonGoals:
+  - "Custom certificate authorities"
