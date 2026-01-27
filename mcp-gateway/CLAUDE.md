@@ -132,6 +132,37 @@ Status: COMPLETE (all capabilities verified)
 
 ## SESSION DISCIPLINE
 
+### Session Management Commands
+
+| Command | Purpose | When to Use |
+|---------|---------|-------------|
+| `/clear` | Reset everything EXCEPT CLAUDE.md | After failed approach, before new strategy |
+| `/compact` | Summarize progress, compress context | Mid-session when responses slow or drift detected |
+
+### Thinking Budget Allocation
+
+Use these keywords to allocate reasoning budget:
+
+| Keyword | Use Case | Example |
+|---------|----------|---------|
+| `think` | Standard decisions | "Think about the best file structure" |
+| `think hard` | Architectural choices, refactors | "Think hard about how to restructure this service" |
+| `ultrathink` | High-stakes decisions, multiple valid paths | "Ultrathink about the migration strategy" |
+
+**When to Trigger Extended Thinking:**
+- Before any file with 200+ lines of changes
+- Before architectural decisions affecting 3+ files
+- When multiple valid approaches exist
+- Before deleting or significantly refactoring existing code
+
+### Operator Controls
+
+| Action | Key | Use Case |
+|--------|-----|----------|
+| **Stop execution** | `ESC` | Hallucination detected, wrong path |
+| **Jump back** | `ESC` x2 | Return to previous decision point |
+| **Hard stop** | `Ctrl+C` | Emergency abort |
+
 ### Turn Counting (MANDATORY)
 
 Track in every response: `[Turn N/10]`
@@ -152,6 +183,19 @@ Track in every response: `[Turn N/10]`
 | 60K tokens | Evaluate progress, consider session split |
 | 80K tokens | STOP, commit, handoff to fresh session |
 | Context compacted | Quality audit required in fresh session |
+
+### Command Output Guardrails (ENFORCED)
+
+| Command Type | Max Lines | Pattern |
+|--------------|-----------|---------|
+| `npm test` | 20 lines | `\| tail -20` |
+| `npm run build` | 15 lines | `\| tail -15` |
+| `cat` / file view | 100 lines | Use `head -100` or line ranges |
+| `find` / `ls -R` | 50 lines | `\| head -50` |
+| `git diff` | stat only | `--stat` (no full diffs) |
+| `git log` | 5 commits | `-5` max |
+
+**VIOLATION = CONTEXT BLOWOUT = SESSION DEATH**
 
 ### Per-Phase Reporting
 
@@ -183,11 +227,92 @@ Proceeding to Phase N+1 / Requesting session split
 
 ---
 
+## CODEBASE NAVIGATION
+
+### Preferred: Native CLI Tools
+
+Use grep/find/glob for codebase search — reads actual current files, not stale indexes.
+
+```bash
+# Find implementations
+grep -r "functionName" src/ --include="*.ts" | head -20
+
+# Find files by pattern
+find . -name "*.service.ts" -type f | head -30
+
+# Count occurrences
+grep -c "pattern" src/**/*.ts
+```
+
+**Why CLI > RAG for Code:**
+- No index drift
+- Syntax-aware (actual file content)
+- Matches how senior engineers navigate repos
+- Respects .gitignore patterns
+
+---
+
+## SESSION HANDOFF PROTOCOL
+
+### Persistent Handoff File: `TICKET.md`
+
+At cycle limit OR session end, create/update `TICKET.md` in repo root:
+
+```markdown
+# TICKET.md — Session Handoff
+
+## Last Session
+- **Date:** [date]
+- **Cycles:** [N]/10
+- **Commit:** [hash]
+
+## Completed
+- [x] Task 1
+- [x] Task 2
+
+## In Progress
+- [ ] Task 3 — stopped at: [specific point]
+
+## Next Session Must
+1. [Specific first action]
+2. [Specific second action]
+
+## Context Notes
+- [Any decisions made that affect next steps]
+- [Any blockers discovered]
+```
+
+### Handoff Rules
+1. TICKET.md is committed with session-end commit
+2. Next session reads TICKET.md FIRST before any work
+3. TICKET.md is updated, not replaced (preserves history)
+
+---
+
+## VERIFICATION-FIRST DEVELOPMENT
+
+Every file creation follows:
+
+1. **Declare expected output** before implementation
+2. **Create test file** before or alongside implementation
+3. **Run tests** after every file change
+4. **Fix failures** before proceeding
+5. **Commit** only when tests pass
+
+### Test Command Pattern (ALWAYS)
+```bash
+npm test -- --testPathPattern=[pattern] 2>&1 | tail -20
+```
+
+Never run unbounded `npm test` without tail.
+
+---
+
 ## Epic Tracking
 See: `.forge/progress.md`
 
-Current: Post-Epic 7.5 (V&V Framework complete)
-Completed: Epics 00-07, Epic 7.5 (V&V Framework)
+Current: Epic 14 complete, Epic 11 scaffolded
+Completed: Epics 00-07, 7.5, 10b, 13, 14, 15
 
 ## Skills
 See: `.forge/skills/MANIFEST.md`
