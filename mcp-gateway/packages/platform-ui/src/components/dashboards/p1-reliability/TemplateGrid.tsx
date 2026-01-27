@@ -1,6 +1,8 @@
 'use client';
 
+import { useCallback } from 'react';
 import { Template } from '@/lib/persona/dashboard-types';
+import { forgeSignals } from '@/lib/signals';
 
 interface TemplateGridProps {
   templates: Template[];
@@ -8,6 +10,17 @@ interface TemplateGridProps {
 }
 
 export function TemplateGrid({ templates, onSelectTemplate }: TemplateGridProps) {
+  const handleTemplateClick = useCallback(
+    (template: Template) => {
+      forgeSignals.track('feature_discovered', {
+        featureId: 'template',
+        featureName: template.name,
+        templateId: template.id,
+      });
+      onSelectTemplate?.(template);
+    },
+    [onSelectTemplate]
+  );
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 h-full">
       <div className="p-4 border-b border-gray-100">
@@ -23,7 +36,7 @@ export function TemplateGrid({ templates, onSelectTemplate }: TemplateGridProps)
             <TemplateCard
               key={template.id}
               template={template}
-              onClick={() => onSelectTemplate?.(template)}
+              onClick={() => handleTemplateClick(template)}
             />
           ))}
         </div>

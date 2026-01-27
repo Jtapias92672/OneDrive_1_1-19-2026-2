@@ -1,5 +1,8 @@
 'use client';
 
+import { useCallback } from 'react';
+import { forgeSignals } from '@/lib/signals';
+
 interface HelpWidgetProps {
   onChat?: () => void;
   onDocs?: () => void;
@@ -7,6 +10,13 @@ interface HelpWidgetProps {
 }
 
 export function HelpWidget({ onChat, onDocs, onTutorials }: HelpWidgetProps) {
+  const handleHelpClick = useCallback(
+    (type: 'chat' | 'docs' | 'videos', callback?: () => void) => {
+      forgeSignals.track('help_requested', { helpType: type });
+      callback?.();
+    },
+    []
+  );
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 h-full">
       <div className="p-4 border-b border-gray-100">
@@ -17,18 +27,18 @@ export function HelpWidget({ onChat, onDocs, onTutorials }: HelpWidgetProps) {
         <HelpLink
           icon={<ChatIcon />}
           label="Chat with Support"
-          onClick={onChat}
+          onClick={() => handleHelpClick('chat', onChat)}
           primary
         />
         <HelpLink
           icon={<DocsIcon />}
           label="View Documentation"
-          onClick={onDocs}
+          onClick={() => handleHelpClick('docs', onDocs)}
         />
         <HelpLink
           icon={<VideoIcon />}
           label="Watch Tutorial Videos"
-          onClick={onTutorials}
+          onClick={() => handleHelpClick('videos', onTutorials)}
         />
 
         <div className="pt-3 border-t border-gray-100">

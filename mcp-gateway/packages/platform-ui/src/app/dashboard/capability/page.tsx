@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { P3Dashboard } from '@/components/dashboards/p3-capability';
 import { useP3Dashboard } from '@/hooks/useP3Dashboard';
@@ -9,6 +10,7 @@ import {
   mockRecentTasks,
   mockExperimentalFeatures,
 } from '@/lib/persona/capability-mock-data';
+import { forgeSignals } from '@/lib/signals';
 
 export default function CapabilityDashboardPage() {
   const router = useRouter();
@@ -21,6 +23,11 @@ export default function CapabilityDashboardPage() {
     error,
     analyzeTask,
   } = useP3Dashboard();
+
+  // Track page view
+  useEffect(() => {
+    forgeSignals.track('page_viewed', { page: 'dashboard/capability' });
+  }, []);
 
   // Use mock data as fallback during development
   const displayFrontierMap = frontierMap ?? mockFrontierMap;

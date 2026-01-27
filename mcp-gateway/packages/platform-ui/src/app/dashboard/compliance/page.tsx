@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { P2Dashboard } from '@/components/dashboards/p2-compliance';
 import { useP2Dashboard } from '@/hooks/useP2Dashboard';
@@ -11,6 +12,7 @@ import {
   mockOrganizationPolicy,
   mockAuditSummary,
 } from '@/lib/persona/compliance-mock-data';
+import { forgeSignals } from '@/lib/signals';
 
 export default function ComplianceDashboardPage() {
   const router = useRouter();
@@ -24,6 +26,11 @@ export default function ComplianceDashboardPage() {
     isLoading,
     error,
   } = useP2Dashboard();
+
+  // Track page view
+  useEffect(() => {
+    forgeSignals.track('page_viewed', { page: 'dashboard/compliance' });
+  }, []);
 
   // Use mock data as fallback during development
   const displayComplianceStatus = complianceStatus ?? mockComplianceStatus;

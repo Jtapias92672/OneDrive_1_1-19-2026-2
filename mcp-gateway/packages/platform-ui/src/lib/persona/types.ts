@@ -263,3 +263,125 @@ export interface SubmitOnboardingResponse {
   confidence: number;
   dashboardConfig: DashboardConfig;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BEHAVIORAL SIGNAL TYPES (US-15.6, US-15.7)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type SignalType =
+  // Task lifecycle
+  | 'task_started'
+  | 'task_completed'
+  | 'task_abandoned'
+
+  // Output evaluation
+  | 'output_accepted'
+  | 'output_rejected'
+
+  // Help & discovery
+  | 'help_requested'
+  | 'feature_discovered'
+  | 'feature_ignored'
+
+  // Navigation
+  | 'page_viewed'
+  | 'widget_interacted'
+
+  // Persona signals
+  | 'persona_override'
+  | 'progressive_question_answered'
+  | 'progressive_question_skipped';
+
+export interface BehaviorSignal {
+  id: string;
+  userId: string;
+  sessionId: string;
+  signalType: SignalType;
+  context?: Record<string, unknown>;
+  clientVersion?: string;
+  platform?: string;
+  createdAt: Date;
+}
+
+export interface SignalBatch {
+  signals: BehaviorSignal[];
+  batchId: string;
+  clientTimestamp: Date;
+}
+
+export interface IngestSignalsRequest {
+  batch: SignalBatch;
+}
+
+export interface IngestSignalsResponse {
+  accepted: number;
+  rejected: number;
+  errors?: { signalId: string; reason: string }[];
+}
+
+// Critical signals exempt from throttling
+export const CRITICAL_SIGNALS: SignalType[] = [
+  'task_completed',
+  'task_abandoned',
+  'error_encountered' as SignalType, // Will be added to type if needed
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROGRESSIVE PROFILING TYPES (US-15.7)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ProgressiveTrigger =
+  | 'first_complex_task'
+  | 'first_failure'
+  | 'first_success'
+  | 'day_7_checkin';
+
+export interface ProgressiveQuestion {
+  id: string;
+  trigger: ProgressiveTrigger;
+  questionText: string;
+  inputType: 'text' | 'select' | 'rating';
+  options?: string[];
+  skippable: boolean;
+}
+
+export interface ProgressiveQuestionRecord {
+  questionId: string;
+  trigger: ProgressiveTrigger;
+  askedAt: Date;
+  answeredAt?: Date;
+  response?: string;
+  skipped: boolean;
+}
+
+export const PROGRESSIVE_QUESTIONS: ProgressiveQuestion[] = [
+  {
+    id: 'pq-first-complex',
+    trigger: 'first_complex_task',
+    questionText: "What's the context for this project?",
+    inputType: 'text',
+    skippable: true,
+  },
+  {
+    id: 'pq-first-failure',
+    trigger: 'first_failure',
+    questionText: 'What went wrong?',
+    inputType: 'text',
+    skippable: true,
+  },
+  {
+    id: 'pq-first-success',
+    trigger: 'first_success',
+    questionText: 'What made this work?',
+    inputType: 'text',
+    skippable: true,
+  },
+  {
+    id: 'pq-day-7',
+    trigger: 'day_7_checkin',
+    questionText: "How's Forge working for you?",
+    inputType: 'rating',
+    options: ['1', '2', '3', '4', '5'],
+    skippable: true,
+  },
+];

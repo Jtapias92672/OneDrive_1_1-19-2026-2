@@ -1,13 +1,20 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { P1Dashboard } from '@/components/dashboards/p1-reliability';
 import { useP1Dashboard } from '@/hooks/useP1Dashboard';
 import { mockReliabilityMetrics, mockTemplates, mockProjects, mockSkillProgress } from '@/lib/persona/mock-data';
+import { forgeSignals } from '@/lib/signals';
 
 export default function ReliabilityDashboardPage() {
   const router = useRouter();
   const { metrics, templates, projects, skillProgress, isLoading, error } = useP1Dashboard();
+
+  // Track page view
+  useEffect(() => {
+    forgeSignals.track('page_viewed', { page: 'dashboard/reliability' });
+  }, []);
 
   // Use mock data as fallback during development
   const displayMetrics = metrics ?? mockReliabilityMetrics;
