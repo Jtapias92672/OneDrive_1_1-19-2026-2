@@ -391,7 +391,8 @@ export class MockMendixClient implements IMendixClient {
   }
 
   async getAppByName(name: string): Promise<MendixProject | null> {
-    for (const project of this.mockProjects.values()) {
+    const projects = Array.from(this.mockProjects.values());
+    for (const project of projects) {
       if (project.name === name) return project;
     }
     return null;
