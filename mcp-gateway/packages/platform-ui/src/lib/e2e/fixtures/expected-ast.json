@@ -1,0 +1,88 @@
+{
+  "nodes": [
+    {
+      "id": "1:1",
+      "type": "Component",
+      "name": "LoginForm",
+      "props": {
+        "width": 400,
+        "height": 300
+      },
+      "children": [
+        {
+          "id": "1:2",
+          "type": "Input",
+          "name": "EmailInput",
+          "props": {
+            "width": 360,
+            "height": 40,
+            "inputType": "text"
+          }
+        },
+        {
+          "id": "1:3",
+          "type": "Input",
+          "name": "PasswordInput",
+          "props": {
+            "width": 360,
+            "height": 40,
+            "inputType": "password"
+          }
+        },
+        {
+          "id": "1:4",
+          "type": "Button",
+          "name": "SubmitButton",
+          "props": {
+            "width": 360,
+            "height": 48,
+            "variant": "primary"
+          },
+          "children": [
+            {
+              "id": "1:5",
+              "type": "Text",
+              "name": "ButtonText",
+              "props": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2:1",
+      "type": "Component",
+      "name": "Header",
+      "props": {
+        "width": 1200,
+        "height": 64
+      },
+      "children": [
+        {
+          "id": "2:2",
+          "type": "Image",
+          "name": "Logo",
+          "props": {
+            "width": 120,
+            "height": 40
+          }
+        },
+        {
+          "id": "2:3",
+          "type": "Container",
+          "name": "NavLinks",
+          "props": {
+            "width": 400,
+            "height": 24,
+            "layout": "horizontal"
+          }
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "sourceFile": "sample-figma-file.json",
+    "parsedAt": "2026-01-28T00:00:00Z",
+    "nodeCount": 8
+  }
+}

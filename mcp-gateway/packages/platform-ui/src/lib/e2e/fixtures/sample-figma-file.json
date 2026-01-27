@@ -1,0 +1,82 @@
+{
+  "document": {
+    "id": "0:0",
+    "name": "Document",
+    "type": "DOCUMENT",
+    "children": [
+      {
+        "id": "0:1",
+        "name": "Page 1",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "1:1",
+            "name": "LoginForm",
+            "type": "FRAME",
+            "absoluteBoundingBox": { "x": 0, "y": 0, "width": 400, "height": 300 },
+            "children": [
+              {
+                "id": "1:2",
+                "name": "EmailInput",
+                "type": "RECTANGLE",
+                "absoluteBoundingBox": { "x": 20, "y": 20, "width": 360, "height": 40 }
+              },
+              {
+                "id": "1:3",
+                "name": "PasswordInput",
+                "type": "RECTANGLE",
+                "absoluteBoundingBox": { "x": 20, "y": 80, "width": 360, "height": 40 }
+              },
+              {
+                "id": "1:4",
+                "name": "SubmitButton",
+                "type": "RECTANGLE",
+                "absoluteBoundingBox": { "x": 20, "y": 140, "width": 360, "height": 48 },
+                "children": [
+                  {
+                    "id": "1:5",
+                    "name": "ButtonText",
+                    "type": "TEXT"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "2:1",
+            "name": "Header",
+            "type": "FRAME",
+            "absoluteBoundingBox": { "x": 0, "y": 0, "width": 1200, "height": 64 },
+            "children": [
+              {
+                "id": "2:2",
+                "name": "Logo",
+                "type": "RECTANGLE",
+                "absoluteBoundingBox": { "x": 20, "y": 12, "width": 120, "height": 40 }
+              },
+              {
+                "id": "2:3",
+                "name": "NavLinks",
+                "type": "FRAME",
+                "absoluteBoundingBox": { "x": 500, "y": 20, "width": 400, "height": 24 }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "components": {
+    "1:1": { "key": "login-form", "name": "LoginForm" },
+    "2:1": { "key": "header", "name": "Header" }
+  },
+  "styles": {
+    "S:1": { "key": "primary-button", "name": "Primary Button" },
+    "S:2": { "key": "input-field", "name": "Input Field" }
+  },
+  "schemaVersion": 0,
+  "name": "FORGE Test Design",
+  "lastModified": "2026-01-28T00:00:00Z",
+  "thumbnailUrl": "",
+  "version": "1"
+}
