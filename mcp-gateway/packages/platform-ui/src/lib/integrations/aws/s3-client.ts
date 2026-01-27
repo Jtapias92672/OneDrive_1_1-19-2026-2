@@ -2,14 +2,25 @@
  * AWS S3 Client
  * Epic 11: External Integrations
  *
- * Interface for Amazon S3. Real implementation pending.
+ * Real implementation using @aws-sdk/client-s3
  */
+
+import {
+  S3Client as AWSS3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  ListObjectsV2Command,
+  HeadObjectCommand,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl as awsGetSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 export interface S3Config {
   region: string;
   bucket: string;
   accessKeyId?: string;
   secretAccessKey?: string;
+  endpoint?: string;
 }
 
 export interface S3Object {
@@ -17,6 +28,15 @@ export interface S3Object {
   size: number;
   lastModified: Date;
   etag: string;
+}
+
+export interface S3ObjectMetadata {
+  key: string;
+  size: number;
+  lastModified: Date;
+  etag: string;
+  contentType: string;
+  metadata: Record<string, string>;
 }
 
 export interface PutObjectRequest {
@@ -46,45 +66,149 @@ export interface ListObjectsResponse {
 }
 
 export interface IS3Client {
-  putObject(request: PutObjectRequest): Promise<{ etag: string }>;
-  getObject(key: string): Promise<GetObjectResponse>;
-  deleteObject(key: string): Promise<void>;
-  listObjects(request?: ListObjectsRequest): Promise<ListObjectsResponse>;
+  uploadFile(request: PutObjectRequest): Promise<{ etag: string }>;
+  downloadFile(key: string): Promise<GetObjectResponse>;
+  deleteFile(key: string): Promise<void>;
+  listFiles(request?: ListObjectsRequest): Promise<ListObjectsResponse>;
+  getFileMetadata(key: string): Promise<S3ObjectMetadata>;
   getSignedUrl(key: string, expiresIn?: number): Promise<string>;
 }
 
 export class S3Client implements IS3Client {
   private config: S3Config;
+  private client: AWSS3Client;
 
   constructor(config: S3Config) {
     this.config = config;
+    this.client = new AWSS3Client({
+      region: config.region,
+      ...(config.accessKeyId && config.secretAccessKey
+        ? {
+            credentials: {
+              accessKeyId: config.accessKeyId,
+              secretAccessKey: config.secretAccessKey,
+            },
+          }
+        : {}),
+      ...(config.endpoint ? { endpoint: config.endpoint } : {}),
+    });
   }
 
-  async putObject(request: PutObjectRequest): Promise<{ etag: string }> {
-    // TODO: Implement real AWS SDK call
-    // Requires @aws-sdk/client-s3
-    throw new Error('Not implemented: Real AWS S3 integration pending');
+  /**
+   * Upload a file to S3
+   */
+  async uploadFile(request: PutObjectRequest): Promise<{ etag: string }> {
+    const body = typeof request.body === 'string' ? Buffer.from(request.body) : request.body;
+
+    const command = new PutObjectCommand({
+      Bucket: this.config.bucket,
+      Key: request.key,
+      Body: body,
+      ContentType: request.contentType || 'application/octet-stream',
+      Metadata: request.metadata,
+    });
+
+    const response = await this.client.send(command);
+    return { etag: response.ETag || '' };
   }
 
-  async getObject(key: string): Promise<GetObjectResponse> {
-    // TODO: Implement real AWS SDK call
-    throw new Error('Not implemented: Real AWS S3 integration pending');
+  /**
+   * Download a file from S3
+   */
+  async downloadFile(key: string): Promise<GetObjectResponse> {
+    const command = new GetObjectCommand({
+      Bucket: this.config.bucket,
+      Key: key,
+    });
+
+    const response = await this.client.send(command);
+
+    // Convert stream to buffer
+    const chunks: Uint8Array[] = [];
+    const stream = response.Body as AsyncIterable<Uint8Array>;
+    for await (const chunk of stream) {
+      chunks.push(chunk);
+    }
+    const body = Buffer.concat(chunks);
+
+    return {
+      body,
+      contentType: response.ContentType || 'application/octet-stream',
+      contentLength: response.ContentLength || body.length,
+      metadata: response.Metadata || {},
+    };
   }
 
-  async deleteObject(key: string): Promise<void> {
-    // TODO: Implement real AWS SDK call
-    throw new Error('Not implemented: Real AWS S3 integration pending');
+  /**
+   * Delete a file from S3
+   */
+  async deleteFile(key: string): Promise<void> {
+    const command = new DeleteObjectCommand({
+      Bucket: this.config.bucket,
+      Key: key,
+    });
+
+    await this.client.send(command);
   }
 
-  async listObjects(request?: ListObjectsRequest): Promise<ListObjectsResponse> {
-    // TODO: Implement real AWS SDK call
-    throw new Error('Not implemented: Real AWS S3 integration pending');
+  /**
+   * List files in S3 with optional prefix
+   */
+  async listFiles(request?: ListObjectsRequest): Promise<ListObjectsResponse> {
+    const command = new ListObjectsV2Command({
+      Bucket: this.config.bucket,
+      Prefix: request?.prefix,
+      MaxKeys: request?.maxKeys,
+      ContinuationToken: request?.continuationToken,
+    });
+
+    const response = await this.client.send(command);
+
+    const objects: S3Object[] = (response.Contents || []).map((item) => ({
+      key: item.Key || '',
+      size: item.Size || 0,
+      lastModified: item.LastModified || new Date(),
+      etag: item.ETag || '',
+    }));
+
+    return {
+      objects,
+      isTruncated: response.IsTruncated || false,
+      nextContinuationToken: response.NextContinuationToken,
+    };
   }
 
+  /**
+   * Get file metadata without downloading the content
+   */
+  async getFileMetadata(key: string): Promise<S3ObjectMetadata> {
+    const command = new HeadObjectCommand({
+      Bucket: this.config.bucket,
+      Key: key,
+    });
+
+    const response = await this.client.send(command);
+
+    return {
+      key,
+      size: response.ContentLength || 0,
+      lastModified: response.LastModified || new Date(),
+      etag: response.ETag || '',
+      contentType: response.ContentType || 'application/octet-stream',
+      metadata: response.Metadata || {},
+    };
+  }
+
+  /**
+   * Generate a pre-signed URL for temporary access
+   */
   async getSignedUrl(key: string, expiresIn = 3600): Promise<string> {
-    // TODO: Implement real AWS SDK call
-    // Requires @aws-sdk/s3-request-presigner
-    throw new Error('Not implemented: Real AWS S3 integration pending');
+    const command = new GetObjectCommand({
+      Bucket: this.config.bucket,
+      Key: key,
+    });
+
+    return awsGetSignedUrl(this.client, command, { expiresIn });
   }
 
   /**
@@ -93,24 +217,33 @@ export class S3Client implements IS3Client {
   isConfigured(): boolean {
     return Boolean(this.config.region && this.config.bucket);
   }
+
+  /**
+   * Get the underlying AWS SDK client for advanced operations
+   */
+  getAwsClient(): AWSS3Client {
+    return this.client;
+  }
 }
 
 /**
- * Mock client for testing
+ * Mock client for testing (in-memory implementation)
  */
 export class MockS3Client implements IS3Client {
-  private storage: Map<string, { body: Buffer; contentType: string }> = new Map();
+  private storage: Map<string, { body: Buffer; contentType: string; metadata: Record<string, string> }> =
+    new Map();
 
-  async putObject(request: PutObjectRequest): Promise<{ etag: string }> {
+  async uploadFile(request: PutObjectRequest): Promise<{ etag: string }> {
     const body = typeof request.body === 'string' ? Buffer.from(request.body) : request.body;
     this.storage.set(request.key, {
       body,
       contentType: request.contentType || 'application/octet-stream',
+      metadata: request.metadata || {},
     });
     return { etag: `"mock-etag-${Date.now()}"` };
   }
 
-  async getObject(key: string): Promise<GetObjectResponse> {
+  async downloadFile(key: string): Promise<GetObjectResponse> {
     const obj = this.storage.get(key);
     if (!obj) {
       throw new Error(`Object not found: ${key}`);
@@ -119,15 +252,15 @@ export class MockS3Client implements IS3Client {
       body: obj.body,
       contentType: obj.contentType,
       contentLength: obj.body.length,
-      metadata: {},
+      metadata: obj.metadata,
     };
   }
 
-  async deleteObject(key: string): Promise<void> {
+  async deleteFile(key: string): Promise<void> {
     this.storage.delete(key);
   }
 
-  async listObjects(request?: ListObjectsRequest): Promise<ListObjectsResponse> {
+  async listFiles(request?: ListObjectsRequest): Promise<ListObjectsResponse> {
     const prefix = request?.prefix || '';
     const objects: S3Object[] = [];
 
@@ -145,6 +278,21 @@ export class MockS3Client implements IS3Client {
     return {
       objects,
       isTruncated: false,
+    };
+  }
+
+  async getFileMetadata(key: string): Promise<S3ObjectMetadata> {
+    const obj = this.storage.get(key);
+    if (!obj) {
+      throw new Error(`Object not found: ${key}`);
+    }
+    return {
+      key,
+      size: obj.body.length,
+      lastModified: new Date(),
+      etag: '"mock-etag"',
+      contentType: obj.contentType,
+      metadata: obj.metadata,
     };
   }
 
