@@ -37,3 +37,28 @@ export type {
 // Governance Gateway integration
 export { governanceGateway, GovernanceGateway } from './gateway';
 export type { GovernanceDecision, GovernanceEvaluationInput } from './gateway';
+
+// Audit Trail
+export { auditLogger, AuditLogger, auditStore, hashChain, HashChain } from './audit';
+export type {
+  AuditEvent,
+  AuditEventType,
+  AuditActor,
+  AuditQuery,
+  AuditExport,
+  AuditStats,
+  HashChainVerification,
+} from './audit';
+
+// Workflow Engine
+export { workflowEngine, WorkflowEngine, workflowStore } from './workflow';
+export { figmaToCodeWorkflow, ticketToPRWorkflow } from './workflow';
+export type {
+  Workflow,
+  WorkflowType,
+  WorkflowStatus,
+  WorkflowDefinition,
+  WorkflowStage,
+  StageResult,
+  WorkflowContext,
+} from './workflow';
