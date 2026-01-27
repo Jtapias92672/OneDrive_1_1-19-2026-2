@@ -102,7 +102,7 @@ echo -e "\n📊 3. Test counts by layer..."
 UNIT_COUNT=$(grep -r "describe\|it(" --include="*.test.ts" --exclude-dir="e2e" . 2>/dev/null | wc -l | tr -d ' ' || echo 0)
 STORY_COUNT=$(grep -r "describe\|it(" --include="*.story.test.ts" . 2>/dev/null | wc -l | tr -d ' ' || echo 0)
 # Count E2E tests from e2e directory (both .e2e.ts and .test.ts patterns)
-E2E_COUNT=$(grep -r "describe\|it(" --include="*.e2e.ts" --include="*.test.ts" ./src/lib/e2e ./e2e 2>/dev/null | wc -l | tr -d ' ' || echo 0)
+E2E_COUNT=$(grep -r "describe\|it(" --include="*.e2e.test.ts" ./packages/platform-ui/src/lib/e2e ./src/lib/e2e ./e2e 2>/dev/null | wc -l | tr -d ' ' || echo 0)
 
 echo "  Unit tests:  $UNIT_COUNT occurrences"
 echo "  Story tests: $STORY_COUNT occurrences"
@@ -127,8 +127,8 @@ fi
 echo -e "\n🏷️  4. E2E tag distribution..."
 
 # Check for tags in e2e directory (both patterns)
-SMOKE_TAGS=$(grep -r "@smoke" ./src/lib/e2e ./e2e 2>/dev/null | wc -l | tr -d ' ' || echo 0)
-SANITY_TAGS=$(grep -r "@sanity" ./src/lib/e2e ./e2e 2>/dev/null | wc -l | tr -d ' ' || echo 0)
+SMOKE_TAGS=$(grep -r "@smoke" ./packages/platform-ui/src/lib/e2e ./src/lib/e2e ./e2e 2>/dev/null | wc -l | tr -d ' ' || echo 0)
+SANITY_TAGS=$(grep -r "@sanity" ./packages/platform-ui/src/lib/e2e ./src/lib/e2e ./e2e 2>/dev/null | wc -l | tr -d ' ' || echo 0)
 
 echo "  @smoke tagged:  $SMOKE_TAGS"
 echo "  @sanity tagged: $SANITY_TAGS"

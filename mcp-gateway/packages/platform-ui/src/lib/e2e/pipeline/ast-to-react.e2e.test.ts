@@ -81,9 +81,9 @@ function getReactTag(type: string): string {
   }
 }
 
-describe('AST to React E2E', () => {
+describe('@sanity AST to React E2E', () => {
   describe('generateReactFromAST', () => {
-    it('generates React components from AST', () => {
+    it('@sanity generates React components from AST', () => {
       const ast = expectedAst as ASTFixture;
       const components = generateReactFromAST(ast);
 

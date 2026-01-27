@@ -72,9 +72,9 @@ function countNodes(nodes: unknown[]): number {
   return count;
 }
 
-describe('Figma to AST E2E', () => {
+describe('@sanity Figma to AST E2E', () => {
   describe('parseFigmaToAST', () => {
-    it('parses sample Figma file to AST', () => {
+    it('@sanity parses sample Figma file to AST', () => {
       const figma = sampleFigmaFile as FigmaFixture;
       const ast = parseFigmaToAST(figma);
 

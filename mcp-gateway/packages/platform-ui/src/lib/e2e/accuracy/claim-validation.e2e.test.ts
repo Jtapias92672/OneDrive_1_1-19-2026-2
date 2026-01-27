@@ -9,14 +9,14 @@ import { frontierService } from '@/lib/accuracy/frontier';
 import { calibrationService } from '@/lib/accuracy/calibration';
 import { confidenceCalculator } from '@/lib/accuracy/confidence';
 
-describe('Accuracy Claim Validation E2E', () => {
+describe('@sanity Accuracy Claim Validation E2E', () => {
   beforeEach(() => {
     calibrationService.reset();
     frontierService.reset();
   });
 
   describe('claim detection pipeline', () => {
-    it('detects claims in generated code comments', () => {
+    it('@sanity detects claims in generated code comments', () => {
       const code = `
         // This component renders 5 + 5 = 10 items
         // Created in 2013 when React was released
