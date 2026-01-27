@@ -24,7 +24,7 @@ export interface ProfileEvent {
   type: 'profile.created' | 'profile.updated' | 'profile.persona_changed' | 'profile.deleted';
   userId: string;
   timestamp: Date;
-  data?: Partial<ForgeUserProfile>;
+  data?: UpdateProfileRequest | { personaType: PersonaType };
   previousPersona?: PersonaType;
 }
 
