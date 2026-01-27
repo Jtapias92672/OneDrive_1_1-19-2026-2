@@ -23,10 +23,44 @@ export interface FigmaNode {
   constraints?: Constraints;
   fills?: Paint[];
   strokes?: Paint[];
+  strokeWeight?: number;
+  strokeAlign?: 'INSIDE' | 'OUTSIDE' | 'CENTER';
   effects?: Effect[];
   opacity?: number;
   visible?: boolean;
   locked?: boolean;
+
+  // Text properties
+  characters?: string;
+  style?: TextStyle;
+
+  // Auto-layout properties
+  layoutMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL';
+  itemSpacing?: number;
+  paddingTop?: number;
+  paddingRight?: number;
+  paddingBottom?: number;
+  paddingLeft?: number;
+  primaryAxisAlignItems?: 'MIN' | 'CENTER' | 'MAX' | 'SPACE_BETWEEN';
+  counterAxisAlignItems?: 'MIN' | 'CENTER' | 'MAX' | 'BASELINE';
+
+  // Corner radius
+  cornerRadius?: number;
+  rectangleCornerRadii?: [number, number, number, number];
+}
+
+export interface TextStyle {
+  fontFamily: string;
+  fontPostScriptName?: string;
+  fontStyle?: string;
+  fontWeight: number;
+  fontSize: number;
+  textAlignHorizontal: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED';
+  textAlignVertical?: 'TOP' | 'CENTER' | 'BOTTOM';
+  letterSpacing?: number;
+  lineHeightPx?: number;
+  lineHeightPercent?: number;
+  lineHeightUnit?: string;
 }
 
 export type FigmaNodeType =
@@ -91,6 +125,9 @@ export interface Effect {
   type: 'INNER_SHADOW' | 'DROP_SHADOW' | 'LAYER_BLUR' | 'BACKGROUND_BLUR';
   visible: boolean;
   radius: number;
+  color?: Color;
+  offset?: { x: number; y: number };
+  spread?: number;
 }
 
 export interface FigmaClientConfig {
