@@ -11,10 +11,10 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:unit": "jest --testPathIgnorePatterns='e2e|story'",
-    "test:story": "jest --testPathPattern='story\\.test\\.ts$'",
-    "test:e2e": "jest --testPathPattern='e2e.*\\.test\\.ts$'",
-    "test:smoke": "jest --testPathPattern='e2e.*\\.test\\.ts$' --testNamePattern='@smoke'",
-    "test:sanity": "jest --testPathPattern='e2e.*\\.test\\.ts$' --testNamePattern='@sanity|@smoke'",
+    "test:story": "jest story.test.ts",
+    "test:e2e": "jest e2e",
+    "test:smoke": "jest e2e --testNamePattern='@smoke'",
+    "test:sanity": "jest e2e --testNamePattern='@sanity|@smoke'",
     "test:regression": "jest"
   },
   "dependencies": {
