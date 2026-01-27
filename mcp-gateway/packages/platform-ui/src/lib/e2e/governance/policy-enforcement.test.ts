@@ -61,10 +61,12 @@ describe('@sanity Governance Policy Enforcement E2E', () => {
         environment: 'development' as const,
         dataClassification: 1 as const,
         scope: 'single-file' as const,
+        workflowType: 'figma-to-code',
       };
 
       const action = {
         type: 'export' as const,
+        target: 'mendix-mpk',
         reversible: true,
         affectsExternalSystems: false,
         requiresApproval: false,
@@ -87,10 +89,12 @@ describe('@sanity Governance Policy Enforcement E2E', () => {
         environment: 'production' as const,
         dataClassification: 3 as const,
         scope: 'system-wide' as const,
+        workflowType: 'deployment',
       };
 
       const action = {
         type: 'deploy' as const,
+        target: 'production',
         reversible: false,
         affectsExternalSystems: true,
         requiresApproval: true,
@@ -107,7 +111,7 @@ describe('@sanity Governance Policy Enforcement E2E', () => {
   describe('audit logging', () => {
     it('logs audit entries', async () => {
       await auditLogger.log(
-        'action_executed',
+        'workflow.completed',
         { type: 'system', id: 'e2e-test' },
         'test-action',
         {
@@ -125,7 +129,7 @@ describe('@sanity Governance Policy Enforcement E2E', () => {
       // Log multiple entries
       for (let i = 0; i < 3; i++) {
         await auditLogger.log(
-          'action_executed',
+          'workflow.completed',
           { type: 'system', id: 'e2e-test' },
           `action-${i}`,
           {
@@ -147,7 +151,7 @@ describe('@sanity Governance Policy Enforcement E2E', () => {
 
     it('captures complete audit context', async () => {
       await auditLogger.log(
-        'action_executed',
+        'workflow.completed',
         { type: 'user', id: 'user-e2e' },
         'generate',
         {
@@ -177,13 +181,17 @@ describe('@sanity Governance Policy Enforcement E2E', () => {
         action: 'deploy',
         resourceType: 'deployment',
         environment: 'production' as const,
-        timestamp: new Date(),
+        dataClassification: 2 as const,
+        scope: 'single-file' as const,
+        workflowType: 'deployment',
       };
       const action = {
         type: 'deploy' as const,
+        target: 'production',
         reversible: false,
         affectsExternalSystems: true,
         requiresApproval: true,
+        estimatedImpact: 'high' as const,
       };
       const assessment = carsAssessor.assess(context, action);
       // Override risk level for test purposes

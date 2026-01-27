@@ -186,7 +186,7 @@ class PipelineOrchestrator {
 
     // Log to audit trail
     await auditLogger.log(
-      'workflow_completed',
+      'workflow.completed',
       { type: 'system', id: 'e2e-orchestrator' },
       'pipeline-complete',
       {

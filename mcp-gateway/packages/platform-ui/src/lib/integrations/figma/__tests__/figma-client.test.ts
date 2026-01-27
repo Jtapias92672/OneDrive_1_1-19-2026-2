@@ -5,48 +5,121 @@
 
 import { FigmaClient, MockFigmaClient, IFigmaClient } from '../figma-client';
 
-describe('FigmaClient', () => {
-  let client: FigmaClient;
+// Mock global fetch
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
 
+describe('FigmaClient', () => {
   beforeEach(() => {
-    client = new FigmaClient({ accessToken: 'test-token' });
+    mockFetch.mockClear();
+  });
+
+  describe('constructor', () => {
+    it('throws when no token provided', () => {
+      expect(() => new FigmaClient({ accessToken: '' })).toThrow(
+        'Figma access token required'
+      );
+    });
+
+    it('accepts valid token', () => {
+      const client = new FigmaClient({ accessToken: 'test-token' });
+      expect(client.isConfigured()).toBe(true);
+    });
   });
 
   describe('isConfigured', () => {
     it('returns true when token is set', () => {
+      const client = new FigmaClient({ accessToken: 'test-token' });
       expect(client.isConfigured()).toBe(true);
-    });
-
-    it('returns false when token is empty', () => {
-      const emptyClient = new FigmaClient({ accessToken: '' });
-      expect(emptyClient.isConfigured()).toBe(false);
     });
   });
 
-  describe('API methods throw not implemented', () => {
-    it('getFile throws', async () => {
-      await expect(client.getFile('file-key')).rejects.toThrow('Not implemented');
+  describe('API methods', () => {
+    let client: FigmaClient;
+
+    beforeEach(() => {
+      client = new FigmaClient({ accessToken: 'test-token' });
     });
 
-    it('getFileNodes throws', async () => {
-      await expect(client.getFileNodes('file-key', ['1:2'])).rejects.toThrow(
-        'Not implemented'
+    it('getFile calls API with correct URL and headers', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ name: 'Test File', document: {} }),
+      });
+
+      await client.getFile('file-key');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.figma.com/v1/files/file-key',
+        expect.objectContaining({
+          headers: { 'X-Figma-Token': 'test-token' },
+        })
       );
     });
 
-    it('getImages throws', async () => {
-      await expect(client.getImages('file-key', { ids: ['1:2'] })).rejects.toThrow(
-        'Not implemented'
+    it('getFile throws on API error', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        text: () => Promise.resolve('Not found'),
+      });
+
+      await expect(client.getFile('invalid-key')).rejects.toThrow('Figma API 404');
+    });
+
+    it('getFileNodes calls API with node IDs', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ nodes: {} }),
+      });
+
+      await client.getFileNodes('file-key', ['1:2', '3:4']);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('nodes?ids=1%3A2%2C3%3A4'),
+        expect.any(Object)
       );
     });
 
-    it('getTeamProjects throws', async () => {
-      await expect(client.getTeamProjects('team-id')).rejects.toThrow('Not implemented');
+    it('getImages calls API with correct params', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ images: {} }),
+      });
+
+      await client.getImages('file-key', { ids: ['1:2'], format: 'png', scale: 2 });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('images/file-key'),
+        expect.any(Object)
+      );
     });
 
-    it('getProjectFiles throws', async () => {
-      await expect(client.getProjectFiles('project-id')).rejects.toThrow(
-        'Not implemented'
+    it('getTeamProjects calls API', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ projects: [] }),
+      });
+
+      await client.getTeamProjects('team-id');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.figma.com/v1/teams/team-id/projects',
+        expect.any(Object)
+      );
+    });
+
+    it('getProjectFiles calls API', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ files: [] }),
+      });
+
+      await client.getProjectFiles('project-id');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.figma.com/v1/projects/project-id/files',
+        expect.any(Object)
       );
     });
   });
