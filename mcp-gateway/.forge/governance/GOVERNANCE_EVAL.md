@@ -1,248 +1,302 @@
-# FORGE Gate Evaluation Algorithm
+# GOVERNANCE_EVAL.md
+# Epic 7.5: Governance Evaluation Documentation
+# Updated: 2026-01-28 — E2E Testing Integration
 
-Documentation for how gates are evaluated in the V&V Quality Framework.
+## Purpose
 
-## Overview
+This document describes how gates evaluate conditions and integrate with the testing taxonomy to control work flow through the FORGE pipeline.
 
-Gates are checkpoints in the CI/CD pipeline that enforce quality standards before work can proceed. Each gate evaluates a set of conditions and returns either **AUTHORIZED** or **DENIED**.
+---
 
-## Evaluation Flow
+## Testing Hierarchy (Authoritative)
+
+### Visual Pipeline
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    GATE EVALUATION                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  1. LOAD CONTEXT                                            │
-│     ├── CheckerSpec for work item                           │
-│     ├── Current test suite results                          │
-│     ├── Coverage metrics                                    │
-│     └── Risk assessment                                     │
-│                                                             │
-│  2. CHECK REQUIRED SUITES                                   │
-│     ├── For each required suite:                            │
-│     │   └── If not passed → DENY                            │
-│     └── All passed → continue                               │
-│                                                             │
-│  3. CHECK TARGETED TESTS (if required)                      │
-│     ├── If required and not passed → DENY                   │
-│     └── Passed or not required → continue                   │
-│                                                             │
-│  4. EVALUATE DENY CONDITIONS                                │
-│     ├── For each denyIf condition:                          │
-│     │   ├── Evaluate expression against context             │
-│     │   ├── If true and not overridable → DENY              │
-│     │   └── If true and overridable → check override        │
-│     └── No denies triggered → continue                      │
-│                                                             │
-│  5. EVALUATE WARN CONDITIONS                                │
-│     └── Collect warnings (non-blocking)                     │
-│                                                             │
-│  6. CHECK APPROVAL REQUIREMENTS                             │
-│     ├── If required and not approved → DENY                 │
-│     └── Approved or not required → continue                 │
-│                                                             │
-│  7. RUN ADDITIONAL CHECKS                                   │
-│     ├── For each additionalCheck:                           │
-│     │   ├── Execute command                                 │
-│     │   └── If fails and required → DENY                    │
-│     └── All passed → continue                               │
-│                                                             │
-│  8. RETURN DECISION                                         │
-│     ├── No denies → AUTHORIZED                              │
-│     └── Any deny → DENIED with reasons                      │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         TESTING PIPELINE (Every Sprint)                       │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│   ┌─────────┐     ┌─────────────┐     ┌─────────┐     ┌────────────────┐    │
+│   │  UNIT   │ ──▶ │ STORY TEST  │ ──▶ │   E2E   │ ──▶ │ FULL REGRESSION│    │
+│   │  TESTS  │     │   CASES     │     │  TESTS  │     │                │    │
+│   └─────────┘     └─────────────┘     └─────────┘     └────────────────┘    │
+│       │                 │                  │                  │              │
+│    Developer         Tester            Tester         Automated CI          │
+│    per story        per story         per sprint        on release          │
+│                                                                               │
+│   ◄─────────────────── SCOPE INCREASES ────────────────────────────────────▶ │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Gate Types
+### Layer Definitions
 
-| Gate | Trigger | Purpose |
-|------|---------|---------|
-| `pr` | PR creation | Fast feedback before review |
-| `pre_merge` | Before merge to main | Quality check before integration |
-| `release_candidate` | Promotion to RC | Validation before staging |
-| `release` | Production release | Final quality gate |
-| `pre_dispatch` | Convoy dispatch | Ensure prerequisites for agents |
+| Layer | Owner | Cadence | CI Trigger | File Pattern |
+|-------|-------|---------|------------|--------------|
+| **Unit** | Developer | Per story | Every commit | `*.test.ts` |
+| **Story** | Tester | Per story | Every PR | `*.story.test.ts` |
+| **E2E** | Tester | Per sprint | Nightly | `*.e2e.ts` |
+| **Full Regression** | CI | On release | Pre-release | All above |
 
-## Condition Expressions
+---
 
-Conditions use a simple expression language:
+## Regression Mode Definitions (Authoritative)
 
-### Operators
+### Relationship Diagram
 
-| Operator | Example | Meaning |
-|----------|---------|---------|
-| `==` | `risk.level == 'high'` | Equality |
-| `!=` | `status != 'passed'` | Inequality |
-| `<` | `coverage < 80` | Less than |
-| `>` | `failures > 0` | Greater than |
-| `<=` | `points <= 5` | Less or equal |
-| `>=` | `reviewers >= 2` | Greater or equal |
-| `&&` | `a && b` | Logical AND |
-| `||` | `a || b` | Logical OR |
-
-### Context Variables
-
-| Variable | Type | Description |
-|----------|------|-------------|
-| `smoke.passed` | boolean | Smoke suite passed |
-| `smoke.failed` | number | Failed smoke tests count |
-| `sanity.passed` | boolean | Sanity suite passed |
-| `sanity.notRun` | boolean | Sanity suite not executed |
-| `regression.failed` | number | Failed regression tests |
-| `coverage` | number | Current coverage % |
-| `coverage.delta` | number | Coverage change |
-| `risk.level` | string | CARS risk level |
-| `checkerSpec.missing` | boolean | No CheckerSpec found |
-| `checkerSpec.invalid` | boolean | CheckerSpec fails validation |
-| `workItem.storyPoints` | number | Story point estimate |
-| `workItem.touchedModules` | number | Modules affected |
-| `verificationChecks.mustFailed` | number | Failed must-priority V checks |
-| `validationChecks.mustFailed` | number | Failed must-priority B checks |
-| `quarantine.inCriticalPath` | boolean | Quarantined test blocking |
-
-## Override Mechanism
-
-Some deny conditions can be overridden:
-
-```yaml
-denyIf:
-  - condition: "regression.failed > 0"
-    reason: "Regression tests failed"
-    overridable: true
-    overrideRequires: ["cto-approval", "documented-exception"]
+```
+┌───────────────────────────────────────────────────────────────┐
+│                     FULL REGRESSION                            │
+│  ┌─────────────────────────────────────────────────────────┐  │
+│  │                   ALL UNIT TESTS                         │  │
+│  │                   npm run test:unit                      │  │
+│  └─────────────────────────────────────────────────────────┘  │
+│  ┌─────────────────────────────────────────────────────────┐  │
+│  │               ALL STORY TEST CASES                       │  │
+│  │               npm run test:story                         │  │
+│  └─────────────────────────────────────────────────────────┘  │
+│  ┌─────────────────────────────────────────────────────────┐  │
+│  │                  ALL E2E TESTS                           │  │
+│  │                  npm run test:e2e                        │  │
+│  │  ┌─────────────────────────────────────────────────┐    │  │
+│  │  │              SANITY TEST (subset)                │    │  │
+│  │  │              @sanity + @smoke tags               │    │  │
+│  │  │  ┌───────────────────────────────────────┐      │    │  │
+│  │  │  │        SMOKE TEST (subset)            │      │    │  │
+│  │  │  │        @smoke tags only               │      │    │  │
+│  │  │  └───────────────────────────────────────┘      │    │  │
+│  │  └─────────────────────────────────────────────────┘    │  │
+│  └─────────────────────────────────────────────────────────┘  │
+│                                                               │
+│  npm run test:regression = ALL OF THE ABOVE                   │
+└───────────────────────────────────────────────────────────────┘
 ```
 
-Override requirements:
-1. All listed approvals must be obtained
-2. Override is logged in audit trail
-3. Reason must be documented
+### Mode Details
 
-## Complexity Rules
+| Mode | Definition | Includes Unit? | Includes Story? | E2E Scope |
+|------|------------|----------------|-----------------|-----------|
+| **Smoke** | Limited E2E test | ❌ No | ❌ No | @smoke only |
+| **Sanity** | Partial E2E test | ❌ No | ❌ No | @sanity + @smoke |
+| **Full Regression** | Extensive test | ✅ Yes | ✅ Yes | All E2E |
 
-### Max Active Work Items
+### Key Clarifications
 
-```yaml
-complexity:
-  maxActiveWorkItemsPerRun: 2
+1. **Smoke and Sanity are E2E subsets** — They do NOT include unit tests or story tests
+2. **Full Regression is the union** — It runs ALL layers, not just E2E
+3. **E2E grows each sprint** — As features are added, E2E coverage expands
+
+---
+
+## Gate-to-Test Mapping
+
+### Which Tests Run at Which Gate?
+
+| Gate | Unit | Story | E2E | Smoke | Sanity | Full Regression |
+|------|------|-------|-----|-------|--------|-----------------|
+| PR Merge | ✅ | ✅ | ❌ | ❌ | ⚠️ Optional | ❌ |
+| Nightly | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Pre-Release | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Post-Deployment | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| Sprint Boundary | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+### Gate Evaluation Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        GATE EVALUATION                               │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌──────────────┐                                                   │
+│  │ PR MERGE     │──▶ Unit ✓ + Story ✓ + TypeScript ✓ + Lint ✓      │
+│  │ Gate         │    = AUTHORIZED for merge                         │
+│  └──────────────┘                                                   │
+│         │                                                            │
+│         ▼                                                            │
+│  ┌──────────────┐                                                   │
+│  │ NIGHTLY      │──▶ Unit ✓ + Story ✓ + E2E ✓                      │
+│  │ Gate         │    = AUTHORIZED (build healthy)                   │
+│  └──────────────┘                                                   │
+│         │                                                            │
+│         ▼                                                            │
+│  ┌──────────────┐                                                   │
+│  │ PRE-RELEASE  │──▶ Full Regression ✓ (Unit + Story + E2E)        │
+│  │ Gate         │    + Security ✓ + Docs ✓                          │
+│  └──────────────┘    = AUTHORIZED for release                       │
+│         │                                                            │
+│         ▼                                                            │
+│  ┌──────────────┐                                                   │
+│  │ POST-DEPLOY  │──▶ Smoke ✓ (limited E2E subset)                  │
+│  │ Gate         │    = AUTHORIZED (stay deployed)                   │
+│  └──────────────┘    or DENIED → ROLLBACK                           │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-Prevents coordination collapse by limiting concurrent work.
+---
 
-**Rationale:** Brooks' Law - adding more parallel work increases communication overhead exponentially.
+## E2E Test Requirements
 
-### Decomposition Requirements
+### Sprint Requirements
 
-```yaml
-requireDecompositionIf:
-  storyPointsAtLeast: 13
-  touchedModulesAtLeast: 5
+Every sprint MUST:
+1. Add E2E tests for new features
+2. Maintain all existing E2E tests passing
+3. Tag new critical paths with `@smoke`
+4. Tag new major components with `@sanity`
+
+### E2E Test Structure
+
+```
+e2e/
+├── fixtures/                    # Test data
+│   ├── sample-figma-file.json
+│   └── expected-outputs/
+├── pipeline/                    # Pipeline flow tests
+│   ├── figma-to-ast.e2e.ts
+│   ├── ast-to-react.e2e.ts
+│   └── full-pipeline.e2e.ts    # @smoke
+├── orchestration/               # Agent tests
+│   ├── agent-flow.e2e.ts
+│   └── ledger-integration.e2e.ts
+├── governance/                  # Policy tests
+│   ├── policy-enforcement.e2e.ts  # @sanity
+│   └── audit-trail.e2e.ts
+└── accuracy/                    # Validation tests
+    ├── claim-validation.e2e.ts
+    └── calibration.e2e.ts
 ```
 
-Large work items must be broken down:
-- ≥13 story points → decompose
-- ≥5 modules touched → decompose
-
-**Rationale:** Cognitive load theory - humans can't effectively reason about large scope.
-
-### Integration Plan
-
-```yaml
-requireIntegrationPlanIfDecomposed: true
-```
-
-If work is decomposed, an integration plan is required to ensure pieces fit together.
-
-## Communication Policy
-
-### Risk-Based Escalation
-
-| Risk Level | Actions |
-|------------|---------|
-| Low | Standard review |
-| Medium | Standard review + warning |
-| High | Rich review + stakeholder notification |
-| Critical | Rich review + multiple channels + audit |
-
-### Rich Review
-
-High/Critical risk work requires "rich review":
-- Detailed explanation of changes
-- Risk mitigation documentation
-- Test evidence linked
-- Stakeholder sign-off
-
-## Audit Policy
-
-Random audit ensures quality standards are maintained:
-
-```yaml
-audit:
-  enabled: true
-  randomAuditRate: 0.1  # 10% of work items
-  alwaysAuditIf:
-    - "risk.level == 'critical'"
-    - "touchesSecurityCode"
-```
-
-**Purpose:** Detect alignment faking (per Anthropic research) - agents may appear compliant but cut corners when not monitored.
-
-## Implementation
+### Tagging Examples
 
 ```typescript
-async function evaluateGate(
-  gateName: string,
-  context: GateContext
-): Promise<GateDecision> {
-  const rules = await loadGateRules();
-  const gate = rules.gates[gateName];
+// @smoke — Critical path, runs post-deployment
+describe('@smoke FORGE Pipeline Happy Path', () => {
+  it('@smoke transforms Figma to Mendix', async () => {
+    const result = await pipeline.run(fixture);
+    expect(result.mpk).toBeDefined();
+  });
+});
 
-  const reasons: string[] = [];
-  let status: 'AUTHORIZED' | 'DENIED' = 'AUTHORIZED';
+// @sanity — Major component, runs pre-merge
+describe('@sanity Governance Policy Enforcement', () => {
+  it('@sanity evaluates default policies', async () => {
+    const result = await governance.evaluate(action);
+    expect(result.decision).toBe('AUTHORIZED');
+  });
+});
 
-  // 1. Check required suites
-  for (const suite of gate.requiredSuites) {
-    if (!context.suiteResults[suite]?.passed) {
-      status = 'DENIED';
-      reasons.push(`Required suite '${suite}' not passed`);
-    }
+// No tag — Full E2E only
+describe('Edge Case: Malformed Input', () => {
+  it('handles missing node IDs', async () => {
+    const result = await pipeline.run(malformedFixture);
+    expect(result.errors).toContain('MISSING_NODE_ID');
+  });
+});
+```
+
+---
+
+## CI Command Reference
+
+### Required Scripts (package.json)
+
+```json
+{
+  "scripts": {
+    "test:unit": "vitest run --testPathPattern='*.test.ts' --exclude='*.e2e.ts' --exclude='*.story.test.ts'",
+    "test:story": "vitest run --testPathPattern='*.story.test.ts'",
+    "test:e2e": "vitest run --testPathPattern='*.e2e.ts'",
+    "test:smoke": "vitest run --testPathPattern='*.e2e.ts' --testNamePattern='@smoke'",
+    "test:sanity": "vitest run --testPathPattern='*.e2e.ts' --testNamePattern='@sanity|@smoke'",
+    "test:regression": "vitest run"
   }
-
-  // 2. Check targeted tests
-  if (gate.requireTargetedTests && !context.targetedTestsPassed) {
-    status = 'DENIED';
-    reasons.push('Targeted tests required but not passed');
-  }
-
-  // 3. Evaluate deny conditions
-  for (const deny of gate.denyIf || []) {
-    if (evaluateCondition(deny.condition, context)) {
-      if (!deny.overridable || !hasOverride(deny, context)) {
-        status = 'DENIED';
-        reasons.push(deny.reason);
-      }
-    }
-  }
-
-  // 4. Check approval
-  if (gate.requireApproval?.required && !context.approved) {
-    status = 'DENIED';
-    reasons.push('Approval required');
-  }
-
-  return {
-    gate: gateName,
-    status,
-    reasons,
-    evaluatedAt: new Date().toISOString()
-  };
 }
 ```
 
+### Execution Matrix
+
+| Command | Unit | Story | E2E (smoke) | E2E (sanity) | E2E (full) |
+|---------|------|-------|-------------|--------------|------------|
+| `npm run test:unit` | ✅ | ❌ | ❌ | ❌ | ❌ |
+| `npm run test:story` | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `npm run test:e2e` | ❌ | ❌ | ✅ | ✅ | ✅ |
+| `npm run test:smoke` | ❌ | ❌ | ✅ | ❌ | ❌ |
+| `npm run test:sanity` | ❌ | ❌ | ✅ | ✅ | ❌ |
+| `npm run test:regression` | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+---
+
+## Acceptance Criteria (Epic 7.5)
+
+### Structural Requirements
+
+- [ ] **AC-7.5.1:** E2E test directory exists (`e2e/`)
+- [ ] **AC-7.5.2:** At least one E2E test file exists with `.e2e.ts` extension
+- [ ] **AC-7.5.3:** E2E entry point command exists (`npm run test:e2e`)
+- [ ] **AC-7.5.4:** Smoke test entry point exists (`npm run test:smoke`)
+- [ ] **AC-7.5.5:** Sanity test entry point exists (`npm run test:sanity`)
+- [ ] **AC-7.5.6:** Full regression entry point exists (`npm run test:regression`)
+
+### Execution Requirements
+
+- [ ] **AC-7.5.7:** `npm run test:regression` executes Unit + Story + E2E tests
+- [ ] **AC-7.5.8:** `npm run test:smoke` executes subset of E2E tests (@smoke tagged)
+- [ ] **AC-7.5.9:** `npm run test:sanity` executes superset of Smoke (@sanity + @smoke)
+- [ ] **AC-7.5.10:** All regression modes return exit code 0 when passing
+
+### Coverage Requirements
+
+- [ ] **AC-7.5.11:** E2E tests cover all critical user workflows
+- [ ] **AC-7.5.12:** Smoke tests cover deployment-critical paths
+- [ ] **AC-7.5.13:** Sanity tests cover all major system components
+
+### Documentation Requirements
+
+- [ ] **AC-7.5.14:** Test taxonomy documented in GOVERNANCE_EVAL.md
+- [ ] **AC-7.5.15:** E2E test tagging convention documented
+
+---
+
+## Sprint Boundary Verification
+
+### Checklist
+
+```bash
+#!/bin/bash
+# .forge/scripts/verify-testing-taxonomy.sh
+
+echo "=== EPIC 7.5 TESTING TAXONOMY VERIFICATION ==="
+
+echo -e "\n1. Verify all test modes exist:"
+npm run test:unit -- --passWithNoTests 2>&1 | tail -3
+npm run test:story -- --passWithNoTests 2>&1 | tail -3
+npm run test:e2e -- --passWithNoTests 2>&1 | tail -3
+npm run test:smoke -- --passWithNoTests 2>&1 | tail -3
+npm run test:sanity -- --passWithNoTests 2>&1 | tail -3
+npm run test:regression -- --passWithNoTests 2>&1 | tail -3
+
+echo -e "\n2. Verify E2E directory structure:"
+ls -la e2e/ 2>/dev/null || ls -la src/lib/e2e/ | head -10
+
+echo -e "\n3. Test counts by layer:"
+echo "Unit tests: $(grep -r 'describe\|it(' --include='*.test.ts' --exclude='*.e2e.ts' --exclude='*.story.test.ts' | wc -l)"
+echo "Story tests: $(grep -r 'describe\|it(' --include='*.story.test.ts' | wc -l)"
+echo "E2E tests: $(grep -r 'describe\|it(' --include='*.e2e.ts' | wc -l)"
+
+echo -e "\n4. E2E tag distribution:"
+echo "Smoke tagged: $(grep -r '@smoke' --include='*.e2e.ts' | wc -l)"
+echo "Sanity tagged: $(grep -r '@sanity' --include='*.e2e.ts' | wc -l)"
+
+echo -e "\n=== VERIFICATION COMPLETE ==="
+```
+
+---
+
 ## References
 
-- human-review-gates.md (ArcFoundry skill)
-- CARS framework (risk assessment)
-- Brooks, "Mythical Man-Month" (complexity)
-- Anthropic, "Alignment Faking" (audit policy)
+- ISTQB Glossary: Verification vs Validation
+- Martin Fowler: Practical Test Pyramid
+- Google Testing Blog: Test Classification
+- ArcFoundry: verification-quality-library

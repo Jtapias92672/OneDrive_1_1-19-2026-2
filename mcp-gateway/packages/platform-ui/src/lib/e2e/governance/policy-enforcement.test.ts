@@ -8,14 +8,14 @@ import { carsAssessor } from '@/lib/governance/cars';
 import { auditLogger, auditStore } from '@/lib/governance/audit';
 import { approvalService, approvalStore } from '@/lib/governance/approval';
 
-describe('Governance Policy Enforcement E2E', () => {
+describe('@sanity Governance Policy Enforcement E2E', () => {
   beforeEach(() => {
     auditStore.reset();
     approvalStore.reset();
   });
 
   describe('policy evaluation', () => {
-    it('evaluates request against policies', async () => {
+    it('@sanity evaluates request against policies', async () => {
       const request = {
         action: 'generate' as const,
         resource: 'component-123',

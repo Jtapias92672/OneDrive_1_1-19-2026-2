@@ -1,207 +1,255 @@
-# FORGE Gate Rules
-# Quality gate policies for CI/CD pipeline stages
-# Reference: human-review-gates.md, CARS framework
+# .forge/governance/gate_rules.yaml
+# Epic 7.5: Gate Rules Configuration
+# Updated: 2026-01-28 — Integrated E2E testing requirements
+#
+# Gates control when work can proceed through the pipeline.
+# Each gate evaluates conditions and returns AUTHORIZED or DENIED.
 
-version: "1.0.0"
+version: "2.0.0"
+
+# =============================================================================
+# GATE DEFINITIONS
+# =============================================================================
 
 gates:
-  pr:
-    name: "Pull Request Gate"
-    description: |
-      Fast feedback gate for PR creation.
-      Must pass before code review begins.
-    requiredSuites:
-      - smoke
-    requireTargetedTests: true
-    requireCheckerSpec: true
-    denyIf:
-      - condition: "smoke.failed > 0"
-        reason: "Smoke tests must pass before review"
-        overridable: false
-      - condition: "checkerSpec.missing"
-        reason: "CheckerSpec required for all work items"
-        overridable: false
-      - condition: "lintErrors > 0"
-        reason: "Lint errors must be resolved"
-        overridable: false
-    warnIf:
-      - condition: "coverage.delta < -2"
-        message: "Coverage decreased by more than 2%"
-      - condition: "targetedTests.missing"
-        message: "No targeted tests found for changed files"
-    requireApproval:
-      required: false
-    additionalChecks:
-      - name: "TypeScript Compile"
-        command: "npm run build"
-        timeout: "5m"
-        required: true
-      - name: "Lint"
-        command: "npm run lint"
-        timeout: "2m"
-        required: true
+  # ---------------------------------------------------------------------------
+  # PR Gate: Controls merge to main/develop
+  # ---------------------------------------------------------------------------
+  pr_merge:
+    description: "Controls pull request merge eligibility"
+    required_conditions:
+      - unit_tests_pass
+      - story_tests_pass
+      - typescript_compiles
+      - no_lint_errors
+      - coverage_threshold_met
+    optional_conditions:
+      - sanity_tests_pass  # Recommended but not blocking
+    evaluation: "all_required_must_pass"
+    
+    condition_definitions:
+      unit_tests_pass:
+        check: "npm run test:unit exits 0"
+        failure_message: "Unit tests must pass before merge"
+        
+      story_tests_pass:
+        check: "npm run test:story exits 0"
+        failure_message: "Story test cases must pass before merge"
+        
+      typescript_compiles:
+        check: "npx tsc --noEmit exits 0"
+        failure_message: "TypeScript must compile without errors"
+        
+      no_lint_errors:
+        check: "npm run lint exits 0"
+        failure_message: "No linting errors allowed"
+        
+      coverage_threshold_met:
+        check: "coverage >= 80%"
+        failure_message: "Code coverage must be >= 80%"
 
-  pre_merge:
-    name: "Pre-Merge Gate"
-    description: |
-      Gate before merging to main branch.
-      Requires passing tests and code review approval.
-    requiredSuites:
-      - smoke
-    requireTargetedTests: true
-    requireCheckerSpec: true
-    denyIf:
-      - condition: "smoke.failed > 0"
-        reason: "Smoke tests must pass before merge"
-        overridable: false
-      - condition: "quarantine.inCriticalPath"
-        reason: "Quarantined test in critical path blocks merge"
-        overridable: true
-        overrideRequires: ["tech-lead-approval"]
-      - condition: "verificationChecks.mustFailed > 0"
-        reason: "All must-priority verification checks must pass"
-        overridable: false
-    warnIf:
-      - condition: "verificationChecks.shouldFailed > 0"
-        message: "Some should-priority verification checks failed"
-    requireApproval:
-      required: true
-      minReviewers: 1
-      requireCodeOwner: true
-      requireSecurityReview: false
+  # ---------------------------------------------------------------------------
+  # Nightly Gate: Controls nightly build status
+  # ---------------------------------------------------------------------------
+  nightly:
+    description: "Nightly build health check"
+    required_conditions:
+      - unit_tests_pass
+      - story_tests_pass
+      - e2e_tests_pass
+    evaluation: "all_required_must_pass"
+    
+    condition_definitions:
+      e2e_tests_pass:
+        check: "npm run test:e2e exits 0"
+        failure_message: "E2E tests must pass in nightly build"
 
-  release_candidate:
-    name: "Release Candidate Gate"
-    description: |
-      Gate for promoting to release candidate.
-      Conditional sanity suite based on risk level.
-    requiredSuites:
-      - smoke
-    requireTargetedTests: true
-    requireCheckerSpec: true
-    denyIf:
-      - condition: "smoke.failed > 0"
-        reason: "Smoke tests must pass for release candidate"
-        overridable: false
-      - condition: "risk.level == 'high' && sanity.notRun"
-        reason: "High-risk work requires sanity suite"
-        overridable: false
-      - condition: "risk.level == 'critical' && sanity.failed > 0"
-        reason: "Critical-risk work requires passing sanity suite"
-        overridable: false
-    warnIf:
-      - condition: "risk.level == 'medium' && sanity.notRun"
-        message: "Consider running sanity suite for medium-risk work"
-    requireApproval:
-      required: true
-      minReviewers: 1
-      requireCodeOwner: true
-      requireSecurityReview: false
-    additionalChecks:
-      - name: "Security Scan"
-        command: "npm run security:scan"
-        timeout: "10m"
-        required: true
+  # ---------------------------------------------------------------------------
+  # Pre-Release Gate: Controls release candidate eligibility
+  # ---------------------------------------------------------------------------
+  pre_release:
+    description: "Release candidate validation"
+    required_conditions:
+      - full_regression_pass
+      - security_scan_pass
+      - documentation_complete
+    evaluation: "all_required_must_pass"
+    
+    condition_definitions:
+      full_regression_pass:
+        check: "npm run test:regression exits 0"
+        description: "Full regression = Unit + Story + E2E (ALL tests)"
+        failure_message: "Full regression must pass before release"
+        
+      security_scan_pass:
+        check: "npm audit --production exits 0"
+        failure_message: "Security vulnerabilities must be resolved"
+        
+      documentation_complete:
+        check: "All public APIs documented"
+        failure_message: "Documentation must be complete"
 
-  release:
-    name: "Release Gate"
-    description: |
-      Final gate before production release.
-      Requires full regression and provenance verification.
-    requiredSuites:
-      - smoke
-      - sanity
-      - regression
-    requireTargetedTests: true
-    requireCheckerSpec: true
-    denyIf:
-      - condition: "regression.failed > 0"
-        reason: "Full regression must pass for release"
-        overridable: true
-        overrideRequires: ["cto-approval", "documented-exception"]
-      - condition: "provenance.unverified"
-        reason: "Supply chain provenance must be verified"
-        overridable: false
-      - condition: "validationChecks.mustFailed > 0"
-        reason: "All must-priority validation checks must pass"
-        overridable: false
-    warnIf:
-      - condition: "regression.timeBudgetExceeded"
-        message: "Regression suite exceeded time budget"
-      - condition: "validationChecks.shouldFailed > 0"
-        message: "Some should-priority validation checks failed"
-    requireApproval:
-      required: true
-      minReviewers: 2
-      requireCodeOwner: true
-      requireSecurityReview: true
-    additionalChecks:
-      - name: "Provenance Verification"
-        command: "npm run verify:provenance"
-        timeout: "5m"
-        required: true
-      - name: "License Check"
-        command: "npm run license:check"
-        timeout: "2m"
-        required: true
+  # ---------------------------------------------------------------------------
+  # Post-Deployment Gate: Controls deployment rollback
+  # ---------------------------------------------------------------------------
+  post_deployment:
+    description: "Post-deployment health verification"
+    required_conditions:
+      - smoke_tests_pass
+    evaluation: "all_required_must_pass"
+    rollback_on_failure: true
+    
+    condition_definitions:
+      smoke_tests_pass:
+        check: "npm run test:smoke exits 0"
+        description: "Smoke = Limited E2E subset (critical paths)"
+        failure_message: "Smoke tests failed - triggering rollback"
 
-  pre_dispatch:
-    name: "Pre-Dispatch Gate"
-    description: |
-      Gate before dispatching convoy to workers.
-      Ensures CheckerSpec exists and basic requirements met.
-    requiredSuites: []
-    requireTargetedTests: false
-    requireCheckerSpec: true
-    denyIf:
-      - condition: "checkerSpec.missing"
-        reason: "CheckerSpec required before dispatch"
-        overridable: false
-      - condition: "checkerSpec.invalid"
-        reason: "CheckerSpec must validate against schema"
-        overridable: false
-      - condition: "workItem.storyPoints >= 13 && decomposition.missing"
-        reason: "Large work items (≥13 points) require decomposition"
-        overridable: false
-    warnIf:
-      - condition: "workItem.touchedModules >= 3"
-        message: "Work touches 3+ modules - consider decomposition"
-    requireApproval:
-      required: false
+  # ---------------------------------------------------------------------------
+  # Sprint Boundary Gate: Controls sprint completion
+  # ---------------------------------------------------------------------------
+  sprint_boundary:
+    description: "Sprint completion validation"
+    required_conditions:
+      - full_regression_pass
+      - e2e_coverage_increased
+      - no_critical_bugs
+    evaluation: "all_required_must_pass"
+    
+    condition_definitions:
+      e2e_coverage_increased:
+        check: "E2E test count >= previous sprint"
+        description: "E2E tests grow each sprint as system expands"
+        failure_message: "E2E test coverage must increase each sprint"
+        
+      no_critical_bugs:
+        check: "No P0/P1 bugs open"
+        failure_message: "Critical bugs must be resolved"
 
-complexity:
-  maxActiveWorkItemsPerRun: 2
-  requireDecompositionIf:
-    storyPointsAtLeast: 13
-    touchedModulesAtLeast: 5
-  requireIntegrationPlanIfDecomposed: true
+  # ---------------------------------------------------------------------------
+  # Convoy Dispatch Gate: Controls agent work dispatch
+  # ---------------------------------------------------------------------------
+  convoy_dispatch:
+    description: "Controls when convoys can be dispatched to workers"
+    required_conditions:
+      - checker_spec_exists
+      - targeted_tests_defined
+    optional_conditions:
+      - smoke_tests_pass
+    evaluation: "all_required_must_pass"
+    
+    condition_definitions:
+      checker_spec_exists:
+        check: "CheckerSpec YAML exists for work item"
+        failure_message: "CheckerSpec required before dispatch"
+        
+      targeted_tests_defined:
+        check: "CheckerSpec.verification[] is non-empty"
+        failure_message: "Targeted verification tests must be defined"
 
-communication:
-  riskLevelTriggers:
-    high:
-      requireRichReview: true
-      notifyStakeholders: true
-      channels:
-        - "#forge-alerts"
-    critical:
-      requireRichReview: true
-      notifyStakeholders: true
-      channels:
-        - "#forge-alerts"
-        - "#engineering-leads"
-  escalationPath:
-    - role: "Tech Lead"
-      contact: "@tech-lead"
-    - role: "Engineering Manager"
-      contact: "@eng-manager"
-    - role: "CTO"
-      contact: "@cto"
+  # ---------------------------------------------------------------------------
+  # Receipt Generation Gate: Controls V&V receipt creation
+  # ---------------------------------------------------------------------------
+  receipt_generation:
+    description: "Controls when V&V receipts can be generated"
+    required_conditions:
+      - all_verification_checks_pass
+      - all_validation_checks_pass
+      - test_evidence_present
+    evaluation: "all_required_must_pass"
+    
+    condition_definitions:
+      all_verification_checks_pass:
+        check: "VnVResult.verification.passed == true"
+        failure_message: "All verification checks must pass"
+        
+      all_validation_checks_pass:
+        check: "VnVResult.validation.passed == true"
+        failure_message: "All validation checks must pass"
+        
+      test_evidence_present:
+        check: "testEvidence array is non-empty"
+        failure_message: "Test evidence must be recorded"
 
-audit:
-  enabled: true
-  randomAuditRate: 0.1
-  alwaysAuditIf:
-    - "risk.level == 'critical'"
-    - "touchesSecurityCode"
-    - "touchesPaymentCode"
-    - "modifiesPublicAPI"
+# =============================================================================
+# GATE EVALUATION ALGORITHM
+# =============================================================================
+
+evaluation_algorithm:
+  description: |
+    For each gate, evaluate conditions in order:
+    1. Check all required_conditions
+    2. If any required condition fails, return DENIED with reasons
+    3. Check optional_conditions (log warnings but don't block)
+    4. If all required pass, return AUTHORIZED
+    
+  pseudocode: |
+    function evaluateGate(gate, context):
+      failed_reasons = []
+      warnings = []
+      
+      for condition in gate.required_conditions:
+        if not evaluate(condition, context):
+          failed_reasons.append(condition.failure_message)
+      
+      if failed_reasons.length > 0:
+        return { decision: 'DENIED', reasons: failed_reasons }
+      
+      for condition in gate.optional_conditions:
+        if not evaluate(condition, context):
+          warnings.append(condition.failure_message)
+      
+      return { decision: 'AUTHORIZED', warnings: warnings }
+
+# =============================================================================
+# RISK-BASED GATE ESCALATION (CARS Integration)
+# =============================================================================
+
+cars_integration:
+  description: "Gate requirements escalate based on CARS risk level"
+  
+  risk_escalation:
+    LOW:
+      pr_merge: "standard"
+      pre_release: "standard"
+      
+    MEDIUM:
+      pr_merge: "standard + sanity_tests_pass required"
+      pre_release: "standard + manual review"
+      
+    HIGH:
+      pr_merge: "standard + sanity_tests_pass + security review"
+      pre_release: "standard + dual approval"
+      
+    CRITICAL:
+      pr_merge: "blocked without explicit override"
+      pre_release: "blocked without executive approval"
+
+# =============================================================================
+# OVERRIDE PROTOCOL
+# =============================================================================
+
+overrides:
+  description: "Emergency override procedures for blocked gates"
+  
+  procedures:
+    standard_override:
+      approvers: 1
+      roles: ["tech_lead", "senior_engineer"]
+      documentation: "Justification in PR description"
+      audit: true
+      
+    elevated_override:
+      approvers: 2
+      roles: ["tech_lead", "engineering_manager"]
+      documentation: "Incident ticket required"
+      audit: true
+      time_limit_hours: 24
+      
+    emergency_override:
+      approvers: 2
+      roles: ["engineering_manager", "director"]
+      documentation: "Executive summary required"
+      audit: true
+      time_limit_hours: 4
+      post_mortem_required: true

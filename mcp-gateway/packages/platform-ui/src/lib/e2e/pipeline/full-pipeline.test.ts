@@ -260,14 +260,14 @@ class PipelineOrchestrator {
   }
 }
 
-describe('Full Pipeline E2E', () => {
+describe('@smoke Full Pipeline E2E', () => {
   let orchestrator: PipelineOrchestrator;
 
   beforeEach(() => {
     orchestrator = new PipelineOrchestrator();
   });
 
-  it('executes complete Figma-to-Mendix pipeline', async () => {
+  it('@smoke executes complete Figma-to-Mendix pipeline', async () => {
     const figma = sampleFigmaFile as FigmaFixture;
     const result = await orchestrator.execute(figma);
 

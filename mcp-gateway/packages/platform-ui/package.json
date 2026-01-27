@@ -9,7 +9,13 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest --testPathIgnorePatterns='e2e|story'",
+    "test:story": "jest --testPathPattern='story\\.test\\.ts$'",
+    "test:e2e": "jest --testPathPattern='e2e.*\\.test\\.ts$'",
+    "test:smoke": "jest --testPathPattern='e2e.*\\.test\\.ts$' --testNamePattern='@smoke'",
+    "test:sanity": "jest --testPathPattern='e2e.*\\.test\\.ts$' --testNamePattern='@sanity|@smoke'",
+    "test:regression": "jest"
   },
   "dependencies": {
     "next": "14.2.0",

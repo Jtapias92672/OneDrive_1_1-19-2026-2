@@ -1,132 +1,232 @@
-# FORGE Suite Registry
-# Test suite definitions with time budgets and triggers
-# Based on test pyramid (Martin Fowler) + SMURF (Google Testing Blog)
+# .forge/suites/suite_registry.yaml
+# Epic 7.5: Test Suite Registry
+# Updated: 2026-01-28 — Added E2E as first-class requirement
+# 
+# AUTHORITATIVE DEFINITIONS (per ArcFoundry methodology):
+# - Unit tests: Developer-owned, per story
+# - Story test cases: Tester-owned, per story  
+# - E2E tests: Tester-owned, per sprint (complexity grows each sprint)
+# - Full Regression: ALL tests (Unit + Story + E2E)
+# - Smoke test: Limited E2E subset (critical paths only)
+# - Sanity test: Partial E2E subset (all major components)
 
-version: "1.0.0"
+version: "2.0.0"
 
-suites:
+# =============================================================================
+# TEST LAYER DEFINITIONS (Authoritative)
+# =============================================================================
+
+test_layers:
+  unit:
+    description: "Isolated tests for individual functions, classes, and modules"
+    owner: "developer"
+    cadence: "per_story"
+    execution: "every_commit"
+    file_pattern: "*.test.ts"
+    exclude_patterns:
+      - "*.e2e.ts"
+      - "*.story.test.ts"
+    coverage_target: 80  # percent
+    max_duration_per_test_ms: 10
+    
+  story:
+    description: "Acceptance tests validating user story requirements"
+    owner: "tester"
+    cadence: "per_story"
+    execution: "every_pr"
+    file_pattern: "*.story.test.ts"
+    traceability: "story_id_required"
+    max_duration_per_test_ms: 1000
+    
+  e2e:
+    description: "System-level workflow tests exercising integrated components"
+    owner: "tester"
+    cadence: "per_sprint"
+    execution: "nightly"
+    file_pattern: "*.e2e.ts"
+    directory: "e2e/"
+    complexity_note: "Grows each sprint as system expands"
+    max_duration_per_test_ms: 60000  # 1 minute max per E2E test
+    tags:
+      - "@smoke"     # Critical path subset
+      - "@sanity"    # Major component subset
+      - "@full"      # All E2E tests
+
+# =============================================================================
+# REGRESSION MODES (Authoritative Definitions)
+# =============================================================================
+
+regression_modes:
   smoke:
-    name: "Smoke Tests"
-    description: |
-      Critical path tests that must pass for any deployment.
-      Fast feedback loop for PR validation.
-    timeBudget:
-      target: "5m"
-      max: "30m"
-      enforced: true
-    triggers:
-      - pr
-      - merge
-      - release
-    include:
-      tags:
-        - "smoke"
-        - "critical"
-      patterns:
-        - "**/*.smoke.test.ts"
-        - "**/smoke/**/*.test.ts"
-    exclude:
-      tags:
-        - "slow"
-        - "integration"
-        - "e2e"
-    parallelism: 8
-    retries: 1
-    failFast: true
-
+    description: "Limited E2E test covering critical happy paths only"
+    scope: "e2e_subset"
+    tag_filter: "@smoke"
+    use_case: "Post-deployment verification, quick confidence check"
+    budget_minutes: 5
+    test_count_range: "5-10"
+    includes_unit: false
+    includes_story: false
+    command: "npm run test:smoke"
+    
   sanity:
-    name: "Sanity Tests"
-    description: |
-      Broader coverage tests for release candidate validation.
-      Includes integration tests and cross-module scenarios.
-    timeBudget:
-      target: "1h"
-      max: "3h"
-      enforced: true
-    triggers:
-      - merge
-      - release
-      - manual
-    include:
-      tags:
-        - "smoke"
-        - "sanity"
-        - "integration"
-      patterns:
-        - "**/*.test.ts"
-        - "**/*.integration.test.ts"
-    exclude:
-      tags:
-        - "regression-only"
-        - "e2e"
-        - "performance"
-    parallelism: 4
-    retries: 2
-    failFast: false
+    description: "Partial E2E test checking all major system parts"
+    scope: "e2e_subset"
+    tag_filter: "@sanity OR @smoke"
+    use_case: "Feature branch validation, pre-merge check"
+    budget_minutes: 15
+    test_count_range: "20-50"
+    includes_unit: false
+    includes_story: false
+    command: "npm run test:sanity"
+    
+  full_regression:
+    description: "Extensive E2E + ALL Unit tests + ALL Story test cases"
+    scope: "all"
+    use_case: "Release candidate validation, sprint boundary"
+    budget_minutes: 60
+    includes:
+      - unit        # ALL unit tests
+      - story       # ALL story test cases
+      - e2e         # ALL E2E tests
+    command: "npm run test:regression"
 
-  regression:
-    name: "Full Regression"
-    description: |
-      Complete test suite for release validation.
-      Includes E2E, performance, and edge case tests.
-    timeBudget:
-      target: "4h"
-      max: "8h"
-      enforced: false
-    triggers:
-      - release
-      - schedule
-      - manual
-    include:
-      tags:
-        - "smoke"
-        - "sanity"
-        - "regression"
-        - "e2e"
-      patterns:
-        - "**/*.test.ts"
-        - "**/*.e2e.test.ts"
-    exclude:
-      tags:
-        - "quarantine"
-        - "experimental"
-    parallelism: 2
-    retries: 3
-    failFast: false
+# =============================================================================
+# CI CONFIGURATION
+# =============================================================================
 
-tagging:
-  required: true
-  conventions:
-    - prefix: "smoke"
-      description: "Critical path test, must be fast (<10s)"
-      examples: ["smoke", "smoke-auth", "smoke-api"]
-    - prefix: "sanity"
-      description: "Important but not critical, moderate speed"
-      examples: ["sanity", "sanity-db", "sanity-integration"]
-    - prefix: "regression"
-      description: "Full coverage, can be slow"
-      examples: ["regression", "regression-edge-cases"]
-    - prefix: "e2e"
-      description: "End-to-end browser/UI tests"
-      examples: ["e2e", "e2e-checkout", "e2e-login"]
-    - prefix: "perf"
-      description: "Performance and load tests"
-      examples: ["perf", "perf-api", "perf-db"]
-    - prefix: "module:"
-      description: "Module-specific tests"
-      examples: ["module:auth", "module:api", "module:parser"]
-    - prefix: "feature:"
-      description: "Feature-specific tests"
-      examples: ["feature:login", "feature:export"]
-  forbidden:
-    - "skip"
-    - "todo"
-    - "fixme"
-    - "broken"
+ci_modes:
+  # Required for every repository
+  required:
+    - unit
+    - story
+    - e2e
+    - smoke
+    - sanity
+    - regression
+    
+  triggers:
+    every_commit:
+      - unit
+    every_pr:
+      - unit
+      - story
+    nightly:
+      - e2e
+    post_deployment:
+      - smoke
+    pre_merge:
+      - sanity
+    pre_release:
+      - regression
+    sprint_boundary:
+      - regression
 
-quarantine:
-  enabled: true
-  tag: "quarantine"
-  maxAge: "14d"
-  requiresTicket: true
-  blockCriticalPath: true
+  commands:
+    unit: "npm run test:unit"
+    story: "npm run test:story"
+    e2e: "npm run test:e2e"
+    smoke: "npm run test:smoke"
+    sanity: "npm run test:sanity"
+    regression: "npm run test:regression"
+
+# =============================================================================
+# OWNERSHIP MATRIX
+# =============================================================================
+
+ownership:
+  developer:
+    responsibilities:
+      - "Write unit tests for every story"
+      - "Maintain >80% coverage per module"
+      - "Run unit tests before every commit"
+    deliverables:
+      - "*.test.ts files co-located with source"
+      
+  tester:
+    responsibilities:
+      - "Write story test cases for every story"
+      - "Write E2E tests each sprint (cumulative)"
+      - "Tag E2E tests with @smoke/@sanity as appropriate"
+      - "Run E2E suite nightly"
+    deliverables:
+      - "*.story.test.ts files"
+      - "*.e2e.ts files in e2e/ directory"
+      
+  ci_system:
+    responsibilities:
+      - "Run full regression pre-release"
+      - "Gate deployments on smoke test pass"
+      - "Report test metrics"
+    deliverables:
+      - "Automated test execution"
+      - "Pass/fail gates"
+
+# =============================================================================
+# E2E TEST TAGGING CONVENTION
+# =============================================================================
+
+tagging_convention:
+  smoke:
+    description: "Critical path tests included in Smoke regression"
+    syntax: "@smoke"
+    example: |
+      describe('@smoke FORGE Pipeline Happy Path', () => {
+        it('@smoke transforms basic component', async () => { ... });
+      });
+      
+  sanity:
+    description: "Major component tests included in Sanity regression"
+    syntax: "@sanity"
+    example: |
+      describe('@sanity Governance Policy Enforcement', () => {
+        it('@sanity evaluates default policies', async () => { ... });
+      });
+      
+  full_only:
+    description: "Edge cases only run in full E2E suite"
+    syntax: "No tag (default)"
+    example: |
+      describe('Edge Case: Malformed Figma Input', () => {
+        it('handles missing node IDs gracefully', async () => { ... });
+      });
+
+# =============================================================================
+# VALIDATION RULES
+# =============================================================================
+
+validation:
+  pre_pr_merge:
+    required_suites:
+      - unit
+      - story
+    gate_rule: "all_pass"
+    
+  pre_release:
+    required_suites:
+      - regression  # Which includes unit + story + e2e
+    gate_rule: "all_pass"
+    
+  post_deployment:
+    required_suites:
+      - smoke
+    gate_rule: "all_pass"
+    rollback_on_failure: true
+
+# =============================================================================
+# METRICS & REPORTING
+# =============================================================================
+
+metrics:
+  track:
+    - test_count_by_layer
+    - coverage_by_module
+    - execution_time_by_suite
+    - flaky_test_rate
+    - regression_pass_rate
+    
+  thresholds:
+    unit_coverage_min: 80
+    e2e_count_min_per_epic: 5
+    smoke_duration_max_minutes: 5
+    sanity_duration_max_minutes: 15
+    regression_duration_max_minutes: 60
