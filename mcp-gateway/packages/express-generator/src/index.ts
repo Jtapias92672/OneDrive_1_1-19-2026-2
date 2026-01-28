@@ -7,3 +7,6 @@
 
 // Core exports
 export * from './core';
+
+// Utilities
+export { NameUtils, CodeFormatter, TypeMapper } from './utils';
