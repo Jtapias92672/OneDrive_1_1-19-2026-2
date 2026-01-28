@@ -10,3 +10,6 @@ export * from './core';
 
 // Utilities
 export { NameUtils, CodeFormatter, TypeMapper } from './utils';
+
+// Builders
+export { PrismaBuilder } from './builders';
