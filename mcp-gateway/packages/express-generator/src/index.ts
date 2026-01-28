@@ -12,4 +12,13 @@ export * from './core';
 export { NameUtils, CodeFormatter, TypeMapper } from './utils';
 
 // Builders
-export { PrismaBuilder } from './builders';
+export {
+  PrismaBuilder,
+  ControllerBuilder,
+  ServiceBuilder,
+  RouteBuilder,
+  MiddlewareBuilder,
+} from './builders';
+
+// Generator
+export { ExpressGenerator } from './generator';
