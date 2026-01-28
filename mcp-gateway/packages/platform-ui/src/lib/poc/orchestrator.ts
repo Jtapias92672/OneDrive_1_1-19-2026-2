@@ -45,6 +45,7 @@ import { FigmaClient } from '../integrations/figma/figma-client';
 import { FigmaParser } from '../integrations/figma/figma-parser';
 import type { ParsedComponent as FigmaParsedComponent } from '../integrations/figma/parsed-types';
 import { DesignAPIMapper } from './design-api-mapper';
+import { HTMLParser } from './html-parser';
 import { PlaywrightTestGenerator } from './test-generators/playwright-generator';
 import { APITestGenerator } from './test-generators/api-test-generator';
 import { VercelClient } from '../integrations/vercel/vercel-client';
@@ -62,6 +63,7 @@ export class ForgePOCOrchestrator {
   // Real services
   private figmaClient: FigmaClient;
   private figmaParser: FigmaParser;
+  private htmlParser: HTMLParser;
   private designMapper: DesignAPIMapper;
   private playwrightGenerator: PlaywrightTestGenerator;
   private apiTestGenerator: APITestGenerator;
@@ -74,6 +76,9 @@ export class ForgePOCOrchestrator {
     // Initialize Figma services
     this.figmaClient = new FigmaClient({ accessToken: config.figmaToken });
     this.figmaParser = new FigmaParser();
+
+    // Initialize HTML parser
+    this.htmlParser = new HTMLParser();
 
     // Initialize design-to-API mapper
     this.designMapper = new DesignAPIMapper();
@@ -143,10 +148,30 @@ export class ForgePOCOrchestrator {
     };
 
     try {
-      // Stage 1: Parse Figma
-      this.emitProgress(runId, 'parsing_figma', 5, 'Parsing Figma design...');
-      result.figmaMetadata = await this.parseFigmaMetadata(input.figmaUrl);
-      const components = await this.parseFigmaComponents(input.figmaUrl);
+      // Stage 1: Parse source (Figma or HTML)
+      let components: ParsedComponent[];
+
+      if (input.htmlContent || input.htmlPath) {
+        // Parse HTML
+        this.emitProgress(runId, 'parsing_html', 5, 'Parsing HTML content...');
+        const parseResult = input.htmlContent
+          ? this.htmlParser.parse(input.htmlContent)
+          : await this.htmlParser.parseFile(input.htmlPath!);
+
+        components = parseResult.components;
+        result.figmaMetadata = {
+          fileKey: input.htmlPath || 'inline-html',
+          fileName: parseResult.metadata.title,
+          lastModified: new Date().toISOString(),
+        };
+      } else if (input.figmaUrl) {
+        // Parse Figma
+        this.emitProgress(runId, 'parsing_figma', 5, 'Parsing Figma design...');
+        result.figmaMetadata = await this.parseFigmaMetadata(input.figmaUrl);
+        components = await this.parseFigmaComponents(input.figmaUrl);
+      } else {
+        throw new Error('Either figmaUrl, htmlContent, or htmlPath is required');
+      }
 
       // Stage 2: Create Jira Epic
       if (!input.options?.skipJira) {

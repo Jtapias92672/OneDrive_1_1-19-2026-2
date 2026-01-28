@@ -30,7 +30,12 @@ export interface JiraIntegrationConfig {
 // =============================================================================
 
 export interface POCRunInput {
-  figmaUrl: string;
+  /** Figma URL to parse (mutually exclusive with htmlContent/htmlPath) */
+  figmaUrl?: string;
+  /** HTML content to parse directly */
+  htmlContent?: string;
+  /** Path to HTML file to parse */
+  htmlPath?: string;
   options?: POCRunOptions;
 }
 
@@ -40,6 +45,24 @@ export interface POCRunOptions {
   deployFrontend?: boolean;
   deployBackend?: boolean;
   skipJira?: boolean;
+}
+
+// =============================================================================
+// Source Metadata Types
+// =============================================================================
+
+export type SourceType = 'figma' | 'html';
+
+export interface SourceMetadata {
+  sourceType: SourceType;
+  /** For Figma: file key; For HTML: file path or 'inline' */
+  sourceId: string;
+  /** Name of the source (Figma file name or HTML title) */
+  sourceName: string;
+  /** Last modified timestamp */
+  lastModified: string;
+  /** Additional source-specific metadata */
+  extra?: Record<string, unknown>;
 }
 
 // =============================================================================
@@ -259,6 +282,7 @@ export interface POCRunResult {
 export type POCRunStatus =
   | 'initializing'
   | 'parsing_figma'
+  | 'parsing_html'
   | 'creating_jira_epic'
   | 'creating_jira_tasks'
   | 'generating_frontend'

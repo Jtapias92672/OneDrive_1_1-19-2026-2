@@ -1,5 +1,10 @@
 require('@testing-library/jest-dom');
 
+// Polyfill TextEncoder/TextDecoder for JSDOM (required by libraries like JSDOM, whatwg-url)
+const { TextEncoder, TextDecoder } = require('util');
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
