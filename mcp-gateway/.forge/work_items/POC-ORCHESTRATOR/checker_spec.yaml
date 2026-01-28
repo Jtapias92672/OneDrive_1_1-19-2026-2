@@ -1,0 +1,158 @@
+# POC Orchestrator CheckerSpec
+# V&V contract for Forge POC: Figma → Jira → Full Stack Code → Test → Deploy → Close
+# Created: 2026-01-28
+
+version: "1.0.0"
+
+workItem:
+  id: "POC-ORCHESTRATOR"
+  title: "POC Orchestrator - Full Stack Code Generation Pipeline"
+  type: feature
+  storyPoints: 13
+  touchedModules:
+    - "packages/platform-ui/src/lib/poc"
+
+intent:
+  summary: |
+    End-to-end orchestrator that takes a Figma URL and generates a complete
+    full-stack application: React frontend components + Express backend API,
+    creates Jira Epic/Tasks for tracking, deploys to Vercel/Lambda, runs tests,
+    and closes tickets on completion.
+  acceptanceCriteria:
+    - "ForgePOCOrchestrator class with configurable integrations"
+    - "Figma parsing with component extraction"
+    - "Jira Epic and Task creation (frontend + backend)"
+    - "React component generation with tests and stories"
+    - "Express API generation (controllers, services, models, routes)"
+    - "Vercel frontend deployment integration"
+    - "AWS Lambda backend deployment integration"
+    - "Automatic test execution (unit, E2E, API)"
+    - "Jira ticket closure with deployment URLs"
+    - "Design-to-API inference for data models"
+  context: |
+    Core POC orchestrator implementing the full Forge vision:
+    Figma design → automated full-stack code generation → deployment.
+    Phase 1-3 of the POC plan complete.
+
+risk:
+  level: medium
+  changeSurface: module
+  factors:
+    - "Integration with multiple external services (Figma, Jira, Vercel, AWS)"
+    - "Complex multi-stage workflow"
+    - "Code generation complexity"
+  mitigations:
+    - "Graceful fallbacks for external service failures"
+    - "Comprehensive test coverage (147 tests)"
+    - "Stub responses when services unavailable"
+
+# Verification: Did we build it right? (Technical correctness)
+verification:
+  checks:
+    - id: "V-1"
+      description: "TypeScript compiles without errors"
+      priority: must
+      automated: true
+      evidenceType: build-output
+    - id: "V-2"
+      description: "All POC orchestrator tests pass (59 tests)"
+      priority: must
+      automated: true
+      testIds: ["orchestrator.test.ts"]
+      evidenceType: test-result
+    - id: "V-3"
+      description: "All design-api-mapper tests pass (35 tests)"
+      priority: must
+      automated: true
+      testIds: ["design-api-mapper.test.ts"]
+      evidenceType: test-result
+    - id: "V-4"
+      description: "All test generator tests pass (53 tests)"
+      priority: must
+      automated: true
+      testIds: ["playwright-generator.test.ts", "api-test-generator.test.ts"]
+      evidenceType: test-result
+    - id: "V-5"
+      description: "POC module coverage >= 80% lines"
+      priority: must
+      automated: true
+      evidenceType: coverage-report
+    - id: "V-6"
+      description: "orchestrator.ts coverage >= 80% lines"
+      priority: should
+      automated: true
+      evidenceType: coverage-report
+  notes: |
+    Verification focuses on technical correctness of the orchestration pipeline.
+    All "must" priority checks must pass.
+
+# Validation: Did we build the right thing? (Business correctness)
+validation:
+  checks:
+    - id: "B-1"
+      description: "Orchestrator produces valid React components"
+      priority: must
+      automated: true
+      testIds: ["generateFrontend"]
+      evidenceType: test-result
+    - id: "B-2"
+      description: "Orchestrator produces valid Express backend code"
+      priority: must
+      automated: true
+      testIds: ["generateBackend"]
+      evidenceType: test-result
+    - id: "B-3"
+      description: "Design-to-API mapper infers correct data models"
+      priority: must
+      automated: true
+      testIds: ["design-api-mapper"]
+      evidenceType: test-result
+    - id: "B-4"
+      description: "Deployment integration works (Vercel + Lambda stubs)"
+      priority: should
+      automated: true
+      testIds: ["deployFrontend", "deployBackend"]
+      evidenceType: test-result
+  notes: |
+    Validation ensures the orchestrator produces usable, production-quality output.
+
+testSuites:
+  membership:
+    - smoke
+    - sanity
+  tags:
+    - "poc-orchestrator"
+    - "full-stack-generation"
+  targetedTests:
+    - "packages/platform-ui/src/lib/poc/__tests__/orchestrator.test.ts"
+    - "packages/platform-ui/src/lib/poc/__tests__/design-api-mapper.test.ts"
+    - "packages/platform-ui/src/lib/poc/test-generators/__tests__/*.test.ts"
+
+evidence:
+  required:
+    - test-results
+    - coverage-report
+    - build-output
+  artifacts:
+    - name: "POC Test Results"
+      path: "/tmp/poc-test-results.json"
+      description: "Jest test output for POC module"
+    - name: "Coverage Report"
+      path: "coverage/lcov-report/index.html"
+      description: "POC module coverage report"
+
+definitionOfDone:
+  - "All verification checks (V-*) with priority 'must' pass"
+  - "All validation checks (B-*) with priority 'must' pass"
+  - "147 tests passing"
+  - "POC module coverage >= 80% lines"
+  - "Build succeeds without errors"
+  - "Orchestrator can run end-to-end with mocked services"
+
+nonGoals:
+  - "Production deployment infrastructure"
+  - "Real Jira/Vercel/AWS integration (stubs acceptable)"
+  - "UI dashboard for POC (separate work item)"
+
+externalLinks:
+  plan: "file://.claude/plans/playful-finding-cloud.md"
