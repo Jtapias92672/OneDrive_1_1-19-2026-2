@@ -368,4 +368,392 @@ describe('PrismaBuilder', () => {
       expect(schema).toContain('model Post');
     });
   });
+
+  describe('Relation Generation', () => {
+    it('should generate one-to-one relation', () => {
+      const entities: Entity[] = [
+        {
+          id: '1',
+          name: 'User',
+          fields: [
+            { name: 'email', type: 'string', required: true, unique: true },
+            {
+              name: 'profile',
+              type: 'uuid',
+              required: false,
+              unique: false,
+              relation: {
+                type: 'one-to-one',
+                target: 'Profile',
+              },
+            },
+          ],
+          timestamps: false,
+          softDelete: false,
+        },
+        {
+          id: '2',
+          name: 'Profile',
+          fields: [
+            { name: 'bio', type: 'text', required: false, unique: false },
+          ],
+          timestamps: false,
+          softDelete: false,
+        },
+      ];
+
+      const builder = new PrismaBuilder(createContext(entities));
+      const schema = builder.build();
+
+      expect(schema).toContain('Profile?');
+      expect(schema).toContain('@relation');
+    });
+
+    it('should generate many-to-one relation', () => {
+      const entities: Entity[] = [
+        {
+          id: '1',
+          name: 'Post',
+          fields: [
+            { name: 'title', type: 'string', required: true, unique: false },
+            {
+              name: 'author',
+              type: 'uuid',
+              required: true,
+              unique: false,
+              relation: {
+                type: 'many-to-one',
+                target: 'User',
+                onDelete: 'CASCADE',
+              },
+            },
+          ],
+          timestamps: false,
+          softDelete: false,
+        },
+      ];
+
+      const builder = new PrismaBuilder(createContext(entities));
+      const schema = builder.build();
+
+      expect(schema).toContain('User');
+      expect(schema).toContain('@relation');
+      expect(schema).toContain('onDelete: CASCADE');
+    });
+
+    it('should generate one-to-many relation', () => {
+      const entities: Entity[] = [
+        {
+          id: '1',
+          name: 'User',
+          fields: [
+            { name: 'email', type: 'string', required: true, unique: true },
+            {
+              name: 'posts',
+              type: 'uuid',
+              required: false,
+              unique: false,
+              relation: {
+                type: 'one-to-many',
+                target: 'Post',
+                inverseSide: 'author',
+              },
+            },
+          ],
+          timestamps: false,
+          softDelete: false,
+        },
+      ];
+
+      const builder = new PrismaBuilder(createContext(entities));
+      const schema = builder.build();
+
+      expect(schema).toContain('Post[]');
+    });
+
+    it('should generate many-to-many relation', () => {
+      const entities: Entity[] = [
+        {
+          id: '1',
+          name: 'Post',
+          fields: [
+            { name: 'title', type: 'string', required: true, unique: false },
+            {
+              name: 'tags',
+              type: 'uuid',
+              required: false,
+              unique: false,
+              relation: {
+                type: 'many-to-many',
+                target: 'Tag',
+              },
+            },
+          ],
+          timestamps: false,
+          softDelete: false,
+        },
+      ];
+
+      const builder = new PrismaBuilder(createContext(entities));
+      const schema = builder.build();
+
+      expect(schema).toContain('Tag[]');
+    });
+  });
+
+  describe('Field with Default Values', () => {
+    it('should generate field with default value', () => {
+      const entity: Entity = {
+        id: '1',
+        name: 'User',
+        fields: [
+          { name: 'isActive', type: 'boolean', required: true, unique: false, default: true },
+        ],
+        timestamps: false,
+        softDelete: false,
+      };
+
+      const builder = new PrismaBuilder(createContext([entity]));
+      const schema = builder.build();
+
+      expect(schema).toContain('@default(true)');
+    });
+
+    it('should generate uuid field with default', () => {
+      const entity: Entity = {
+        id: '1',
+        name: 'User',
+        fields: [
+          { name: 'id', type: 'uuid', required: true, unique: true },
+        ],
+        timestamps: false,
+        softDelete: false,
+      };
+
+      const builder = new PrismaBuilder(createContext([entity]));
+      const schema = builder.build();
+
+      expect(schema).toContain('@id @default(uuid())');
+    });
+  });
+
+  describe('Decimal Fields', () => {
+    it('should generate decimal field with precision', () => {
+      const entity: Entity = {
+        id: '1',
+        name: 'Product',
+        fields: [
+          { name: 'price', type: 'decimal', required: true, unique: false },
+        ],
+        timestamps: false,
+        softDelete: false,
+      };
+
+      const builder = new PrismaBuilder(createContext([entity]));
+      const schema = builder.build();
+
+      expect(schema).toContain('Decimal');
+      expect(schema).toContain('@db.Decimal(10, 2)');
+    });
+  });
+
+  describe('Enum Fields', () => {
+    it('should generate enum field referencing existing enum', () => {
+      const entities: Entity[] = [
+        {
+          id: '1',
+          name: 'User',
+          fields: [
+            { name: 'role', type: 'enum', required: true, unique: false, enum: ['ADMIN', 'USER'] },
+          ],
+          timestamps: false,
+          softDelete: false,
+        },
+      ];
+
+      const enums = [{ name: 'UserRole', values: ['ADMIN', 'USER'] }];
+
+      const builder = new PrismaBuilder(createContext(entities, enums));
+      const schema = builder.build();
+
+      expect(schema).toContain('Userrole');
+    });
+
+    it('should generate enum field as String when no matching enum', () => {
+      const entities: Entity[] = [
+        {
+          id: '1',
+          name: 'User',
+          fields: [
+            { name: 'status', type: 'enum', required: true, unique: false, enum: ['ACTIVE', 'INACTIVE'] },
+          ],
+          timestamps: false,
+          softDelete: false,
+        },
+      ];
+
+      const builder = new PrismaBuilder(createContext(entities, []));
+      const schema = builder.build();
+
+      expect(schema).toContain('String');
+    });
+  });
+
+  describe('Column Name Mapping', () => {
+    it('should generate column name override when different from default', () => {
+      const entity: Entity = {
+        id: '1',
+        name: 'User',
+        fields: [
+          // columnName 'custom_name' differs from default conversion
+          { name: 'firstName', type: 'string', required: true, unique: false, columnName: 'custom_name' },
+        ],
+        timestamps: false,
+        softDelete: false,
+      };
+
+      const builder = new PrismaBuilder(createContext([entity]));
+      const schema = builder.build();
+
+      expect(schema).toContain('@map("custom_name")');
+    });
+
+    it('should generate column name when explicitly provided and different from auto-generated', () => {
+      const entity: Entity = {
+        id: '1',
+        name: 'User',
+        fields: [
+          // firstName auto-converts to first_name, so we use user_first_name to be different
+          { name: 'firstName', type: 'string', required: true, unique: false, columnName: 'user_first_name' },
+        ],
+        timestamps: false,
+        softDelete: false,
+      };
+
+      const builder = new PrismaBuilder(createContext([entity]));
+      const schema = builder.build();
+
+      expect(schema).toContain('@map("user_first_name")');
+    });
+  });
+
+  describe('findRelationships', () => {
+    it('should find relationships for entity', () => {
+      const entities: Entity[] = [
+        {
+          id: '1',
+          name: 'User',
+          fields: [{ name: 'email', type: 'string', required: true, unique: true }],
+          timestamps: false,
+          softDelete: false,
+        },
+      ];
+
+      const context = createContext(entities);
+      context.dataModel.relationships = [
+        {
+          id: 'r1',
+          name: 'UserPosts',
+          type: 'one-to-many',
+          source: 'User',
+          target: 'Post',
+          sourceField: 'posts',
+          targetField: 'author',
+        },
+      ];
+
+      const builder = new PrismaBuilder(context);
+      const relationships = builder.findRelationships('User');
+
+      expect(relationships).toHaveLength(1);
+      expect(relationships[0].name).toBe('UserPosts');
+    });
+  });
+
+  describe('Foreign Key Generation', () => {
+    it('should generate foreign key fields for relations', () => {
+      const entity: Entity = {
+        id: '1',
+        name: 'Post',
+        fields: [
+          { name: 'title', type: 'string', required: true, unique: false },
+          {
+            name: 'author',
+            type: 'uuid',
+            required: true,
+            unique: false,
+            relation: {
+              type: 'many-to-one',
+              target: 'User',
+            },
+          },
+        ],
+        timestamps: false,
+        softDelete: false,
+      };
+
+      const builder = new PrismaBuilder(createContext([entity]));
+      const fkFields = builder.generateForeignKeyFields(entity);
+
+      expect(fkFields).toHaveLength(1);
+      expect(fkFields[0].name).toBe('user_id');
+      expect(fkFields[0].type).toBe('uuid');
+    });
+
+    it('should not duplicate existing foreign key field', () => {
+      const entity: Entity = {
+        id: '1',
+        name: 'Post',
+        fields: [
+          { name: 'title', type: 'string', required: true, unique: false },
+          { name: 'user_id', type: 'uuid', required: true, unique: false },
+          {
+            name: 'author',
+            type: 'uuid',
+            required: true,
+            unique: false,
+            relation: {
+              type: 'many-to-one',
+              target: 'User',
+            },
+          },
+        ],
+        timestamps: false,
+        softDelete: false,
+      };
+
+      const builder = new PrismaBuilder(createContext([entity]));
+      const fkFields = builder.generateForeignKeyFields(entity);
+
+      expect(fkFields).toHaveLength(0);
+    });
+
+    it('should generate unique foreign key for one-to-one relation', () => {
+      const entity: Entity = {
+        id: '1',
+        name: 'Profile',
+        fields: [
+          { name: 'bio', type: 'text', required: false, unique: false },
+          {
+            name: 'user',
+            type: 'uuid',
+            required: true,
+            unique: false,
+            relation: {
+              type: 'one-to-one',
+              target: 'User',
+            },
+          },
+        ],
+        timestamps: false,
+        softDelete: false,
+      };
+
+      const builder = new PrismaBuilder(createContext([entity]));
+      const fkFields = builder.generateForeignKeyFields(entity);
+
+      expect(fkFields).toHaveLength(1);
+      expect(fkFields[0].unique).toBe(true);
+    });
+  });
 });
