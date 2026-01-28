@@ -12,7 +12,33 @@ Enterprise-grade AI-assisted design-to-code platform. Converts Figma designs to 
 
 ---
 
-## PHILOSOPHY (READ FIRST — NON-NEGOTIABLE)
+## THE THREE TRUTHS (READ FIRST — NON-NEGOTIABLE)
+
+### Truth 1: Truth Serum Protocol
+> "Reality over claims. Evidence over assertions."
+
+- **NEVER** claim something works without proof
+- Test before reporting success
+- If you're not sure, say so
+- Memory of creating something ≠ proof it exists
+
+### Truth 2: Eyes Before Hands
+> "Understand before changing. Read before writing."
+
+- Read entire file before editing
+- Understand context before changes
+- Review existing patterns before adding new
+
+### Truth 3: Systematic Over Fast
+> "Correct is better than quick. Repeatable beats one-time."
+
+- One change at a time
+- Verify after each change
+- Document as you go
+
+---
+
+## PHILOSOPHY
 
 **Primary Objective:** Code that works correctly
 **Secondary Objective:** Tests that prove it works
@@ -252,6 +278,85 @@ grep -c "pattern" src/**/*.ts
 
 ---
 
+## DAILY ROUTINE PROTOCOLS (PERSISTENT)
+
+### Morning Start Protocol
+
+Every session MUST begin with this sequence:
+
+```
+=== SESSION START ===
+Turn: 0
+
+PREFLIGHT CHECKLIST:
+1. cat TICKET.md                    # What was left from last session
+2. cat CLAUDE.md | head -100        # Load protocols
+3. git status                       # Check uncommitted work
+4. npm test 2>&1 | tail -10         # Verify baseline
+
+CONFIRM:
+- [ ] Philosophy loaded (capabilities over metrics)
+- [ ] 10-turn rule acknowledged
+- [ ] First question: "What capabilities must work?"
+
+Today's priorities:
+1. [TASK 1 from TICKET.md]
+2. [TASK 2]
+3. [TASK 3]
+
+Report: Protocols loaded, ready for task
+```
+
+### Day End Protocol
+
+Every session MUST end with this sequence:
+
+```
+=== SESSION END ===
+Turns: X
+Status: [COMPLETE/PARTIAL]
+Commits: [hash1, hash2, ...]
+Tests: [count] passing
+
+Completed:
+- Task 1: [status]
+- Task 2: [status]
+
+Pending:
+- [remaining work]
+
+Tomorrow's priority:
+- [specific first action]
+
+=== UPDATE TICKET.md ===
+```
+
+### End of Day Checklist
+
+Before ending any session:
+
+```markdown
+- [ ] All tests passing (npm test && npx jest tests/unit/)
+- [ ] No uncommitted changes (git status clean)
+- [ ] TICKET.md updated with:
+  - Completed tasks
+  - In-progress tasks with specific stopping point
+  - Next session's first action
+- [ ] Commits pushed (if applicable)
+- [ ] Handoff summary generated
+```
+
+### Verification-First Ending
+
+Before marking ANY task complete:
+
+1. **Run ALL test suites** (not just one)
+2. **Check branch coverage** (not just line coverage)
+3. **Verify config combinations** (not just defaults)
+4. **Inspect skipped tests** (they indicate issues)
+
+---
+
 ## SESSION HANDOFF PROTOCOL
 
 ### Persistent Handoff File: `TICKET.md`
@@ -320,3 +425,46 @@ See: `.forge/skills/MANIFEST.md`
 ## Contacts
 - Owner: JT
 - Org: ArcFoundry
+
+---
+
+## KEY LESSONS LEARNED (2026-01-28)
+
+| Lesson | Impact |
+|--------|--------|
+| **Test counts ≠ Code quality** | High test count masked untested code paths |
+| **Branch coverage matters** | 66% branch = 1/3 of logic NEVER runs |
+| **Default config bias** | Only testing defaults misses real-world scenarios |
+| **Security needs extra scrutiny** | 1-8% coverage on security = vulnerability |
+| **"Passing" can be misleading** | Tests can pass in one suite, fail in another |
+| **Verify before trusting reports** | Reports need validation against actual code |
+
+### Verification Checklist (Before Marking Complete)
+
+1. **Verify BRANCH coverage**, not just line %
+2. **Test ALL config combinations**, not just defaults
+3. **Run ALL test suites** (`npm test` AND `tests/unit/`)
+4. **Check for skipped tests** - they indicate issues
+5. **Inspect actual uncovered lines**
+6. **Smaller, focused instructions** to avoid token limits
+
+---
+
+## JT1 RECOVERY PROTOCOL
+
+**Trigger:** "Invoke JT1 Protocol"
+
+**When to Use:**
+- Application in broken state
+- Standard debugging failed 3+ times
+- Critical blocker with no clear path
+
+**Phases:**
+1. **STOP (5 min)** - Halt all changes, document state
+2. **DIAGNOSE (15 min)** - Find ACTUAL root cause
+3. **PLAN (10 min)** - Design minimal fix with rollback
+4. **ACT** - Execute step by step, verify after each
+
+---
+
+*Built for DCMA/DFARS/CMMC/SOC2 compliance.*

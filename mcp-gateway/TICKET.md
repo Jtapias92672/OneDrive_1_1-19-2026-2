@@ -1,43 +1,96 @@
 # TICKET.md — Session Handoff
 
 ## Last Session
-- **Date:** 2026-01-28
-- **Cycles:** 6/10
-- **Commit:** a64dfb0
+- **Date:** 2026-01-28 (Evening)
+- **Platform:** Claude Cowork
+- **Commit:** b3e9dd1
 
-## Completed
-- [x] Epic 14 Session 2: Multi-tier validation (tier1, tier2, tier3, pipeline, confidence)
-- [x] Epic 14 Session 3: Frontier service, complexity analyzer, calibration service
-- [x] Epic 14 Tag: `epic-14-complete`
-- [x] Epic 7.0 Verification: PASSED (7 files, 3414 lines, 4/4 roles)
-- [x] Epic 13 Verification: PASSED (20 endpoints, 172 tests)
-- [x] Epic 11 Scaffolding: Figma, Mendix, AWS clients (interfaces only)
+---
 
-## In Progress
-- [ ] None
+## Session Summary (2026-01-28)
+
+### Completed ✅
+- [x] Epic 14 verification (Phase 0-1)
+- [x] Fixed 25 failing tests in tests/unit/
+- [x] Security components to 95%+ (oauth, tenant, sanitization)
+- [x] Added lessons learned to README.md
+- [x] Enhanced CLAUDE.md with Three Truths and JT1 protocol
+- [x] Imported session protocols from Claude.ai
+- [x] Created CC-DIRECTIVES for systematic verification
+- [x] Added Morning/Day-End protocols to CLAUDE.md as persistent routines
+
+### In Progress ⏳
+- [ ] Phase 2: Overall coverage 77% → 90%+
+  - service-builder.ts branch: 66.66% → 85% needed
+  - 1 JWT test skipped (jose ESM issue)
+
+### Pending 📋
+- [ ] Phase 3: Final Epic 7.5 v2 verification
+- [ ] Epic 15: EC2 Infrastructure (directive ready)
+- [ ] Epic 16: Project Creation UI (directive ready)
+
+---
+
+## Test Status
+
+| Suite | Passing | Status |
+|-------|---------|--------|
+| express-generator | 215/215 | ✅ |
+| tests/unit | 835/836 | ⚠️ 1 skipped |
+| platform-ui | 1225/1225 | ✅ |
+| **TOTAL** | ~2275 | ✅ |
+
+---
 
 ## Next Session Must
-1. Read this TICKET.md first
-2. Choose next work: Epic 12 (E2E Integration) or real integrations
-3. Run `npm test | tail -10` to verify 824 tests passing
+
+1. **Fix JWT validation** - Add jose to transformIgnorePatterns
+2. **Fix service-builder.ts** - Test these configs:
+   - `{ useTransactions: false, useSoftDelete: true }`
+   - `{ useTransactions: true, useSoftDelete: false }`
+   - `{ useTransactions: false, useSoftDelete: false }`
+3. **Run Epic 7.5 v2** - Full verification after fixes
+4. **Only then** proceed to Epic 15/16
+
+---
+
+## Key Lessons Learned Today
+
+| Lesson | Impact |
+|--------|--------|
+| Test counts ≠ Code quality | 37 tests were failing in tests/unit/ |
+| Branch coverage matters | 66% = 1/3 of logic never runs |
+| Default config bias | Must test ALL config combinations |
+| Security scrutiny | Found components at 1-8% coverage |
+
+---
+
+## Protocol Files (Read First)
+
+| File | Purpose |
+|------|---------|
+| `CLAUDE.md` | Three Truths, protocols, guardrails |
+| `README.md` | QA guidelines, lessons learned |
+| `CC-DIRECTIVES/CC-END-OF-DAY-ANALYSIS-EPIC-7.5.md` | Tomorrow's analysis prompt |
+
+---
 
 ## Context Notes
-- Epic 11 has interface stubs only — all methods throw "Not implemented"
-- Epic 16 (Adaptive Intelligence) is BLOCKED on Bedrock access
-- Epic 12 (E2E Integration) should be last after all others
-- All scaffolding is complete — ready for real integration coding
 
-## Test Counts
-| Package | Tests |
-|---------|-------|
-| platform-ui | 824 |
-| governance | 172 |
-| accuracy | ~150 |
-| integrations | 49 |
+- CC hit token limits multiple times — use smaller instructions
+- CodeFormatter was intentionally simplified (correct decision)
+- Security components improved from 1-8% to 95%+
+- Branch coverage is the real metric, not line coverage
 
-## Recent Commits
-```
-a64dfb0 feat(epic-11): External integrations scaffolding
-6bea213 feat(epic-14): Session 3 - Frontier + Calibration + Complexity
-cf92a2a Session end: modules complete, integration incomplete
-```
+---
+
+## Session History
+
+| Date | Platform | Result |
+|------|----------|--------|
+| 2026-01-28 | Claude.ai | Epic 14 complete, scaffolding done |
+| 2026-01-28 | Cowork | Phase 0-1 fixed, protocols migrated |
+
+---
+
+*Handoff created 2026-01-28 by Claude Cowork*
