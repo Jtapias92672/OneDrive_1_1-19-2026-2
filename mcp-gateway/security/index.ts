@@ -223,8 +223,9 @@ export class SecurityLayer {
    * Compute integrity hash for a tool
    */
   computeToolHash(tool: MCPTool): string {
-    const algorithm = this.config.toolIntegrity.hashAlgorithm;
-    
+    // Ensure we always use a valid hash algorithm (default to sha256)
+    const algorithm = this.config.toolIntegrity?.hashAlgorithm || 'sha256';
+
     // Hash the critical fields that affect behavior
     const hashContent = JSON.stringify({
       name: tool.name,

@@ -368,11 +368,17 @@ export class SignatureVerifier {
    * Fetch Sigstore bundle from npm
    */
   private async fetchSigstoreBundle(
-    _packageName: string,
-    _version: string
+    packageName: string,
+    version: string
   ): Promise<SigstoreBundle | null> {
     // In production, fetch from:
     // https://registry.npmjs.org/-/npm/v1/attestations/${packageName}@${version}
+
+    // First, verify the package exists on npm
+    const packageExists = await this.checkPackageExists(packageName, version);
+    if (!packageExists) {
+      return null;
+    }
 
     // Simulate bundle fetch
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -399,6 +405,26 @@ export class SignatureVerifier {
         signature: crypto.randomBytes(64).toString('base64'),
       },
     };
+  }
+
+  /**
+   * Check if package exists on npm registry
+   */
+  private async checkPackageExists(
+    packageName: string,
+    version: string
+  ): Promise<boolean> {
+    try {
+      // Fetch package metadata from npm registry
+      const encodedName = packageName.startsWith('@')
+        ? `@${encodeURIComponent(packageName.slice(1))}`
+        : encodeURIComponent(packageName);
+
+      const response = await fetch(`https://registry.npmjs.org/${encodedName}/${version}`);
+      return response.ok;
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -440,6 +466,20 @@ export class SignatureVerifier {
     // This is a fallback for packages without Sigstore attestations
 
     try {
+      // Verify the package exists first
+      const packageExists = await this.checkPackageExists(packageName, version);
+      if (!packageExists) {
+        return {
+          valid: false,
+          package: packageName,
+          version,
+          signatureType: 'npm',
+          errors: [`Package ${packageName}@${version} not found on npm registry`],
+          warnings: [],
+          verifiedAt: new Date().toISOString(),
+        };
+      }
+
       // Simulate signature check
       await new Promise((resolve) => setTimeout(resolve, 10));
 

@@ -19,6 +19,10 @@ export default {
       },
     ],
   },
+  // Transform ESM packages in node_modules (jose is an ESM package)
+  transformIgnorePatterns: [
+    'node_modules/(?!(jose)/)',
+  ],
   extensionsToTreatAsEsm: ['.ts'],
   collectCoverageFrom: [
     '**/*.ts',

@@ -17,7 +17,8 @@ jest.mock('../../security/index.js', () => ({
     authenticate: jest.fn().mockResolvedValue({ valid: true }),
     sanitizeInput: jest.fn().mockReturnValue({ safe: true, sanitized: {} }),
     verifyToolIntegrity: jest.fn().mockReturnValue(true),
-    computeToolHash: jest.fn().mockReturnValue('mock-hash-abc123'),
+    // Return a proper SHA-256 length hash (64 hex characters)
+    computeToolHash: jest.fn().mockReturnValue('a'.repeat(64)),
   })),
 }));
 

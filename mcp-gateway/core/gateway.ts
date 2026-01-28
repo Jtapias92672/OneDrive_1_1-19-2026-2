@@ -220,11 +220,19 @@ export class MCPGateway {
 
   private mergeConfig(config?: Partial<MCPGatewayConfig>): MCPGatewayConfig {
     if (!config) return DEFAULT_CONFIG;
-    
+
+    // Deep merge security config to preserve nested properties
+    const security = {
+      oauth: { ...DEFAULT_CONFIG.security.oauth, ...config.security?.oauth },
+      inputSanitization: { ...DEFAULT_CONFIG.security.inputSanitization, ...config.security?.inputSanitization },
+      toolIntegrity: { ...DEFAULT_CONFIG.security.toolIntegrity, ...config.security?.toolIntegrity },
+      supplyChain: { ...DEFAULT_CONFIG.security.supplyChain, ...config.security?.supplyChain },
+    };
+
     return {
       ...DEFAULT_CONFIG,
       ...config,
-      security: { ...DEFAULT_CONFIG.security, ...config.security },
+      security,
       approval: { ...DEFAULT_CONFIG.approval, ...config.approval },
       sandbox: { ...DEFAULT_CONFIG.sandbox, ...config.sandbox },
       privacy: { ...DEFAULT_CONFIG.privacy, ...config.privacy },

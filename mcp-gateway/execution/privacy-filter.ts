@@ -40,11 +40,38 @@ const PII_PATTERNS: PrivacyRule[] = [
     riskScore: 0.5,
   },
 
-  // International phone numbers
+  // International phone numbers (with separators)
   {
     pattern: /\b\+\d{1,3}[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}\b/g,
     replacement: '[REDACTED_PHONE_INTL]',
     category: 'phone_international',
+    type: 'pii',
+    riskScore: 0.5,
+  },
+
+  // E.164 format phones (compact international: +14155551234)
+  {
+    pattern: /\+[1-9]\d{9,14}\b/g,
+    replacement: '[REDACTED_PHONE_E164]',
+    category: 'phone_e164',
+    type: 'pii',
+    riskScore: 0.5,
+  },
+
+  // 00-prefix international phones (European style: 0044207123456)
+  {
+    pattern: /\b00[1-9]\d{8,13}\b/g,
+    replacement: '[REDACTED_PHONE_00PREFIX]',
+    category: 'phone_00prefix',
+    type: 'pii',
+    riskScore: 0.5,
+  },
+
+  // UK phone numbers (020 7123 4567, 07700 900123, 0161-234-5678)
+  {
+    pattern: /\b0[1-9]\d{1,4}[-\s]?\d{3,4}[-\s]?\d{3,4}\b/g,
+    replacement: '[REDACTED_PHONE_UK]',
+    category: 'phone_uk',
     type: 'pii',
     riskScore: 0.5,
   },
@@ -56,6 +83,78 @@ const PII_PATTERNS: PrivacyRule[] = [
     category: 'ssn',
     type: 'pii',
     riskScore: 0.9,
+  },
+
+  // HICN (Health Insurance Claim Number) - SSN + suffix letter(s)
+  {
+    pattern: /\b\d{3}[-\s]?\d{2}[-\s]?\d{4}[A-Z]{1,2}\b/g,
+    replacement: '[REDACTED_HICN]',
+    category: 'hicn',
+    type: 'pii',
+    riskScore: 0.9,
+  },
+
+  // NPI (National Provider Identifier) - 10 digits with context
+  {
+    pattern: /\b(?:NPI|National\s+Provider\s+(?:ID|Identifier)?|Provider\s+(?:NPI|ID))\s*[:=#]?\s*\d{10}\b/gi,
+    replacement: '[REDACTED_NPI]',
+    category: 'healthcare',
+    type: 'pii',
+    riskScore: 0.7,
+  },
+
+  // Medical Record Number (MRN) with context
+  {
+    pattern: /\b(?:MRN|mrn|medical[_\s-]?record[_\s-]?(?:number|num|no)?|patient[_\s-]?(?:id|ID)|chart|Hospital\s+ID|Clinic\s+patient|Lab\s+specimen)\s*[:=#]?\s*[A-Z0-9]{5,12}\b/gi,
+    replacement: '[REDACTED_MRN]',
+    category: 'healthcare',
+    type: 'pii',
+    riskScore: 0.8,
+  },
+
+  // DEA Number (2 letters + 7 digits)
+  {
+    pattern: /\b(?:DEA[_\s-]?(?:Number|No)?)\s*[:=#]?\s*[A-Z]{2}\d{7}\b/gi,
+    replacement: '[REDACTED_DEA]',
+    category: 'healthcare',
+    type: 'pii',
+    riskScore: 0.8,
+  },
+
+  // DEA Number without context (2 letters + 7 digits)
+  {
+    pattern: /\b[A-Z]{2}\d{7}\b/g,
+    replacement: '[REDACTED_DEA]',
+    category: 'healthcare',
+    type: 'pii',
+    riskScore: 0.8,
+  },
+
+  // Medicare Beneficiary Identifier (MBI) - format: 1A23B45CD67
+  {
+    pattern: /\b(?:MBI|Medicare[_\s-]?(?:ID|Beneficiary))\s*[:=#]?\s*\d[A-Z]\d{2}[A-Z]\d{2}[A-Z]{2}\d{2}\b/gi,
+    replacement: '[REDACTED_MBI]',
+    category: 'healthcare',
+    type: 'pii',
+    riskScore: 0.8,
+  },
+
+  // MBI format without context
+  {
+    pattern: /\b\d[A-Z]\d{2}[A-Z]\d{2}[A-Z]{2}\d{2}\b/g,
+    replacement: '[REDACTED_MBI]',
+    category: 'healthcare',
+    type: 'pii',
+    riskScore: 0.8,
+  },
+
+  // Insurance/Subscriber ID with context
+  {
+    pattern: /\b(?:Insurance[_\s-]?member|Subscriber[_\s-]?ID|Group[_\s-]?policy)\s*[:=#]?\s*\d{10}\b/gi,
+    replacement: '[REDACTED_INSURANCE_ID]',
+    category: 'healthcare',
+    type: 'pii',
+    riskScore: 0.7,
   },
 
   // Credit card numbers (various formats)
@@ -88,6 +187,24 @@ const PII_PATTERNS: PrivacyRule[] = [
   // Passport numbers (US format)
   {
     pattern: /\b[A-Z]\d{8}\b/g,
+    replacement: '[REDACTED_PASSPORT]',
+    category: 'passport',
+    type: 'pii',
+    riskScore: 0.8,
+  },
+
+  // Canadian passports (2 letters + 6 digits)
+  {
+    pattern: /\b[A-Z]{2}\d{6}\b/g,
+    replacement: '[REDACTED_PASSPORT_CA]',
+    category: 'passport',
+    type: 'pii',
+    riskScore: 0.8,
+  },
+
+  // Passport with context keyword
+  {
+    pattern: /\b(?:passport|passport[#_\s-]?(?:number|no|num)?)\s*[:=#]?\s*[A-Z0-9]{6,12}\b/gi,
     replacement: '[REDACTED_PASSPORT]',
     category: 'passport',
     type: 'pii',
@@ -138,6 +255,60 @@ const PII_PATTERNS: PrivacyRule[] = [
     type: 'pii',
     riskScore: 0.2,
   },
+
+  // Student ID with context (student_id, SID, UIN, CWID, Net ID, Banner ID, University ID)
+  {
+    pattern: /\b(?:student[_\s-]?id|SID|UIN|CWID|Net[_\s-]?ID|Banner[_\s-]?ID|University[_\s-]?ID|Registrar[_\s-]?student[_\s-]?ID|student[_\s-]?enrollment)\s*[:=#]?\s*[A-Z0-9]{6,12}\b/gi,
+    replacement: '[REDACTED_STUDENT_ID]',
+    category: 'student',
+    type: 'pii',
+    riskScore: 0.6,
+  },
+
+  // FAFSA/Financial Aid ID with context
+  {
+    pattern: /\b(?:FAFSA[_\s-]?(?:id|ID)?|Student[_\s-]?Aid[_\s-]?(?:Number|ID)?|Financial[_\s-]?Aid[_\s-]?ID|fafsa_id|SAR[_\s-]?number)\s*[:=#]?\s*\d{10}\b/gi,
+    replacement: '[REDACTED_FAFSA_ID]',
+    category: 'student',
+    type: 'pii',
+    riskScore: 0.7,
+  },
+
+  // Education record references
+  {
+    pattern: /\b(?:Transcript|Grade|Enrollment|GPA|Credits|Academic[_\s-]?record|Degree[_\s-]?audit|Course[_\s-]?roster[_\s-]?ID)\s+(?:for\s+)?(?:student|of\s+ID|ID)?\s*[:=#]?\s*[A-Z0-9]{6,12}\b/gi,
+    replacement: '[REDACTED_EDUCATION_RECORD]',
+    category: 'student',
+    type: 'pii',
+    riskScore: 0.6,
+  },
+
+  // Vehicle Identification Numbers (VIN) - 17 characters
+  {
+    pattern: /\b[A-HJ-NPR-Z0-9]{17}\b/g,
+    replacement: '[REDACTED_VIN]',
+    category: 'vehicle',
+    type: 'pii',
+    riskScore: 0.5,
+  },
+
+  // VIN with context keyword
+  {
+    pattern: /\b(?:VIN|vehicle[_\s-]?(?:identification[_\s-]?)?(?:number|id)?)\s*[:=#]?\s*[A-HJ-NPR-Z0-9]{15,17}\b/gi,
+    replacement: '[REDACTED_VIN]',
+    category: 'vehicle',
+    type: 'pii',
+    riskScore: 0.5,
+  },
+
+  // License plates with context
+  {
+    pattern: /\b(?:license[_\s-]?plate|plate[_\s-]?(?:number|no)?|registration|tag)\s*[:=#]?\s*[A-Z0-9]{4,8}\b/gi,
+    replacement: '[REDACTED_LICENSE_PLATE]',
+    category: 'vehicle',
+    type: 'pii',
+    riskScore: 0.4,
+  },
 ];
 
 // ============================================
@@ -146,83 +317,238 @@ const PII_PATTERNS: PrivacyRule[] = [
 // ============================================
 
 const SECRET_PATTERNS: PrivacyRule[] = [
-  // AWS Access Key ID
+  // ============================================
+  // AWS CREDENTIALS
+  // ============================================
+
+  // AWS Access Key ID (all prefixes) - flexible length to catch variations
   {
-    pattern: /\b(?:A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}\b/g,
+    pattern: /\b(?:A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{12,20}\b/g,
     replacement: '[BLOCKED_AWS_KEY]',
     category: 'aws_access_key',
     type: 'secret',
     riskScore: 1.0,
   },
 
-  // AWS Secret Access Key
+  // AWS Secret Access Key (context-aware) - flexible length
   {
-    pattern: /\b[A-Za-z0-9/+=]{40}\b/g,
+    pattern: /\b(?:aws[_-]?secret[_-]?(?:access[_-]?)?key|secret[_-]?access[_-]?key|secretAccessKey|AWS_SECRET_ACCESS_KEY)\s*[=:]\s*['"]?([A-Za-z0-9/+=]{30,50})['"]?/gi,
     replacement: '[BLOCKED_AWS_SECRET]',
     category: 'aws_secret_key',
     type: 'secret',
     riskScore: 1.0,
   },
 
-  // Generic API keys
+  // AWS Secret (simplified context - matches aws_secret = 'value')
   {
-    pattern: /\b(?:api[_-]?key|apikey|api_secret)[=:]\s*['"]?([a-zA-Z0-9_-]{20,})['"']?\b/gi,
-    replacement: '[BLOCKED_API_KEY]',
-    category: 'generic_api_key',
+    pattern: /\b(?:aws_secret|secret_access_key)\s*[=:]\s*['"]?([A-Za-z0-9/+=]{30,50})['"]?/gi,
+    replacement: '[BLOCKED_AWS_SECRET]',
+    category: 'aws_secret_key',
     type: 'secret',
     riskScore: 1.0,
   },
 
-  // OpenAI API keys
+  // ============================================
+  // CLOUD PROVIDER TOKENS
+  // ============================================
+
+  // Hugging Face tokens - min 30 chars (some tokens are shorter)
   {
-    pattern: /\bsk-[a-zA-Z0-9]{20,}\b/g,
-    replacement: '[BLOCKED_OPENAI_KEY]',
-    category: 'openai_api_key',
+    pattern: /\bhf_[A-Za-z0-9]{30,}\b/g,
+    replacement: '[BLOCKED_HUGGINGFACE_TOKEN]',
+    category: 'huggingface_token',
     type: 'secret',
     riskScore: 1.0,
   },
 
-  // Anthropic API keys
+  // Azure SAS tokens
   {
-    pattern: /\bsk-ant-[a-zA-Z0-9]{20,}\b/g,
-    replacement: '[BLOCKED_ANTHROPIC_KEY]',
-    category: 'anthropic_api_key',
+    pattern: /[?&]sv=\d{4}-\d{2}-\d{2}&[^"'\s]*sig=[A-Za-z0-9%/+=]+/g,
+    replacement: '[BLOCKED_AZURE_SAS]',
+    category: 'azure_sas_token',
     type: 'secret',
     riskScore: 1.0,
   },
 
-  // GitHub tokens
+  // Azure Storage connection strings - flexible key length
   {
-    pattern: /\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36,}\b/g,
+    pattern: /DefaultEndpointsProtocol=https?;AccountName=[^;]+;AccountKey=[A-Za-z0-9+/=]{40,100}=*;?/g,
+    replacement: '[BLOCKED_AZURE_CONNECTION]',
+    category: 'azure_connection_string',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // Azure Service Bus connection strings - flexible key length
+  {
+    pattern: /Endpoint=sb:\/\/[^;]+;SharedAccessKeyName=[^;]+;SharedAccessKey=[A-Za-z0-9+/=]{30,60}=*/g,
+    replacement: '[BLOCKED_AZURE_SERVICEBUS]',
+    category: 'azure_servicebus_connection',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // Google API keys - flexible length (32-40 chars after AIza)
+  {
+    pattern: /\bAIza[0-9A-Za-z_-]{32,42}\b/g,
+    replacement: '[BLOCKED_GOOGLE_KEY]',
+    category: 'google_api_key',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // ============================================
+  // VCS TOKENS (GitHub, GitLab, Bitbucket)
+  // ============================================
+
+  // GitHub classic tokens - flexible length (min 30)
+  {
+    pattern: /\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{30,}\b/g,
     replacement: '[BLOCKED_GITHUB_TOKEN]',
     category: 'github_token',
     type: 'secret',
     riskScore: 1.0,
   },
 
-  // JWT tokens
+  // GitHub fine-grained PAT - flexible format
   {
-    pattern: /\beyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g,
-    replacement: '[BLOCKED_JWT]',
-    category: 'jwt_token',
+    pattern: /\bgithub_pat_[A-Za-z0-9]{8,30}_[A-Za-z0-9]{40,70}\b/g,
+    replacement: '[BLOCKED_GITHUB_PAT]',
+    category: 'github_pat_fine_grained',
     type: 'secret',
     riskScore: 1.0,
   },
 
-  // Private keys (PEM format)
+  // GitLab Personal Access Token
   {
-    pattern: /-----BEGIN\s+(?:RSA\s+|EC\s+|DSA\s+|OPENSSH\s+)?PRIVATE\s+KEY-----[\s\S]*?-----END\s+(?:RSA\s+|EC\s+|DSA\s+|OPENSSH\s+)?PRIVATE\s+KEY-----/g,
-    replacement: '[BLOCKED_PRIVATE_KEY]',
-    category: 'private_key',
+    pattern: /\bglpat-[A-Za-z0-9_-]{20,}\b/g,
+    replacement: '[BLOCKED_GITLAB_PAT]',
+    category: 'gitlab_pat',
     type: 'secret',
     riskScore: 1.0,
   },
 
-  // Google API keys
+  // GitLab CI Token
   {
-    pattern: /\bAIza[0-9A-Za-z_-]{35}\b/g,
-    replacement: '[BLOCKED_GOOGLE_KEY]',
-    category: 'google_api_key',
+    pattern: /\bglcbt-[A-Za-z0-9_-]{20,}\b/g,
+    replacement: '[BLOCKED_GITLAB_CI]',
+    category: 'gitlab_ci_token',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // GitLab Pipeline Trigger Token
+  {
+    pattern: /\bglptt-[A-Za-z0-9_-]{20,}\b/g,
+    replacement: '[BLOCKED_GITLAB_TRIGGER]',
+    category: 'gitlab_trigger_token',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // Bitbucket/Atlassian tokens
+  {
+    pattern: /\b(?:bitbucket[_-]?(?:app[_-]?)?password|atlassian[_-]?(?:token|app[_-]?secret))\s*[=:]\s*['"]?([A-Za-z0-9_-]{20,})['"]?/gi,
+    replacement: '[BLOCKED_BITBUCKET_TOKEN]',
+    category: 'bitbucket_app_password',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // ============================================
+  // COMMUNICATION PLATFORM TOKENS
+  // ============================================
+
+  // Slack webhooks
+  {
+    pattern: /https:\/\/hooks\.slack\.com\/services\/T[A-Z0-9]+\/B[A-Z0-9]+\/[A-Za-z0-9]+/g,
+    replacement: '[BLOCKED_SLACK_WEBHOOK]',
+    category: 'slack_webhook',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // Slack bot tokens
+  {
+    pattern: /\bxoxb-[0-9]+-[0-9]+-[A-Za-z0-9]+\b/g,
+    replacement: '[BLOCKED_SLACK_BOT]',
+    category: 'slack_bot_token',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // Slack user tokens
+  {
+    pattern: /\bxoxp-[0-9]+-[0-9]+-[0-9]+-[A-Fa-f0-9]+\b/g,
+    replacement: '[BLOCKED_SLACK_USER]',
+    category: 'slack_user_token',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // Discord bot tokens
+  {
+    pattern: /\b[MN][A-Za-z0-9]{23,}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27,}\b/g,
+    replacement: '[BLOCKED_DISCORD_BOT]',
+    category: 'discord_bot_token',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // Discord webhooks
+  {
+    pattern: /https:\/\/(?:discord|discordapp)\.com\/api\/webhooks\/[0-9]+\/[A-Za-z0-9_-]+/g,
+    replacement: '[BLOCKED_DISCORD_WEBHOOK]',
+    category: 'discord_webhook',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // Microsoft Teams webhooks
+  {
+    pattern: /https:\/\/[a-z0-9]+\.webhook\.office\.com\/webhookb2\/[a-f0-9-]+@[a-f0-9-]+\/IncomingWebhook\/[a-z0-9]+\/[a-f0-9-]+/gi,
+    replacement: '[BLOCKED_TEAMS_WEBHOOK]',
+    category: 'teams_webhook',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // ============================================
+  // SERVICE API KEYS
+  // ============================================
+
+  // Twilio API Key (starts with SK) - allow alphanumeric, flexible length
+  {
+    pattern: /\bSK[A-Za-z0-9]{28,36}\b/g,
+    replacement: '[BLOCKED_TWILIO_KEY]',
+    category: 'twilio_api_key',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // Twilio Account SID (starts with AC) - allow alphanumeric, flexible length
+  {
+    pattern: /\bAC[A-Za-z0-9]{28,36}\b/g,
+    replacement: '[BLOCKED_TWILIO_SID]',
+    category: 'twilio_account_sid',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // SendGrid API keys - flexible part lengths
+  {
+    pattern: /\bSG\.[A-Za-z0-9_-]{16,30}\.[A-Za-z0-9_-]{30,60}\b/g,
+    replacement: '[BLOCKED_SENDGRID_KEY]',
+    category: 'sendgrid_api_key',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // Mailchimp API keys
+  {
+    pattern: /\b[a-f0-9]{32}-us[0-9]{1,2}\b/g,
+    replacement: '[BLOCKED_MAILCHIMP_KEY]',
+    category: 'mailchimp_api_key',
     type: 'secret',
     riskScore: 1.0,
   },
@@ -236,20 +562,104 @@ const SECRET_PATTERNS: PrivacyRule[] = [
     riskScore: 1.0,
   },
 
-  // Database connection strings
+  // PayPal access tokens
   {
-    pattern: /\b(?:mongodb|postgres|mysql|redis):\/\/[^\s"']+/gi,
+    pattern: /\baccess_token\$production\$[a-z0-9]+\$[a-z0-9]+\b/gi,
+    replacement: '[BLOCKED_PAYPAL_TOKEN]',
+    category: 'paypal_access_token',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // Datadog API keys
+  {
+    pattern: /\b(?:datadog[_-]?api[_-]?key|dd[_-]?(?:api[_-]?)?key)\s*[=:]\s*['"]?([a-f0-9]{32})['"]?/gi,
+    replacement: '[BLOCKED_DATADOG_KEY]',
+    category: 'datadog_api_key',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // New Relic API keys - flexible length
+  {
+    pattern: /\bNRAK-[A-Z0-9]{24,32}\b/g,
+    replacement: '[BLOCKED_NEWRELIC_KEY]',
+    category: 'newrelic_api_key',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // Shopify Admin tokens - allow uppercase and flexible length
+  {
+    pattern: /\bshpat_[A-Fa-f0-9]{28,36}\b/g,
+    replacement: '[BLOCKED_SHOPIFY_TOKEN]',
+    category: 'shopify_admin_token',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // NPM tokens
+  {
+    pattern: /\bnpm_[A-Za-z0-9]{36,}\b/g,
+    replacement: '[BLOCKED_NPM_TOKEN]',
+    category: 'npm_token',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // ============================================
+  // DATABASE CONNECTIONS
+  // ============================================
+
+  // Database connection strings (MongoDB, Postgres, MySQL, Redis)
+  {
+    pattern: /\b(?:mongodb(?:\+srv)?|postgres(?:ql)?|mysql|redis):\/\/[^\s"']+/gi,
     replacement: '[BLOCKED_DB_CONNECTION]',
     category: 'database_connection',
     type: 'secret',
     riskScore: 1.0,
   },
 
-  // Password patterns in config
+  // ============================================
+  // AI/LLM API KEYS
+  // ============================================
+
+  // OpenAI API keys (including project keys)
   {
-    pattern: /\b(?:password|passwd|pwd|secret)[=:]\s*['"]?([^\s'"]{8,})['"']?\b/gi,
-    replacement: '[BLOCKED_PASSWORD]',
-    category: 'password',
+    pattern: /\bsk-(?:proj-)?[a-zA-Z0-9]{20,}\b/g,
+    replacement: '[BLOCKED_OPENAI_KEY]',
+    category: 'openai_api_key',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // Anthropic API keys
+  {
+    pattern: /\bsk-ant-(?:api\d+-)?[a-zA-Z0-9]{20,}\b/g,
+    replacement: '[BLOCKED_ANTHROPIC_KEY]',
+    category: 'anthropic_api_key',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // ============================================
+  // AUTHENTICATION TOKENS
+  // ============================================
+
+  // Generic API keys (context-aware)
+  {
+    pattern: /\b(?:api[_-]?key|apikey|api[_-]?secret)\s*[=:]\s*['"]?([a-zA-Z0-9_-]{20,})['"]?/gi,
+    replacement: '[BLOCKED_API_KEY]',
+    category: 'generic_api_key',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // JWT tokens
+  {
+    pattern: /\beyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g,
+    replacement: '[BLOCKED_JWT]',
+    category: 'jwt_token',
     type: 'secret',
     riskScore: 1.0,
   },
@@ -272,7 +682,29 @@ const SECRET_PATTERNS: PrivacyRule[] = [
     riskScore: 1.0,
   },
 
-  // SSH private key content
+  // Password patterns in config
+  {
+    pattern: /\b(?:password|passwd|pwd|secret|db[_-]?password)\s*[=:]\s*['"]?([^\s'"]{8,})['"]?/gi,
+    replacement: '[BLOCKED_PASSWORD]',
+    category: 'password',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // ============================================
+  // PRIVATE KEYS
+  // ============================================
+
+  // Private keys (PEM format)
+  {
+    pattern: /-----BEGIN\s+(?:RSA\s+|EC\s+|DSA\s+|OPENSSH\s+)?PRIVATE\s+KEY-----[\s\S]*?-----END\s+(?:RSA\s+|EC\s+|DSA\s+|OPENSSH\s+)?PRIVATE\s+KEY-----/g,
+    replacement: '[BLOCKED_PRIVATE_KEY]',
+    category: 'private_key',
+    type: 'secret',
+    riskScore: 1.0,
+  },
+
+  // SSH public key content (often paired with private)
   {
     pattern: /\b(?:ssh-rsa|ssh-ed25519|ecdsa-sha2-nistp256)\s+[A-Za-z0-9+/=]+/g,
     replacement: '[BLOCKED_SSH_KEY]',

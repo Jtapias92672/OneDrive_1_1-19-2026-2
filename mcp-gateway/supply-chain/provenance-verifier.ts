@@ -228,7 +228,7 @@ export class ProvenanceVerifier {
         signatureVerified,
         attestationFetched: true,
         verifiedAt: new Date().toISOString(),
-        verificationMethod: 'npm-attestation',
+        verificationMethod: signatureVerified ? 'sigstore' : 'npm-attestation',
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -319,13 +319,41 @@ export class ProvenanceVerifier {
   }
 
   /**
+   * Check if package exists on npm registry
+   */
+  private async checkPackageExists(
+    packageName: string,
+    version: string
+  ): Promise<boolean> {
+    try {
+      // Fetch package metadata from npm registry
+      const encodedName = packageName.startsWith('@')
+        ? `@${encodeURIComponent(packageName.slice(1))}`
+        : encodeURIComponent(packageName);
+
+      const response = await fetch(`${this.config.registryUrl}/${encodedName}/${version}`);
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Simulated fetch for development/testing
    */
   private async simulateFetch(
-    _url: string
+    url: string
   ): Promise<{ ok: boolean; data: Record<string, unknown> }> {
     // In production, this would be a real fetch call
-    // For now, simulate a response
+    // First, check if the package actually exists
+    const urlParts = url.replace(this.config.registryUrl + '/', '').split('/');
+    const packageName = decodeURIComponent(urlParts[0] || '');
+    const version = urlParts[1] || '';
+
+    const exists = await this.checkPackageExists(packageName, version);
+    if (!exists) {
+      return { ok: false, data: {} };
+    }
 
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 10));
