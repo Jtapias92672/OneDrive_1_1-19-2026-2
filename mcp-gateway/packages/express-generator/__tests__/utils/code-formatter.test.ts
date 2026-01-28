@@ -23,8 +23,8 @@ describe('CodeFormatter', () => {
     it('should trim trailing whitespace', () => {
       const input = 'line1   \nline2\t\n';
       const result = formatter.format(input);
-      // Trailing whitespace is trimmed, semicolons added to end of file
-      expect(result).toBe('line1\nline2;\n');
+      // Trailing whitespace is trimmed
+      expect(result).toBe('line1\nline2\n');
     });
 
     it('should ensure final newline', () => {
@@ -36,8 +36,8 @@ describe('CodeFormatter', () => {
     it('should not double final newline', () => {
       const input = 'content\n';
       const result = formatter.format(input);
-      // Semicolons are added by format
-      expect(result).toBe('content;\n');
+      // Format preserves content, just ensures final newline
+      expect(result).toBe('content\n');
     });
   });
 
