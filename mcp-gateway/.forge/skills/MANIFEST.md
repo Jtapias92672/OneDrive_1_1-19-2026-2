@@ -76,6 +76,25 @@ For GenBI implementations.
 - Trust tier enforcement
 - Asset certification
 
+## Software Engineering Skills
+
+Located in `.skills/software-engineering/`. Load for UI/UX development and React codebases.
+
+| Skill | Trigger | Use When |
+|-------|---------|----------|
+| react-best-practices | React/Next.js code | Performance audits, bundle optimization, re-render fixes |
+| writing-clearly | Documentation, PRs | Reducing verbosity, commit messages, code comments |
+| brainstorming | "Build X", "Create Y" | Before implementation, clarifying requirements |
+| agentation | Visual feedback | UI debugging, DOM selector identification |
+| impeccable-style | UI polish | Final design review, visual consistency audits |
+| tailwind-design-system | Tailwind CSS | Component patterns, responsive design, dark mode |
+| ui-ux-promax | Design decisions | Color palettes, typography, style vocabulary |
+
+### Loading Software Engineering Skills
+```bash
+cat .skills/software-engineering/[skill-name]/SKILL.md
+```
+
 ## Standalone Skills
 
 | Skill | Use When |
