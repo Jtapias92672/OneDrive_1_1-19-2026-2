@@ -42,6 +42,7 @@ export interface POCRunInput {
 export interface POCRunOptions {
   generateTests?: boolean;
   generateStories?: boolean;
+  generateHtml?: boolean;
   deployFrontend?: boolean;
   deployBackend?: boolean;
   skipJira?: boolean;
@@ -158,6 +159,7 @@ export interface GeneratedComponent {
   code: string;
   testCode?: string;
   storyCode?: string;
+  htmlCode?: string;
   filePath: string;
 }
 
@@ -264,6 +266,7 @@ export interface POCRunResult {
   tasks: JiraTask[];
   frontendComponents: GeneratedComponent[];
   backendFiles: GeneratedBackend;
+  htmlFiles?: GeneratedFile[];
   inferredModels: InferredDataModel[];
   deployments: {
     frontend?: DeploymentResult;
@@ -298,9 +301,11 @@ export interface POCManifest {
     backendModels: number;
     inferredModels: number;
     tests: number;
+    htmlFiles?: number;
   };
   files: {
-    frontend: string[];
+    react: string[];
+    html: string[];
     backend: string[];
     tests: string[];
   };
@@ -313,6 +318,7 @@ export type POCRunStatus =
   | 'creating_jira_epic'
   | 'creating_jira_tasks'
   | 'generating_frontend'
+  | 'generating_html'
   | 'generating_backend'
   | 'deploying_frontend'
   | 'deploying_backend'

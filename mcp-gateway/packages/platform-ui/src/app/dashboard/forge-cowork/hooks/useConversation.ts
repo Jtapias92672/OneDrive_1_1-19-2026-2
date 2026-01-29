@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useGenerationProgressContext } from '../context/GenerationProgressContext';
 
 // State machine states
 export type ConversationState =
@@ -55,6 +56,8 @@ export interface POCResult {
   testCount: number;
   outputPath: string;
   files: string[];
+  frontendComponents?: any[];
+  backendFiles?: any;
 }
 
 interface UseConversationReturn {
@@ -90,6 +93,7 @@ export function useConversation(): UseConversationReturn {
   const [state, setState] = useState<ConversationState>('ready');
   const [options, setOptions] = useState<POCOptions>(initialOptions);
   const [isExecuting, setIsExecuting] = useState(false);
+  const { startGeneration, updateProgress, completeGeneration, handleError } = useGenerationProgressContext();
 
   // Initialize with greeting
   useEffect(() => {
@@ -307,6 +311,10 @@ export function useConversation(): UseConversationReturn {
         progressMessage: 'Initializing...',
       });
 
+      // Start progress tracking with temporary ID (will be replaced by real runId from server)
+      const tempRunId = `temp-${Date.now()}`;
+      startGeneration(tempRunId);
+
       // Execute POC
       try {
         const response = await fetch('/api/poc/run', {
@@ -318,6 +326,7 @@ export function useConversation(): UseConversationReturn {
             options: {
               generateTests: options.generateTests,
               generateStories: options.generateStories,
+              generateHtml: options.generateHtml,
               skipJira: true,
               deployFrontend: false,
               deployBackend: false,
@@ -346,12 +355,20 @@ export function useConversation(): UseConversationReturn {
                 const data = JSON.parse(line.slice(6));
 
                 if (data.progress !== undefined) {
-                  // Update progress
+                  // Update progress in both places
                   setMessages(prev => prev.map(m =>
                     m.id === progressMsg.id
                       ? { ...m, progress: data.progress, progressMessage: data.message }
                       : m
                   ));
+
+                  // Update progress card via context
+                  updateProgress({
+                    runId: data.runId || tempRunId,
+                    stage: data.stage || 'generating',
+                    progress: data.progress,
+                    message: data.message || 'Processing...',
+                  });
                 } else if (data.runId && data.status) {
                   // Final result
                   setMessages(prev => prev.filter(m => m.id !== progressMsg.id));
@@ -380,9 +397,15 @@ export function useConversation(): UseConversationReturn {
                       testCount,
                       outputPath: data.outputPath || `./generated/${data.runId}`,
                       files: [],
+                      frontendComponents: data.frontendComponents || [],
+                      htmlFiles: data.htmlFiles || [],
+                      backendFiles: data.backendFiles || {},
                     },
                     options: resultOptions,
                   });
+
+                  // Complete progress tracking
+                  completeGeneration(componentCount, testCount);
 
                   setState('complete');
                   setIsExecuting(false);
@@ -398,10 +421,15 @@ export function useConversation(): UseConversationReturn {
       } catch (error) {
         setMessages(prev => prev.filter(m => m.id !== progressMsg.id));
 
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+        // Update progress card with error
+        handleError('generate', errorMessage);
+
         addMessage({
           role: 'ai',
           type: 'error',
-          content: `Generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          content: `Generation failed: ${errorMessage}`,
           options: ['Try Again', 'Start New'],
         });
 

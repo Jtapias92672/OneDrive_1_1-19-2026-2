@@ -7,11 +7,13 @@
 
 import { useState } from 'react';
 import useSWR from 'swr';
+import { GenerationProgressProvider, useGenerationProgressContext } from './context/GenerationProgressContext';
 import { Header } from './components/Header';
 import { LeftSidebar } from './components/LeftSidebar';
 import { MainContent } from './components/MainContent';
 // import { POCWorkflowCard } from './components/RightPanel/POCWorkflowCard';
 import { EvidencePacksCard } from './components/RightPanel/EvidencePacksCard';
+import { GenerationProgressCard } from './components/RightPanel/GenerationProgressCard';
 import { CarsFrameworkCard } from './components/RightPanel/CarsFrameworkCard';
 import { SupplyChainCard } from './components/RightPanel/SupplyChainCard';
 import { AgentMemoryCard } from './components/RightPanel/AgentMemoryCard';
@@ -21,12 +23,14 @@ export type DemoMode = 'normal' | 'warning' | 'critical';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default function ForgeCoworkDashboard() {
+function DashboardContent() {
   const [demoMode, setDemoMode] = useState<DemoMode>('normal');
   const [activeNav, setActiveNav] = useState('Chat');
+  const { progressData } = useGenerationProgressContext();
   const [expandedSections, setExpandedSections] = useState({
     // pocWorkflow: true,
     evidencePacks: true,
+    generationProgress: true,
     cars: true,
     supplyChain: false,
     memory: true,
@@ -90,6 +94,12 @@ export default function ForgeCoworkDashboard() {
               onToggle={() => toggleSection('evidencePacks')}
             />
 
+            <GenerationProgressCard
+              data={progressData}
+              expanded={expandedSections.generationProgress}
+              onToggle={() => toggleSection('generationProgress')}
+            />
+
             <CarsFrameworkCard
               data={carsStatus}
               expanded={expandedSections.cars}
@@ -119,5 +129,13 @@ export default function ForgeCoworkDashboard() {
         </aside>
       </div>
     </div>
+  );
+}
+
+export default function ForgeCoworkDashboard() {
+  return (
+    <GenerationProgressProvider>
+      <DashboardContent />
+    </GenerationProgressProvider>
   );
 }

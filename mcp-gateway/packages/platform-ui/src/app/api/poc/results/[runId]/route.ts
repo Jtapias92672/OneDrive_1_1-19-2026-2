@@ -41,18 +41,63 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       // Models file may not exist
     }
 
-    // Build response with file listings
-    const frontendFiles = await listDirectoryFiles(path.join(runDir, 'frontend'));
-    const backendFiles = await listDirectoryFiles(path.join(runDir, 'backend'));
+    // Build response with file contents for FileViewer
+    const reactFiles = await loadFilesWithContent(path.join(runDir, 'react'));
+    const htmlFiles = await loadFilesWithContent(path.join(runDir, 'html'));
+    const backendFiles = await loadFilesWithContent(path.join(runDir, 'backend'));
+
+    // Format as the FileViewer expects
+    const frontendComponents = reactFiles.map(f => ({
+      name: path.basename(f.name, '.tsx'),
+      code: f.content,
+      filePath: f.path,
+      outputPath: f.name,
+    }));
+
+    const htmlFilesList = htmlFiles.map(f => ({
+      name: f.name,
+      content: f.content,
+      path: f.path,
+    }));
+
+    const backendFilesList = {
+      controllers: backendFiles.filter(f => f.path.includes('/controllers/')).map(f => ({
+        name: f.name,
+        content: f.content,
+        path: f.path,
+      })),
+      services: backendFiles.filter(f => f.path.includes('/services/')).map(f => ({
+        name: f.name,
+        content: f.content,
+        path: f.path,
+      })),
+      models: backendFiles.filter(f => f.path.includes('/models/')).map(f => ({
+        name: f.name,
+        content: f.content,
+        path: f.path,
+      })),
+      routes: backendFiles.filter(f => f.path.includes('/routes/')).map(f => ({
+        name: f.name,
+        content: f.content,
+        path: f.path,
+      })),
+      tests: backendFiles.filter(f => f.path.includes('/tests/')).map(f => ({
+        name: f.name,
+        content: f.content,
+        path: f.path,
+      })),
+    };
 
     return NextResponse.json({
       runId,
-      manifest,
+      status: manifest.status,
+      componentCount: frontendComponents.length,
+      modelCount: manifest.summary.inferredModels,
+      testCount: manifest.summary.tests,
+      frontendComponents,
+      htmlFiles: htmlFilesList,
+      backendFiles: backendFilesList,
       inferredModels,
-      files: {
-        frontend: frontendFiles,
-        backend: backendFiles,
-      },
       outputPath: runDir,
     });
   } catch (error) {
@@ -70,10 +115,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 /**
- * List all files in a directory recursively
+ * Load all files in a directory recursively with their contents
  */
-async function listDirectoryFiles(dir: string): Promise<Array<{ name: string; path: string; size: number }>> {
-  const files: Array<{ name: string; path: string; size: number }> = [];
+async function loadFilesWithContent(dir: string): Promise<Array<{ name: string; path: string; content: string }>> {
+  const files: Array<{ name: string; path: string; content: string }> = [];
 
   try {
     const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -82,15 +127,20 @@ async function listDirectoryFiles(dir: string): Promise<Array<{ name: string; pa
       const fullPath = path.join(dir, entry.name);
 
       if (entry.isDirectory()) {
-        const subFiles = await listDirectoryFiles(fullPath);
+        const subFiles = await loadFilesWithContent(fullPath);
         files.push(...subFiles);
       } else {
-        const stats = await fs.stat(fullPath);
-        files.push({
-          name: entry.name,
-          path: fullPath,
-          size: stats.size,
-        });
+        try {
+          const content = await fs.readFile(fullPath, 'utf-8');
+          files.push({
+            name: entry.name,
+            path: fullPath,
+            content,
+          });
+        } catch (error) {
+          // Skip files that can't be read
+          console.error(`Failed to read ${fullPath}:`, error);
+        }
       }
     }
   } catch {

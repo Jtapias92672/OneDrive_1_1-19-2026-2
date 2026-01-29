@@ -5,10 +5,12 @@
  * Main container for the conversational POC interface
  */
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { RotateCcw, Sparkles } from 'lucide-react';
 import { useConversation } from '../../hooks/useConversation';
+import type { POCResult } from '../../hooks/useConversation';
 import { Thread } from './Thread';
+import { FileViewer } from './FileViewer';
 
 export function ConversationalPOC() {
   const {
@@ -22,9 +24,11 @@ export function ConversationalPOC() {
     restart,
   } = useConversation();
 
+  const [fileViewerResult, setFileViewerResult] = useState<POCResult | null>(null);
+
   // Handle option selection based on state
   const handleSelectOption = useCallback(
-    (option: string) => {
+    async (option: string) => {
       if (state === 'discover') {
         selectOption(option);
       } else if (state === 'confirm') {
@@ -39,11 +43,25 @@ export function ConversationalPOC() {
           restart();
         } else if (option === 'Try Again') {
           restart();
+        } else if (option === 'View Files') {
+          // Fetch fresh data from API
+          const resultMessage = messages.find(m => m.type === 'result' && m.result);
+          if (resultMessage?.result?.runId) {
+            try {
+              const response = await fetch(`/api/poc/results/${resultMessage.result.runId}`);
+              const freshData = await response.json();
+              setFileViewerResult(freshData);
+            } catch (error) {
+              console.error('Failed to fetch files:', error);
+              // Fallback to cached data
+              setFileViewerResult(resultMessage.result);
+            }
+          }
         }
-        // View Files and Export ZIP would need additional handling
+        // Export ZIP would need additional handling
       }
     },
-    [state, selectOption, confirmGeneration, restart]
+    [state, selectOption, confirmGeneration, restart, messages]
   );
 
   // Handle multi-select toggle
@@ -102,6 +120,14 @@ export function ConversationalPOC() {
         onConfirm={handleConfirm}
         onSubmitText={submitText}
       />
+
+      {/* File Viewer Modal */}
+      {fileViewerResult && (
+        <FileViewer
+          result={fileViewerResult}
+          onClose={() => setFileViewerResult(null)}
+        />
+      )}
     </div>
   );
 }

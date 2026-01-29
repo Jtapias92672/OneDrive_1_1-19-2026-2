@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
             options: {
               generateTests: options?.generateTests ?? true,
               generateStories: options?.generateStories ?? true,
+              generateHtml: options?.generateHtml ?? false,
               skipJira: options?.skipJira ?? true,
               deployFrontend: options?.deployFrontend ?? false,
               deployBackend: options?.deployBackend ?? false,

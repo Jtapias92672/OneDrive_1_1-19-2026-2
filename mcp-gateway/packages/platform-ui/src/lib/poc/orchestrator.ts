@@ -140,6 +140,7 @@ export class ForgePOCOrchestrator {
         routes: [],
         tests: [],
       },
+      htmlFiles: [],
       inferredModels: [],
       deployments: {},
       testResults: {
@@ -196,6 +197,12 @@ export class ForgePOCOrchestrator {
       this.emitProgress(runId, 'generating_frontend', 30, 'Generating React components...');
       result.frontendComponents = await this.generateFrontend(components, input.options);
       await this.updateTaskStatus(result.tasks, 'frontend', 'in_progress');
+
+      // Stage 5.5: Generate HTML (if requested)
+      if (input.options?.generateHtml) {
+        this.emitProgress(runId, 'generating_html', 45, 'Generating static HTML files...');
+        result.htmlFiles = await this.generateHTML(result.frontendComponents, components);
+      }
 
       // Stage 6: Generate Backend
       this.emitProgress(runId, 'generating_backend', 50, 'Generating Express API...');
@@ -621,6 +628,355 @@ export const Default: Story = {
   args: {},
 };
 `;
+  }
+
+  /**
+   * Generate static HTML files from React components
+   */
+  async generateHTML(
+    generatedComponents: GeneratedComponent[],
+    originalComponents: ParsedComponent[]
+  ): Promise<GeneratedFile[]> {
+    const htmlFiles: GeneratedFile[] = [];
+
+    for (const component of generatedComponents) {
+      const originalComponent = originalComponents.find(c => this.toPascalCase(c.name) === component.name);
+      const htmlContent = this.generateHTMLFile(component, originalComponent);
+
+      htmlFiles.push({
+        name: `${component.name}.html`,
+        content: htmlContent,
+        path: `html/${component.name}.html`,
+      });
+    }
+
+    // Generate index.html that lists all components
+    const indexHtml = this.generateIndexHTML(generatedComponents);
+    htmlFiles.push({
+      name: 'index.html',
+      content: indexHtml,
+      path: 'html/index.html',
+    });
+
+    return htmlFiles;
+  }
+
+  /**
+   * Generate individual HTML file for a component
+   */
+  private generateHTMLFile(component: GeneratedComponent, original?: ParsedComponent): string {
+    const styles = this.extractStyles(original);
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${component.name}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    ${styles}
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding: 2rem;
+      background: #f3f4f6;
+    }
+    .component-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+    .component-header {
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 1rem;
+      margin-bottom: 2rem;
+    }
+    .component-header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #111827;
+    }
+    .component-header p {
+      color: #6b7280;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="component-wrapper">
+    <div class="component-header">
+      <h1>${component.name}</h1>
+      <p>Generated from Figma design</p>
+    </div>
+    <div id="component-preview">
+      ${this.reactToHTML(component, original)}
+    </div>
+  </div>
+  <script>
+    // Add any interactive behavior here
+    console.log('${component.name} loaded');
+  </script>
+</body>
+</html>`;
+  }
+
+  /**
+   * Convert React component to HTML
+   */
+  private reactToHTML(component: GeneratedComponent, original?: ParsedComponent): string {
+    if (!original) {
+      return `<div class="p-4 rounded-lg bg-white shadow-sm">
+        <span class="text-gray-700">${component.name}</span>
+      </div>`;
+    }
+
+    const { styles, type } = original;
+    const classes = this.stylesToTailwind(styles);
+
+    // Generate HTML based on component type
+    switch (type) {
+      case 'form':
+        return this.generateFormHTML(original, classes);
+      case 'button':
+        return this.generateButtonHTML(original, classes);
+      case 'input':
+        return this.generateInputHTML(original, classes);
+      case 'list':
+        return this.generateListHTML(original, classes);
+      case 'card':
+        return this.generateCardHTML(original, classes);
+      default:
+        return this.generateContainerHTML(original, classes);
+    }
+  }
+
+  /**
+   * Convert component styles to Tailwind classes
+   */
+  private stylesToTailwind(styles: ParsedComponent['styles']): string {
+    const classes: string[] = [];
+
+    // Layout
+    if (styles.layout === 'flex') {
+      classes.push('flex', 'flex-col');
+    } else if (styles.layout === 'grid') {
+      classes.push('grid', 'grid-cols-2', 'gap-4');
+    }
+
+    // Spacing
+    if (styles.spacing) {
+      const spacingClass = Math.min(Math.floor(styles.spacing / 4), 12);
+      classes.push(`gap-${spacingClass}`);
+    }
+
+    // Default styles
+    classes.push('p-4', 'rounded-lg', 'bg-white', 'shadow-sm');
+
+    return classes.join(' ');
+  }
+
+  /**
+   * Extract custom CSS styles from component
+   */
+  private extractStyles(component?: ParsedComponent): string {
+    if (!component || !component.styles.colors) return '';
+
+    const colors = component.styles.colors;
+    if (colors.length === 0) return '';
+
+    return `
+    .custom-color-primary {
+      background-color: ${colors[0]};
+    }
+    .custom-color-text {
+      color: ${colors[colors.length > 1 ? 1 : 0]};
+    }`;
+  }
+
+  /**
+   * Generate HTML for form components
+   */
+  private generateFormHTML(component: ParsedComponent, classes: string): string {
+    return `<form class="${classes}">
+  <div class="space-y-4">
+    ${component.props
+      .filter(p => p.type === 'string' || p.type === 'email')
+      .map(
+        p => `
+    <div>
+      <label class="block text-sm font-medium text-gray-700">${p.name}</label>
+      <input
+        type="${p.type === 'email' ? 'email' : 'text'}"
+        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+        ${p.required ? 'required' : ''}
+        placeholder="${p.name}"
+      />
+    </div>`
+      )
+      .join('')}
+    <button type="submit" class="w-full bg-indigo-600 text-white rounded-md py-2 px-4 hover:bg-indigo-700">
+      Submit
+    </button>
+  </div>
+</form>`;
+  }
+
+  /**
+   * Generate HTML for button components
+   */
+  private generateButtonHTML(component: ParsedComponent, classes: string): string {
+    const text = component.props.find(p => p.name === 'children')?.defaultValue || component.name;
+    return `<button class="${classes} bg-indigo-600 text-white hover:bg-indigo-700 transition-colors cursor-pointer">
+  ${text}
+</button>`;
+  }
+
+  /**
+   * Generate HTML for input components
+   */
+  private generateInputHTML(component: ParsedComponent, classes: string): string {
+    return `<div class="${classes}">
+  <label class="block text-sm font-medium text-gray-700">${component.name}</label>
+  <input
+    type="text"
+    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+    placeholder="${component.name}"
+  />
+</div>`;
+  }
+
+  /**
+   * Generate HTML for list components
+   */
+  private generateListHTML(component: ParsedComponent, classes: string): string {
+    return `<ul class="${classes} space-y-2">
+  <li class="p-3 bg-gray-50 rounded-md">${component.name} Item 1</li>
+  <li class="p-3 bg-gray-50 rounded-md">${component.name} Item 2</li>
+  <li class="p-3 bg-gray-50 rounded-md">${component.name} Item 3</li>
+</ul>`;
+  }
+
+  /**
+   * Generate HTML for card components
+   */
+  private generateCardHTML(component: ParsedComponent, classes: string): string {
+    return `<div class="${classes} border border-gray-200">
+  <div class="p-4">
+    <h3 class="text-lg font-medium text-gray-900">${component.name}</h3>
+    <p class="mt-2 text-gray-600">Card content goes here</p>
+  </div>
+</div>`;
+  }
+
+  /**
+   * Generate HTML for container components
+   */
+  private generateContainerHTML(component: ParsedComponent, classes: string): string {
+    return `<div class="${classes}">
+  <span class="text-gray-700">${component.name}</span>
+</div>`;
+  }
+
+  /**
+   * Generate index.html that lists all components
+   */
+  private generateIndexHTML(components: GeneratedComponent[]): string {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generated Components</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding: 2rem;
+      background: #f3f4f6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      background: white;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      margin-bottom: 2rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+    .card h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 0.5rem;
+    }
+    .card p {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+    .card a {
+      display: inline-block;
+      margin-top: 1rem;
+      color: #4f46e5;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .card a:hover {
+      color: #4338ca;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="font-size: 2rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem;">
+        Generated Components
+      </h1>
+      <p style="color: #6b7280;">
+        ${components.length} components generated from Figma design
+      </p>
+    </div>
+    <div class="grid">
+      ${components
+        .map(
+          c => `
+      <div class="card">
+        <h3>${c.name}</h3>
+        <p>Standalone HTML component</p>
+        <a href="./${c.name}.html">View Component →</a>
+      </div>`
+        )
+        .join('')}
+    </div>
+  </div>
+</body>
+</html>`;
   }
 
   /**
@@ -1403,37 +1759,48 @@ describe('${name}Controller', () => {
     const runDir = path.join(outputDir, result.runId);
 
     // Create directory structure
-    await fs.mkdir(path.join(runDir, 'frontend', 'components'), { recursive: true });
-    await fs.mkdir(path.join(runDir, 'frontend', 'tests'), { recursive: true });
-    await fs.mkdir(path.join(runDir, 'frontend', 'stories'), { recursive: true });
+    await fs.mkdir(path.join(runDir, 'react', 'components'), { recursive: true });
+    await fs.mkdir(path.join(runDir, 'react', 'tests'), { recursive: true });
+    await fs.mkdir(path.join(runDir, 'react', 'stories'), { recursive: true });
+    await fs.mkdir(path.join(runDir, 'html'), { recursive: true });
     await fs.mkdir(path.join(runDir, 'backend', 'controllers'), { recursive: true });
     await fs.mkdir(path.join(runDir, 'backend', 'services'), { recursive: true });
     await fs.mkdir(path.join(runDir, 'backend', 'models'), { recursive: true });
     await fs.mkdir(path.join(runDir, 'backend', 'routes'), { recursive: true });
     await fs.mkdir(path.join(runDir, 'backend', 'tests'), { recursive: true });
 
-    const writtenFiles: { frontend: string[]; backend: string[]; tests: string[] } = {
-      frontend: [],
+    const writtenFiles: { react: string[]; html: string[]; backend: string[]; tests: string[] } = {
+      react: [],
+      html: [],
       backend: [],
       tests: [],
     };
 
-    // Write frontend components
+    // Write React components
     for (const component of result.frontendComponents) {
-      const componentPath = path.join(runDir, 'frontend', 'components', `${component.name}.tsx`);
+      const componentPath = path.join(runDir, 'react', 'components', `${component.name}.tsx`);
       await fs.writeFile(componentPath, component.code, 'utf-8');
-      writtenFiles.frontend.push(componentPath);
+      writtenFiles.react.push(componentPath);
 
       if (component.testCode) {
-        const testPath = path.join(runDir, 'frontend', 'tests', `${component.name}.test.tsx`);
+        const testPath = path.join(runDir, 'react', 'tests', `${component.name}.test.tsx`);
         await fs.writeFile(testPath, component.testCode, 'utf-8');
         writtenFiles.tests.push(testPath);
       }
 
       if (component.storyCode) {
-        const storyPath = path.join(runDir, 'frontend', 'stories', `${component.name}.stories.tsx`);
+        const storyPath = path.join(runDir, 'react', 'stories', `${component.name}.stories.tsx`);
         await fs.writeFile(storyPath, component.storyCode, 'utf-8');
-        writtenFiles.frontend.push(storyPath);
+        writtenFiles.react.push(storyPath);
+      }
+    }
+
+    // Write HTML files
+    if (result.htmlFiles) {
+      for (const htmlFile of result.htmlFiles) {
+        const htmlPath = path.join(runDir, 'html', htmlFile.name);
+        await fs.writeFile(htmlPath, htmlFile.content, 'utf-8');
+        writtenFiles.html.push(htmlPath);
       }
     }
 
@@ -1470,6 +1837,7 @@ describe('${name}Controller', () => {
         backendModels: result.backendFiles.models.length,
         inferredModels: result.inferredModels.length,
         tests: writtenFiles.tests.length,
+        htmlFiles: result.htmlFiles?.length || 0,
       },
       files: writtenFiles,
     };
