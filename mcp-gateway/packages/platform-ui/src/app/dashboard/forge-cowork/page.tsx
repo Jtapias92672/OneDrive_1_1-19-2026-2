@@ -10,6 +10,7 @@ import useSWR from 'swr';
 import { Header } from './components/Header';
 import { LeftSidebar } from './components/LeftSidebar';
 import { MainContent } from './components/MainContent';
+// import { POCWorkflowCard } from './components/RightPanel/POCWorkflowCard';
 import { EvidencePacksCard } from './components/RightPanel/EvidencePacksCard';
 import { CarsFrameworkCard } from './components/RightPanel/CarsFrameworkCard';
 import { SupplyChainCard } from './components/RightPanel/SupplyChainCard';
@@ -24,6 +25,7 @@ export default function ForgeCoworkDashboard() {
   const [demoMode, setDemoMode] = useState<DemoMode>('normal');
   const [activeNav, setActiveNav] = useState('Chat');
   const [expandedSections, setExpandedSections] = useState({
+    // pocWorkflow: true,
     evidencePacks: true,
     cars: true,
     supplyChain: false,
@@ -75,6 +77,13 @@ export default function ForgeCoworkDashboard() {
         {/* Right Panel */}
         <aside className="w-[360px] bg-white border-l border-gray-200 flex flex-col flex-shrink-0 overflow-hidden">
           <div className="flex-1 overflow-auto p-4">
+            {/* POC Workflow Card - temporarily disabled
+            <POCWorkflowCard
+              expanded={expandedSections.pocWorkflow}
+              onToggle={() => toggleSection('pocWorkflow')}
+            />
+            */}
+
             <EvidencePacksCard
               data={evidencePacks}
               expanded={expandedSections.evidencePacks}

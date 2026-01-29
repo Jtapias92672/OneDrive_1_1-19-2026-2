@@ -21,6 +21,8 @@
  */
 
 import { randomUUID } from 'crypto';
+import { promises as fs } from 'fs';
+import path from 'path';
 import type {
   POCOrchestratorConfig,
   POCRunInput,
@@ -38,6 +40,7 @@ import type {
   JiraTask,
   DeploymentResult,
   TestSuite,
+  POCManifest,
 } from './types';
 
 // Import real services
@@ -217,8 +220,14 @@ export class ForgePOCOrchestrator {
 
       // Stage 10: Close Tickets
       if (!input.options?.skipJira && result.epic) {
-        this.emitProgress(runId, 'closing_tickets', 95, 'Closing Jira tickets...');
+        this.emitProgress(runId, 'closing_tickets', 90, 'Closing Jira tickets...');
         await this.closeJiraTickets(result);
+      }
+
+      // Stage 11: Write files to disk (if outputDir specified)
+      if (input.options?.outputDir) {
+        this.emitProgress(runId, 'completed', 95, 'Writing generated files to disk...');
+        result.outputPath = await this.writeFilesToDisk(result, input.options.outputDir);
       }
 
       // Complete
@@ -1384,13 +1393,113 @@ describe('${name}Controller', () => {
   }
 
   // ===========================================================================
+  // File Output Methods
+  // ===========================================================================
+
+  /**
+   * Write all generated files to disk
+   */
+  private async writeFilesToDisk(result: POCRunResult, outputDir: string): Promise<string> {
+    const runDir = path.join(outputDir, result.runId);
+
+    // Create directory structure
+    await fs.mkdir(path.join(runDir, 'frontend', 'components'), { recursive: true });
+    await fs.mkdir(path.join(runDir, 'frontend', 'tests'), { recursive: true });
+    await fs.mkdir(path.join(runDir, 'frontend', 'stories'), { recursive: true });
+    await fs.mkdir(path.join(runDir, 'backend', 'controllers'), { recursive: true });
+    await fs.mkdir(path.join(runDir, 'backend', 'services'), { recursive: true });
+    await fs.mkdir(path.join(runDir, 'backend', 'models'), { recursive: true });
+    await fs.mkdir(path.join(runDir, 'backend', 'routes'), { recursive: true });
+    await fs.mkdir(path.join(runDir, 'backend', 'tests'), { recursive: true });
+
+    const writtenFiles: { frontend: string[]; backend: string[]; tests: string[] } = {
+      frontend: [],
+      backend: [],
+      tests: [],
+    };
+
+    // Write frontend components
+    for (const component of result.frontendComponents) {
+      const componentPath = path.join(runDir, 'frontend', 'components', `${component.name}.tsx`);
+      await fs.writeFile(componentPath, component.code, 'utf-8');
+      writtenFiles.frontend.push(componentPath);
+
+      if (component.testCode) {
+        const testPath = path.join(runDir, 'frontend', 'tests', `${component.name}.test.tsx`);
+        await fs.writeFile(testPath, component.testCode, 'utf-8');
+        writtenFiles.tests.push(testPath);
+      }
+
+      if (component.storyCode) {
+        const storyPath = path.join(runDir, 'frontend', 'stories', `${component.name}.stories.tsx`);
+        await fs.writeFile(storyPath, component.storyCode, 'utf-8');
+        writtenFiles.frontend.push(storyPath);
+      }
+    }
+
+    // Write backend files
+    const backendCategories: (keyof typeof result.backendFiles)[] = ['controllers', 'services', 'models', 'routes', 'tests'];
+    for (const category of backendCategories) {
+      const files = result.backendFiles[category];
+      if (Array.isArray(files)) {
+        for (const file of files) {
+          const filePath = path.join(runDir, 'backend', category, file.name);
+          await fs.writeFile(filePath, file.content, 'utf-8');
+          if (category === 'tests') {
+            writtenFiles.tests.push(filePath);
+          } else {
+            writtenFiles.backend.push(filePath);
+          }
+        }
+      }
+    }
+
+    // Write manifest
+    const manifest: POCManifest = {
+      runId: result.runId,
+      status: result.status,
+      sourceType: result.figmaMetadata.fileKey.includes('/') ? 'html' : 'figma',
+      sourceId: result.figmaMetadata.fileKey,
+      sourceName: result.figmaMetadata.fileName,
+      generatedAt: result.timestamps.started,
+      completedAt: result.timestamps.completed,
+      summary: {
+        frontendComponents: result.frontendComponents.length,
+        backendControllers: result.backendFiles.controllers.length,
+        backendServices: result.backendFiles.services.length,
+        backendModels: result.backendFiles.models.length,
+        inferredModels: result.inferredModels.length,
+        tests: writtenFiles.tests.length,
+      },
+      files: writtenFiles,
+    };
+
+    await fs.writeFile(
+      path.join(runDir, 'manifest.json'),
+      JSON.stringify(manifest, null, 2),
+      'utf-8'
+    );
+
+    // Write inferred models as JSON for reference
+    await fs.writeFile(
+      path.join(runDir, 'inferred-models.json'),
+      JSON.stringify(result.inferredModels, null, 2),
+      'utf-8'
+    );
+
+    return runDir;
+  }
+
+  // ===========================================================================
   // Helper Methods
   // ===========================================================================
 
   private extractFigmaFileKey(url: string): string {
     // Extract file key from Figma URL
+    // Supports: /file/, /design/, /proto/ URL patterns
     // Example: https://www.figma.com/file/ABC123/DesignName
-    const match = url.match(/figma\.com\/(?:file|design)\/([a-zA-Z0-9]+)/);
+    // Example: https://www.figma.com/proto/ABC123/PrototypeName
+    const match = url.match(/figma\.com\/(?:file|design|proto)\/([a-zA-Z0-9]+)/);
     if (!match) {
       throw new Error(`Invalid Figma URL: ${url}`);
     }

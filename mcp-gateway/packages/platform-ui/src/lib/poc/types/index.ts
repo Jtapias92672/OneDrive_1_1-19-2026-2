@@ -45,6 +45,8 @@ export interface POCRunOptions {
   deployFrontend?: boolean;
   deployBackend?: boolean;
   skipJira?: boolean;
+  /** Directory to write generated files. If not specified, files are not written. */
+  outputDir?: string;
 }
 
 // =============================================================================
@@ -277,6 +279,31 @@ export interface POCRunResult {
     completed?: string;
   };
   error?: string;
+  /** Path where files were written (if outputDir was specified) */
+  outputPath?: string;
+}
+
+export interface POCManifest {
+  runId: string;
+  status: POCRunStatus;
+  sourceType: 'figma' | 'html';
+  sourceId: string;
+  sourceName: string;
+  generatedAt: string;
+  completedAt?: string;
+  summary: {
+    frontendComponents: number;
+    backendControllers: number;
+    backendServices: number;
+    backendModels: number;
+    inferredModels: number;
+    tests: number;
+  };
+  files: {
+    frontend: string[];
+    backend: string[];
+    tests: string[];
+  };
 }
 
 export type POCRunStatus =
