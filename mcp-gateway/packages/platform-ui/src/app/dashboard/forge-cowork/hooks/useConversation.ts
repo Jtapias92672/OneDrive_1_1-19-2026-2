@@ -44,6 +44,7 @@ export interface POCOptions {
   generateTests: boolean;
   generateStories: boolean;
   generateApi: boolean;
+  generateHtml: boolean;
 }
 
 export interface POCResult {
@@ -77,6 +78,7 @@ const initialOptions: POCOptions = {
   generateTests: true,
   generateStories: false,
   generateApi: true,
+  generateHtml: false,
 };
 
 function generateId(): string {
@@ -140,6 +142,37 @@ export function useConversation(): UseConversationReturn {
   }, []);
 
   const selectOption = useCallback((option: string) => {
+    // Handle "Adjust Settings" from confirm state
+    if (state === 'confirm' && option === 'Adjust Settings') {
+      addMessage({
+        role: 'user',
+        type: 'response',
+        content: option,
+      });
+
+      // Go back to config state
+      setTimeout(() => {
+        addMessage({
+          role: 'ai',
+          type: 'question',
+          content: 'What should I generate?',
+          options: ['React Components', 'Tests', 'Storybook Stories', 'API Endpoints', 'HTML Files'],
+          multiSelect: true,
+          selectedOptions: (() => {
+            const selected: string[] = [];
+            if (options.generateComponents) selected.push('React Components');
+            if (options.generateTests) selected.push('Tests');
+            if (options.generateStories) selected.push('Storybook Stories');
+            if (options.generateApi) selected.push('API Endpoints');
+            if (options.generateHtml) selected.push('HTML Files');
+            return selected;
+          })(),
+        });
+        setState('config');
+      }, 300);
+      return;
+    }
+
     // Add user response
     addMessage({
       role: 'user',
@@ -171,7 +204,7 @@ export function useConversation(): UseConversationReturn {
         setState('source-input');
       }, 300);
     }
-  }, [state, addMessage]);
+  }, [state, options, addMessage]);
 
   const submitText = useCallback((text: string) => {
     // Add user response
@@ -190,7 +223,7 @@ export function useConversation(): UseConversationReturn {
           role: 'ai',
           type: 'question',
           content: 'What should I generate?',
-          options: ['React Components', 'Tests', 'Storybook Stories', 'API Endpoints'],
+          options: ['React Components', 'Tests', 'Storybook Stories', 'API Endpoints', 'HTML Files'],
           multiSelect: true,
           selectedOptions: ['React Components', 'Tests', 'API Endpoints'],
         });
@@ -206,6 +239,7 @@ export function useConversation(): UseConversationReturn {
       if (option === 'Tests') newOptions.generateTests = !prev.generateTests;
       if (option === 'Storybook Stories') newOptions.generateStories = !prev.generateStories;
       if (option === 'API Endpoints') newOptions.generateApi = !prev.generateApi;
+      if (option === 'HTML Files') newOptions.generateHtml = !prev.generateHtml;
       return newOptions;
     });
 
@@ -235,6 +269,7 @@ export function useConversation(): UseConversationReturn {
       if (options.generateTests) selectedItems.push('Tests');
       if (options.generateStories) selectedItems.push('Stories');
       if (options.generateApi) selectedItems.push('API');
+      if (options.generateHtml) selectedItems.push('HTML');
 
       addMessage({
         role: 'user',
