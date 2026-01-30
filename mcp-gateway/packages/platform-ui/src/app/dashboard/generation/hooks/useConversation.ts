@@ -374,6 +374,11 @@ export function useConversation(): UseConversationReturn {
                   // Final result
                   setMessages(prev => prev.filter(m => m.id !== progressMsg.id));
 
+                  // Check if workflow failed with an error
+                  if (data.status === 'failed' && data.error) {
+                    throw new Error(data.error);
+                  }
+
                   const componentCount = data.frontendComponents?.length || 0;
                   const modelCount = data.inferredModels?.length || 0;
                   const testCount = data.backendFiles?.tests?.length || 0;
@@ -389,7 +394,7 @@ export function useConversation(): UseConversationReturn {
                     type: 'result',
                     content: hasFiles
                       ? "Done! Here's what I created:"
-                      : 'Generation failed - no files were created. The source may be invalid or inaccessible.',
+                      : 'Generation completed but no files were created. The source may be empty or contain no valid components.',
                     result: {
                       runId: data.runId,
                       status: data.status,
