@@ -327,43 +327,55 @@ export class MCPGateway {
       }
 
       // ========================================
-      // STEP 2: Rate Limiting
+      // STEPS 2-4: PARALLEL EXECUTION ✅ PHASE 2 OPTIMIZATION
+      // Eliminating Waterfalls skill: Independent operations run in parallel
       // ========================================
-      if (this.config.rateLimiting.enabled) {
-        const rateLimitResult = this.checkRateLimit(request);
-        if (!rateLimitResult.allowed) {
-          this.auditLog('rate:limited', request.tool, request.context.tenantId, {
-            limit: rateLimitResult.limit,
-            current: rateLimitResult.current,
-          });
-          return this.errorResponse(request.id, 'RATE_LIMITED', 'Rate limit exceeded', true);
-        }
+
+      // Execute rate limit check, input sanitization, and tool lookup in parallel
+      const [rateLimitResult, sanitizeResult, tool] = await Promise.all([
+        // STEP 2: Rate Limiting
+        this.config.rateLimiting.enabled
+          ? Promise.resolve(this.checkRateLimit(request))
+          : Promise.resolve({ allowed: true }),
+
+        // STEP 3: Input Sanitization
+        this.config.security.inputSanitization.enabled
+          ? Promise.resolve(this.securityLayer.sanitizeInput(request.params))
+          : Promise.resolve({ safe: true, sanitized: request.params }),
+
+        // STEP 4: Tool Lookup (integrity check done after)
+        Promise.resolve(this.toolRegistry.get(request.tool)),
+      ]);
+
+      // Check rate limit result
+      if (this.config.rateLimiting.enabled && !rateLimitResult.allowed) {
+        this.auditLog('rate:limited', request.tool, request.context.tenantId, {
+          limit: rateLimitResult.limit,
+          current: rateLimitResult.current,
+        });
+        return this.errorResponse(request.id, 'RATE_LIMITED', 'Rate limit exceeded', true);
       }
 
-      // ========================================
-      // STEP 3: Input Sanitization
-      // ========================================
+      // Check sanitization result
+      if (this.config.security.inputSanitization.enabled && !sanitizeResult.safe) {
+        this.auditLog('security:violation', request.tool, request.context.tenantId, {
+          violation: 'input_sanitization',
+          patterns: sanitizeResult.blockedPatterns,
+        });
+        return this.errorResponse(request.id, 'INPUT_BLOCKED', 'Input contains blocked content', false);
+      }
+
+      // Apply sanitized params
       if (this.config.security.inputSanitization.enabled) {
-        const sanitizeResult = this.securityLayer.sanitizeInput(request.params);
-        if (!sanitizeResult.safe) {
-          this.auditLog('security:violation', request.tool, request.context.tenantId, {
-            violation: 'input_sanitization',
-            patterns: sanitizeResult.blockedPatterns,
-          });
-          return this.errorResponse(request.id, 'INPUT_BLOCKED', 'Input contains blocked content', false);
-        }
         request.params = sanitizeResult.sanitized;
       }
 
-      // ========================================
-      // STEP 4: Tool Lookup & Integrity Check
-      // ========================================
-      const tool = this.toolRegistry.get(request.tool);
+      // Check tool exists
       if (!tool) {
         return this.errorResponse(request.id, 'TOOL_NOT_FOUND', `Unknown tool: ${request.tool}`, false);
       }
 
-      // Verify tool hasn't been modified (Rug Pull protection)
+      // Verify tool integrity (sequential - needs tool object)
       if (this.config.security.toolIntegrity.enabled) {
         const currentHash = this.securityLayer.computeToolHash(tool);
         if (currentHash !== tool.integrityHash) {
@@ -371,7 +383,7 @@ export class MCPGateway {
             originalHash: tool.integrityHash,
             currentHash,
           });
-          
+
           if (this.config.monitoring.toolBehavior.alertOnChange) {
             return this.errorResponse(request.id, 'TOOL_MODIFIED', 'Tool has been modified since registration', false);
           }
@@ -502,27 +514,34 @@ export class MCPGateway {
       }
 
       // ========================================
-      // STEP 9: Response Detokenization
-      // ========================================
-      if (this.config.privacy.enabled && privacyInfo.tokenized) {
-        result = this.privacyTokenizer.detokenize(result);
-        this.auditLog('privacy:detokenized', tool.name, request.context.tenantId, {});
-      }
-
-      // ========================================
-      // STEP 10: Audit & Return
+      // STEPS 9-10: PARALLEL EXECUTION ✅ PHASE 2 OPTIMIZATION
+      // Eliminating Waterfalls skill: Detokenize and audit in parallel
       // ========================================
       const durationMs = Date.now() - startTime;
-      
-      this.auditLog('tool:completed', tool.name, request.context.tenantId, {
-        durationMs,
-        success: true,
-      });
+
+      // Execute detokenization and audit logging in parallel (fire-and-forget)
+      const [detokenizedResult] = await Promise.all([
+        // STEP 9: Response Detokenization
+        this.config.privacy.enabled && privacyInfo.tokenized
+          ? Promise.resolve(this.privacyTokenizer.detokenize(result)).then((res) => {
+              this.auditLog('privacy:detokenized', tool.name, request.context.tenantId, {});
+              return res;
+            })
+          : Promise.resolve(result),
+
+        // STEP 10: Audit Logging (fire-and-forget, runs in parallel)
+        Promise.resolve(
+          this.auditLog('tool:completed', tool.name, request.context.tenantId, {
+            durationMs,
+            success: true,
+          })
+        ),
+      ]);
 
       return {
         requestId: request.id,
         success: true,
-        data: result,
+        data: detokenizedResult,
         metadata: {
           durationMs,
           approval: approvalInfo,

@@ -48,14 +48,65 @@ export async function POST(request: NextRequest) {
         };
 
         try {
-          // Create orchestrator
-          // TODO: Enable MCP gateway routing by passing gateway instance
-          // For now, using direct FigmaClient calls (hybrid mode)
+          // ✅ SKILL: Bundle Optimization - Lazy load gateway only when enabled
+          const setupGateway = async () => {
+            if (process.env.MCP_GATEWAY_ENABLED !== 'true') return null;
+
+            // Dynamic import reduces cold start when gateway disabled
+            const { setupMCPGateway } = await import('../../../../../../core/setup-mcp-gateway');
+
+            return setupMCPGateway({
+              mcpMode: 'hybrid',
+              autoDiscoverTools: true,
+              gatewayConfig: {
+                security: {
+                  oauth: { enabled: false },
+                  inputSanitization: {
+                    enabled: true,  // ✅ PHASE 3: Enable input sanitization
+                    maxInputSize: 1024 * 1024, // 1MB
+                    allowedContentTypes: ['application/json'],
+                    blockPatterns: [
+                      '<script',        // XSS: Script tags
+                      'javascript:',    // XSS: JavaScript protocol
+                      'data:text/html', // XSS: Data URI HTML
+                      'onerror=',       // XSS: Event handlers
+                      'onload=',        // XSS: Event handlers
+                      'eval(',          // Code injection
+                      'Function(',      // Code injection
+                      'DROP TABLE',     // SQL injection (case-sensitive check)
+                      'DELETE FROM',    // SQL injection
+                      '; --',           // SQL injection comment
+                      'UNION SELECT',   // SQL injection
+                    ],
+                  },
+                },
+                monitoring: {
+                  audit: {
+                    enabled: true,  // ✅ PHASE 2: Enable audit logging
+                    logLevel: 'INFO',
+                    includePayloads: true,  // Log tool inputs
+                    includeOutputs: false,  // Phase 2: Don't log outputs yet (privacy)
+                  },
+                },
+                approval: {
+                  carsIntegration: { enabled: false },
+                },
+                sandbox: {
+                  enabled: false,
+                },
+              },
+            });
+          };
+
+          // Initialize gateway (Phase 2: audit logging enabled)
+          const gatewaySetup = await setupGateway();
+
+          // Create orchestrator with gateway routing
           const orchestrator = createPOCOrchestrator({
             figmaToken,
-            // gateway: mcpGateway, // MCP routing (when integrated)
-            // tenantId: 'default',
-            // userId: 'poc-user',
+            gateway: gatewaySetup?.gateway,
+            tenantId: gatewaySetup ? 'default' : undefined,
+            userId: gatewaySetup ? 'poc-user' : undefined,
           });
 
           // Set up progress callback
