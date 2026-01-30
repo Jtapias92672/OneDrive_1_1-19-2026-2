@@ -3,7 +3,7 @@
 ## Last Session
 - **Date:** 2026-01-30 (Full Day + Continued Session)
 - **Platform:** Claude Code
-- **Tokens:** ~86K / 200K (all 7 phases + validation + proper fixes)
+- **Tokens:** ~105K / 200K (all 7 phases + validation + 2 root cause fixes)
 - **Status:** 🎉 ALL PHASES COMPLETE + ROOT CAUSE FIXES 🎉
 - **Commits:**
   - 990120e: Priority 1 complete (enable all defaults)
@@ -15,9 +15,11 @@
   - a24d930: Phase 5 complete (HTMLGenerator)
   - 49e382b: Phase 6 complete (RenderEngine)
   - a7335bc: Validation complete (demo + test plan)
-  - 1b98bc4: ~~Band-aid fix~~ (superseded by 0380d18)
+  - 1b98bc4: ~~Band-aid fix #1~~ (superseded by 0380d18)
   - 03e2d75: TICKET.md update
-  - 0380d18: Root cause fix (mock data + PropsExtractor + type conversion)
+  - 0380d18: Root cause fix #1 (mock data structure)
+  - 85bb60c: TICKET.md root cause analysis
+  - b2ea4cc: Root cause fix #2 (type safety - ParsedFill)
 
 ---
 
@@ -169,6 +171,25 @@
   4. Added convertToTypeScriptType() for proper TypeScript type generation
   5. Updated test expectations to match actual generator output
 - **Evidence:** All 45 smoke tests passing (6 suites, 24 new + 21 existing)
+
+**Second Root Cause Fix (b2ea4cc):**
+- **Initial Issue:** 5 "as any" type assertions hiding structural problems
+- **User Challenge:** "Are there other band-aids we should reconsider?"
+- **Root Cause Investigation:**
+  - ParsedComponent.fills used inline type: `Array<{ type, color, opacity }>`
+  - Proper ParsedFill interface already existed with imageRef, imageUrl, scaleMode
+  - Type mismatch forced unsafe casts to access real properties at runtime
+- **Proper Fix (b2ea4cc):**
+  1. Import ParsedFill, ParsedStroke, ParsedText from parsed-types.ts
+  2. Update ParsedComponent to use proper types (not inline definitions)
+  3. Remove all 5 "as any" assertions (3 in image-resolver, 2 in style-extractor)
+  4. Fix demo/test data to match strict ParsedText enums
+- **Benefits:**
+  - Full TypeScript type safety on fills/strokes/text
+  - IDE autocomplete for all IMAGE fill properties
+  - Compile-time validation prevents refactoring errors
+  - Zero runtime impact (properties already existed)
+- **Evidence:** TypeScript compiles + all 45 smoke tests passing
 
 **Capabilities Proven:**
 - Phase 1: All 5 extractors work correctly (8 tests)
