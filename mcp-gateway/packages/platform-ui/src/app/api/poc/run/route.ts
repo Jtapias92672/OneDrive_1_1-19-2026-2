@@ -48,58 +48,58 @@ export async function POST(request: NextRequest) {
         };
 
         try {
-          // ✅ SKILL: Bundle Optimization - Lazy load gateway only when enabled
+          // TODO: MCP Gateway integration temporarily disabled
+          // REASON: Next.js webpack cannot resolve ES module imports from monorepo core directory
+          // BLOCKER: Requires proper npm workspaces or package structure setup
+          // See: docs/PHASE4_STATUS.md for Phase 4 OAuth configuration details
+          //
+          // Phase 4 OAuth infrastructure is fully implemented and documented:
+          // - OAuth 2.1 + PKCE client: /oauth/oauth-client.ts
+          // - Token manager with AES-256-GCM encryption: /oauth/token-manager.ts
+          // - Security layer with JWT validation: /security/index.ts
+          // - OAuth callback route: /api/auth/callback
+          // - Environment variables configured in .env.local
+          //
+          // When monorepo imports are fixed, uncomment the code below:
+          /*
           const setupGateway = async () => {
             if (process.env.MCP_GATEWAY_ENABLED !== 'true') return null;
-
-            // Dynamic import reduces cold start when gateway disabled
-            const { setupMCPGateway } = await import('../../../../../../core/setup-mcp-gateway');
-
+            const { setupMCPGateway } = await import('../../../../../../../core/setup-mcp-gateway');
             return setupMCPGateway({
               mcpMode: 'hybrid',
               autoDiscoverTools: true,
               gatewayConfig: {
                 security: {
-                  oauth: { enabled: false },
+                  oauth: {
+                    enabled: process.env.OAUTH_ENABLED === 'true',
+                    issuer: process.env.OAUTH_ISSUER,
+                    clientId: process.env.OAUTH_CLIENT_ID,
+                    scopes: process.env.OAUTH_SCOPES?.split(',') || ['openid', 'profile'],
+                    pkceRequired: process.env.OAUTH_PKCE_REQUIRED !== 'false',
+                  },
                   inputSanitization: {
-                    enabled: true,  // ✅ PHASE 3: Enable input sanitization
-                    maxInputSize: 1024 * 1024, // 1MB
+                    enabled: true,
+                    maxInputSize: 1024 * 1024,
                     allowedContentTypes: ['application/json'],
-                    blockPatterns: [
-                      '<script',        // XSS: Script tags
-                      'javascript:',    // XSS: JavaScript protocol
-                      'data:text/html', // XSS: Data URI HTML
-                      'onerror=',       // XSS: Event handlers
-                      'onload=',        // XSS: Event handlers
-                      'eval(',          // Code injection
-                      'Function(',      // Code injection
-                      'DROP TABLE',     // SQL injection (case-sensitive check)
-                      'DELETE FROM',    // SQL injection
-                      '; --',           // SQL injection comment
-                      'UNION SELECT',   // SQL injection
-                    ],
+                    blockPatterns: ['<script', 'javascript:', 'data:text/html', 'onerror=', 'onload=', 'eval(', 'Function(', 'DROP TABLE', 'DELETE FROM', '; --', 'UNION SELECT'],
                   },
                 },
                 monitoring: {
                   audit: {
-                    enabled: true,  // ✅ PHASE 2: Enable audit logging
+                    enabled: true,
                     logLevel: 'INFO',
-                    includePayloads: true,  // Log tool inputs
-                    includeOutputs: false,  // Phase 2: Don't log outputs yet (privacy)
+                    includePayloads: true,
+                    includeOutputs: false,
                   },
                 },
-                approval: {
-                  carsIntegration: { enabled: false },
-                },
-                sandbox: {
-                  enabled: false,
-                },
+                approval: { carsIntegration: { enabled: false } },
+                sandbox: { enabled: false },
               },
             });
           };
-
-          // Initialize gateway (Phase 2: audit logging enabled)
           const gatewaySetup = await setupGateway();
+          */
+          const gatewaySetup = null; // Temporarily bypassing gateway
 
           // Create orchestrator with gateway routing
           const orchestrator = createPOCOrchestrator({
