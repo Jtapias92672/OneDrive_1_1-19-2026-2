@@ -40,20 +40,71 @@
 
 ## Next Session Must
 
-1. **Enable MCP Gateway routing:**
-   - Initialize MCPGateway in `/api/poc/run/route.ts`
-   - Pass gateway instance to orchestrator
-   - Test security controls (OAuth, sandbox, audit)
+### Priority 1: Default Output Options (UI Update)
+**Task:** Enable all generation options as default in Forge UI
+- [x] React Components (already enabled)
+- [ ] Tests (add as default)
+- [ ] Storybook Stories (add as default)
+- [ ] API Endpoints (add as default)
+- [x] HTML Files (already enabled)
 
-2. **Complete MCP integration:**
-   - Change `.mcp.json` defaultMode to "mcp"
-   - Verify Figma server routing works
-   - Add health check for gateway
+**Files to modify:**
+- UI component with checkboxes (screenshot shows all 5 options checked)
+- Default state should have all options selected
 
-3. **Additional rendering polish:**
-   - Test with more complex Figma designs
-   - Handle edge cases (nested vectors, gradients)
-   - Optimize image fetching (batch requests)
+### Priority 2: Plan Mode Analysis - Structure for Components/Tests/API
+**Task:** Use Plan Mode + Software Engineering Skills to design architecture
+
+**Scope:** Analyze and design identical generation patterns for:
+1. **React Components** - Current working pattern to replicate
+2. **Tests** - Jest/Testing Library structure
+3. **API Endpoints** - Express routes, controllers, services
+
+**Skills to load:**
+- Software Engineering Skills
+- react-best-practices.skill
+- architectural-entropy-detector.skill
+- writing-clearly.skill
+
+**Deliverable:**
+- Unified generation pipeline architecture
+- Consistent file structure across all output types
+- Reusable patterns for component/test/API generation
+
+### Priority 3: Enable MCP Gateway Routing
+**Task:** Complete MCP integration for security controls
+
+**Actions:**
+1. Initialize MCPGateway in `/api/poc/run/route.ts`
+2. Pass gateway instance to orchestrator
+3. Test security controls (OAuth, sandbox, audit)
+4. Change `.mcp.json` defaultMode to "mcp"
+5. Verify Figma server routing works
+6. Add health check for gateway
+
+**Files:**
+- `packages/platform-ui/src/app/api/poc/run/route.ts`
+- `.mcp.json`
+- Test with real Figma URL
+
+### Priority 4: Restore Cowork App
+**Task:** Investigate and restore Claude Cowork app access
+
+**Context:**
+- User lost access to Cowork app
+- Need to determine account (joe@arcfoundry.ai vs joesjc@gmail.com)
+- MAX plan status needs verification
+
+**Actions:**
+1. Scan chat history for Cowork setup/credentials
+2. Check .claude/ directory for Cowork configs
+3. Identify correct account email
+4. Document restoration steps
+
+### Priority 5: Additional Rendering Polish (If Time)
+- Test with more complex Figma designs
+- Handle edge cases (nested vectors, gradients)
+- Optimize image fetching (batch requests)
 
 ---
 
