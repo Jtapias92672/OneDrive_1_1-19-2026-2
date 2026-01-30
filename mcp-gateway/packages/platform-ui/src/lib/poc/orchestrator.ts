@@ -54,6 +54,7 @@ import { APITestGenerator } from './test-generators/api-test-generator';
 import { VercelClient } from '../integrations/vercel/vercel-client';
 import { JiraClient } from '../integrations/jira/jira-client';
 import type { JiraDescription } from '../integrations/jira/jira-types';
+import { ReactGenerator } from '../generation/generators';
 
 // =============================================================================
 // Orchestrator Class
@@ -1119,20 +1120,28 @@ export class ForgePOCOrchestrator {
    * Generate React components from Figma design
    * Applies skills: react-best-practices, tailwind-design-system, impeccable-style
    *
-   * Note: This is a stub implementation. Wire to @forge/react-generator for full generation.
+   * Phase 2: Feature flag `useNewReactGenerator` enables full design extraction.
    */
   async generateFrontend(
     components: ParsedComponent[],
-    options?: { generateTests?: boolean; generateStories?: boolean }
+    options?: { generateTests?: boolean; generateStories?: boolean; useNewReactGenerator?: boolean }
   ): Promise<GeneratedComponent[]> {
     const generated: GeneratedComponent[] = [];
+
+    // Check if new ReactGenerator should be used (Phase 2)
+    const useNewGenerator = options?.useNewReactGenerator === true;
+
+    // Initialize new generator if enabled
+    const reactGenerator = useNewGenerator ? new ReactGenerator() : null;
 
     for (const component of components) {
       const componentName = this.toPascalCase(component.name);
       const fileName = `${componentName}.tsx`;
 
       // Generate component code
-      const code = this.generateReactComponent(component, componentName);
+      const code = reactGenerator
+        ? reactGenerator.generateComponent(component, componentName)
+        : this.generateReactComponent(component, componentName);
 
       // Generate test code if requested
       const testCode = options?.generateTests !== false

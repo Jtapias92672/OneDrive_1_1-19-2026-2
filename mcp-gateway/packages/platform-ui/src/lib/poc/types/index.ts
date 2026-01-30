@@ -57,6 +57,8 @@ export interface POCRunOptions {
   imageFormat?: 'png' | 'jpg' | 'svg' | 'pdf';
   /** Image scale multiplier (default: 2) */
   imageScale?: number;
+  /** Use new ReactGenerator with full design extraction (Phase 2) (default: false) */
+  useNewReactGenerator?: boolean;
 }
 
 // =============================================================================
