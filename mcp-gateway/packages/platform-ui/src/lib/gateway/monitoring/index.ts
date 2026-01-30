@@ -1,22 +1,25 @@
 /**
  * MCP Security Gateway - Monitoring
- * 
+ *
  * @epic 2.5 - MCP Security Gateway
  * @task 7.1 - Monitoring Implementation
  * @owner joe@arcfoundry.ai
  * @created 2026-01-19
- * 
+ *
  * @description
  *   Audit logging and tool behavior monitoring for MCP gateway.
  *   Detects Tool Poisoning Attacks (TPA) through behavior analysis.
  */
 
-import { 
-  MonitoringConfig, 
-  AuditEntry, 
+import {
+  MonitoringConfig,
+  AuditEntry,
   MCPTool,
   RiskLevel,
 } from '../core/types';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as crypto from 'crypto';
 
 // ============================================
 // AUDIT LOGGER
@@ -26,9 +29,16 @@ export class AuditLogger {
   private config: MonitoringConfig['audit'];
   private entries: AuditEntry[] = [];
   private maxEntries = 10000;
+  private logDir: string;
+  private signatureKey: string;
 
-  constructor(config: MonitoringConfig['audit']) {
+  constructor(config: MonitoringConfig['audit'], logDir = 'logs/audit') {
     this.config = config;
+    this.logDir = path.resolve(process.cwd(), logDir);
+    this.signatureKey = process.env.AUDIT_SIGNATURE_KEY || 'default-key-change-in-production';
+
+    // Ensure log directory exists
+    this.ensureLogDirectory();
   }
 
   /**
@@ -71,6 +81,27 @@ export class AuditLogger {
     return levels.indexOf(level) >= levels.indexOf(this.config.logLevel);
   }
 
+  private ensureLogDirectory(): void {
+    try {
+      if (!fs.existsSync(this.logDir)) {
+        fs.mkdirSync(this.logDir, { recursive: true });
+      }
+    } catch (error) {
+      console.error('[MCPAudit] Failed to create log directory:', error);
+    }
+  }
+
+  private getLogFilePath(): string {
+    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    return path.join(this.logDir, `gateway-${date}.log`);
+  }
+
+  private computeSignature(data: string): string {
+    const hmac = crypto.createHmac('sha256', this.signatureKey);
+    hmac.update(data);
+    return hmac.digest('hex');
+  }
+
   private outputLog(entry: AuditEntry): void {
     const logData = {
       timestamp: entry.timestamp,
@@ -81,15 +112,32 @@ export class AuditLogger {
       ...(this.config.includePayloads ? { details: entry.details } : {}),
     };
 
+    const logDataStr = JSON.stringify(logData);
+    const signature = this.computeSignature(logDataStr);
+    const signedEntry = {
+      ...logData,
+      signature,
+    };
+
+    // Console output (always)
     switch (this.getEntryLevel(entry)) {
       case 'error':
-        console.error('[MCPAudit]', JSON.stringify(logData));
+        console.error('[MCPAudit]', logDataStr);
         break;
       case 'warn':
-        console.warn('[MCPAudit]', JSON.stringify(logData));
+        console.warn('[MCPAudit]', logDataStr);
         break;
       default:
-        console.log('[MCPAudit]', JSON.stringify(logData));
+        console.log('[MCPAudit]', logDataStr);
+    }
+
+    // File output (with signature)
+    try {
+      const logFilePath = this.getLogFilePath();
+      const logLine = JSON.stringify(signedEntry) + '\n';
+      fs.appendFileSync(logFilePath, logLine, 'utf8');
+    } catch (error) {
+      console.error('[MCPAudit] Failed to write to log file:', error);
     }
   }
 
@@ -187,11 +235,99 @@ export class AuditLogger {
   cleanup(): number {
     const cutoff = new Date(Date.now() - this.config.retentionDays * 24 * 60 * 60 * 1000);
     const cutoffStr = cutoff.toISOString();
-    
+
     const before = this.entries.length;
     this.entries = this.entries.filter(e => e.timestamp >= cutoffStr);
-    
+
     return before - this.entries.length;
+  }
+
+  /**
+   * Verify audit log integrity (tamper detection)
+   * Reads log file and validates HMAC signatures
+   */
+  verifyLogIntegrity(logFilePath?: string): LogIntegrityResult {
+    const filePath = logFilePath || this.getLogFilePath();
+
+    if (!fs.existsSync(filePath)) {
+      return {
+        valid: false,
+        error: 'Log file not found',
+        totalEntries: 0,
+        validEntries: 0,
+        invalidEntries: 0,
+      };
+    }
+
+    try {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const lines = content.trim().split('\n').filter(line => line.length > 0);
+
+      let validEntries = 0;
+      let invalidEntries = 0;
+      const tamperedLines: number[] = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        try {
+          const entry = JSON.parse(lines[i]);
+          const { signature, ...dataWithoutSig } = entry;
+
+          if (!signature) {
+            invalidEntries++;
+            tamperedLines.push(i + 1);
+            continue;
+          }
+
+          const expectedSignature = this.computeSignature(JSON.stringify(dataWithoutSig));
+
+          if (signature === expectedSignature) {
+            validEntries++;
+          } else {
+            invalidEntries++;
+            tamperedLines.push(i + 1);
+          }
+        } catch (parseError) {
+          invalidEntries++;
+          tamperedLines.push(i + 1);
+        }
+      }
+
+      return {
+        valid: invalidEntries === 0,
+        totalEntries: lines.length,
+        validEntries,
+        invalidEntries,
+        tamperedLines: tamperedLines.length > 0 ? tamperedLines : undefined,
+      };
+    } catch (error) {
+      return {
+        valid: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        totalEntries: 0,
+        validEntries: 0,
+        invalidEntries: 0,
+      };
+    }
+  }
+
+  /**
+   * Get list of available audit log files
+   */
+  getLogFiles(): string[] {
+    try {
+      if (!fs.existsSync(this.logDir)) {
+        return [];
+      }
+
+      const files = fs.readdirSync(this.logDir);
+      return files
+        .filter(f => f.startsWith('gateway-') && f.endsWith('.log'))
+        .map(f => path.join(this.logDir, f))
+        .sort();
+    } catch (error) {
+      console.error('[MCPAudit] Failed to list log files:', error);
+      return [];
+    }
   }
 }
 
@@ -466,6 +602,15 @@ export interface BehaviorAlert {
   acknowledged: boolean;
   acknowledgedBy?: string;
   acknowledgedAt?: string;
+}
+
+export interface LogIntegrityResult {
+  valid: boolean;
+  totalEntries: number;
+  validEntries: number;
+  invalidEntries: number;
+  tamperedLines?: number[];
+  error?: string;
 }
 
 // ============================================

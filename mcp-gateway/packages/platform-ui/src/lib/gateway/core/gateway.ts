@@ -372,6 +372,11 @@ export class MCPGateway {
 
       // Check tool exists
       if (!tool) {
+        this.auditLog('tool:failed', request.tool, request.context.tenantId, {
+          requestId: request.id,
+          timestamp: request.timestamp,
+          reason: 'tool_not_found',
+        });
         return this.errorResponse(request.id, 'TOOL_NOT_FOUND', `Unknown tool: ${request.tool}`, false);
       }
 
