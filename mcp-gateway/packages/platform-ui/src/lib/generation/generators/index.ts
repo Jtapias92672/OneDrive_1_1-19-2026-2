@@ -17,3 +17,6 @@ export type { TestGeneratorOptions } from './test-generator';
 
 export { StorybookGenerator } from './storybook-generator';
 export type { StorybookGeneratorOptions } from './storybook-generator';
+
+export { HTMLGenerator } from './html-generator';
+export type { HTMLGeneratorOptions } from './html-generator';

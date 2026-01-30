@@ -54,7 +54,7 @@ import { APITestGenerator } from './test-generators/api-test-generator';
 import { VercelClient } from '../integrations/vercel/vercel-client';
 import { JiraClient } from '../integrations/jira/jira-client';
 import type { JiraDescription } from '../integrations/jira/jira-types';
-import { ReactGenerator, TestGenerator, StorybookGenerator } from '../generation/generators';
+import { ReactGenerator, TestGenerator, StorybookGenerator, HTMLGenerator } from '../generation/generators';
 
 // =============================================================================
 // Orchestrator Class
@@ -1281,6 +1281,8 @@ export const Default: Story = {
 
   /**
    * Generate design.html - complete Figma design with preserved hierarchy
+   *
+   * Phase 5: Refactored to use HTMLGenerator (backward compatible)
    */
   private generateDesignHTML(originalComponents: ParsedComponent[]): string {
     // Only render top-level frames for canvas sizing
@@ -1300,12 +1302,15 @@ export const Default: Story = {
     const canvasWidth = maxX - minX;
     const canvasHeight = maxY - minY;
 
+    // Use HTMLGenerator (Phase 5)
+    const htmlGenerator = new HTMLGenerator();
+
     // Render each top-level frame hierarchically
     const componentsHtml = topLevelFrames.map(component => {
       const bounds = component.bounds!;
       return `
       <div style="position: absolute; left: ${bounds.x - minX}px; top: ${bounds.y - minY}px;">
-        ${this.renderComponentTree(component)}
+        ${htmlGenerator.renderComponentTree(component)}
       </div>`;
     }).join('\n');
 
