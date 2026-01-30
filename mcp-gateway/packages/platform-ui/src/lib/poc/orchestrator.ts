@@ -218,6 +218,9 @@ export class ForgePOCOrchestrator {
       if (input.options?.generateHtml) {
         this.emitProgress(runId, 'generating_html', 45, 'Generating static HTML files...');
         result.htmlFiles = await this.generateHTML(result.frontendComponents, components);
+        console.log('[Orchestrator] Generated HTML files:', result.htmlFiles?.length);
+      } else {
+        console.log('[Orchestrator] HTML generation SKIPPED (generateHtml option is false)');
       }
 
       // Stage 6: Generate Backend

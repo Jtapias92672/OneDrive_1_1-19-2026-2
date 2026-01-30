@@ -196,8 +196,38 @@ export async function POST(request: NextRequest) {
           // Store result for later retrieval
           runResults.set(result.runId, result);
 
-          // Send final result
-          sendEvent({ type: 'result', data: result });
+          // Debug logging
+          console.log('[API] Sending final result:', {
+            runId: result.runId,
+            status: result.status,
+            frontendComponents: result.frontendComponents?.length,
+            htmlFiles: result.htmlFiles?.length,
+            backendFiles: Object.keys(result.backendFiles || {}),
+          });
+
+          // Strip file contents from SSE stream to reduce message size
+          // FileViewer will fetch full content from /api/poc/results endpoint
+          const streamResult = {
+            ...result,
+            frontendComponents: result.frontendComponents.map(c => ({
+              name: c.name,
+              filePath: c.filePath,
+            })),
+            htmlFiles: result.htmlFiles?.map(f => ({
+              name: f.name,
+              path: f.path,
+            })),
+            backendFiles: {
+              controllers: result.backendFiles.controllers.map((f: any) => ({ name: f.name })),
+              services: result.backendFiles.services.map((f: any) => ({ name: f.name })),
+              models: result.backendFiles.models.map((f: any) => ({ name: f.name })),
+              routes: result.backendFiles.routes.map((f: any) => ({ name: f.name })),
+              tests: result.backendFiles.tests.map((f: any) => ({ name: f.name })),
+            },
+          };
+
+          // Send final result (without file contents)
+          sendEvent({ type: 'result', data: streamResult });
 
           controller.close();
         } catch (error) {
