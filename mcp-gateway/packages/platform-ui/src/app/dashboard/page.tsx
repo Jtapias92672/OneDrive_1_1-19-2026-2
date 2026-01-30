@@ -835,7 +835,7 @@ export default function ForgeDashboard() {
             </div>
             <span className="font-bold text-[17px] text-slate-900 tracking-tight">FORGE</span>
             <span className="text-slate-200 font-light text-xl hidden sm:inline">|</span>
-            <span className="font-medium text-sm text-slate-500 hidden sm:inline">Cowork</span>
+            <span className="font-medium text-sm text-slate-500 hidden sm:inline">Internal Dev</span>
             <div className="flex items-center gap-1.5 ml-2 bg-green-50 px-2.5 py-1 rounded-full">
               <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
               <span className="text-xs font-medium text-green-600">Active</span>
@@ -862,6 +862,13 @@ export default function ForgeDashboard() {
             >
               <Icons.menu />
             </button>
+            <a
+              href="/dashboard/generation"
+              className="flex items-center gap-1.5 bg-violet-50 text-violet-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-violet-100 transition-colors border border-violet-200"
+            >
+              <Icons.zap className="w-4 h-4" />
+              <span className="hidden md:inline">Generation</span>
+            </a>
             <div className="hidden sm:flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
               <span className="text-sm text-slate-500">Claude Opus</span>
               <Icons.chevronDown />
@@ -912,6 +919,7 @@ export default function ForgeDashboard() {
                 <span className="text-sm font-semibold text-teal-600 truncate">forge-platform-ui</span>
                 <span className="text-slate-200 hidden sm:inline">|</span>
                 <span className="text-sm font-semibold text-slate-900 truncate hidden sm:inline">{epicProgress.id}: {epicProgress.name}</span>
+                <span className="bg-blue-50 text-blue-700 text-[10px] font-semibold px-2 py-0.5 rounded hidden lg:inline">INTERNAL DEV</span>
                 {epicProgress.phase && (
                   <>
                     <span className="text-slate-200 hidden md:inline">•</span>
@@ -936,7 +944,7 @@ export default function ForgeDashboard() {
                 <div className="w-full max-w-[900px]">
                   <div className="flex justify-end mb-5">
                     <div className="bg-teal-600 text-white px-4 py-3 rounded-2xl rounded-br-sm max-w-[70%] text-sm leading-relaxed">
-                      Continue working on {epicProgress.id} - {epicProgress.name}
+                      Continue building FORGE: {epicProgress.id} - {epicProgress.name}
                     </div>
                   </div>
                   <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden w-full">
@@ -971,7 +979,10 @@ export default function ForgeDashboard() {
                         <ProgressBar progress={epicProgress.percentage} size="lg" />
                       </div>
                       <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <span className="text-amber-800 text-sm">Should I proceed with this implementation?</span>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-amber-800 text-sm font-medium">Should I proceed with this implementation?</span>
+                          <span className="text-amber-600 text-xs">Working on FORGE internal codebase</span>
+                        </div>
                         <div className="flex gap-2">
                           <ActionButton variant="primary">Yes, continue</ActionButton>
                           <ActionButton variant="secondary">Let me review</ActionButton>

@@ -5,8 +5,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'FORGE Cowork Dashboard',
-  description: 'FORGE Platform UI - Cowork Dashboard',
+  title: 'FORGE Platform UI',
+  description: 'FORGE Platform - Internal Development Dashboard',
   icons: {
     icon: '/icon.svg',
   },

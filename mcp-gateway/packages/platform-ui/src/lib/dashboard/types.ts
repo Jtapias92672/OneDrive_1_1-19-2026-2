@@ -147,6 +147,7 @@ export interface DashboardData {
 }
 
 export interface ExpandedSections {
+  generationProgress?: boolean;
   evidencePacks: boolean;
   cars: boolean;
   supplyChain: boolean;
