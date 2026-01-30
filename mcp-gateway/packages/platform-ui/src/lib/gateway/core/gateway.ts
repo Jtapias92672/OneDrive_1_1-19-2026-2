@@ -760,7 +760,7 @@ export class MCPGateway {
   private eventTypeToOutcome(eventType: AuditEventType): AuditEntry['outcome'] {
     if (eventType.includes('completed')) return 'success';
     if (eventType.includes('failed') || eventType.includes('denied') || eventType.includes('blocked')) return 'failure';
-    if (eventType.includes('timeout') || eventType.includes('limited')) return 'blocked';
+    if (eventType.includes('timeout') || eventType.includes('limited') || eventType.includes('violation')) return 'blocked';
     return 'pending';
   }
 
