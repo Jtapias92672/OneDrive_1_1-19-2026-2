@@ -1,0 +1,27 @@
+import { PrismaClient, Rectangle } from '@prisma/client';
+
+export class RectangleService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Rectangle[]> {
+    return this.prisma.rectangle.findMany();
+  }
+
+  async findById(id: string): Promise<Rectangle | null> {
+    return this.prisma.rectangle.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Rectangle, 'id' | 'createdAt' | 'updatedAt'>): Promise<Rectangle> {
+    return this.prisma.rectangle.create({ data });
+  }
+
+  async update(id: string, data: Partial<Rectangle>): Promise<Rectangle> {
+    return this.prisma.rectangle.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.rectangle.delete({ where: { id } });
+  }
+}
+
+export default RectangleService;

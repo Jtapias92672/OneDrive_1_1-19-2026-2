@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://www.mendix.com/clientSystem/9.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      name="Generated.Frame4"
+      title="Frame 4">
+  <layoutCall layoutName="Atlas_Default">
+    <parameter name="Main">
+      <placeholder>        <container name="Frame4" class="gen-frame4">
+          <text name="RegisterForAccount" class="gen-registerforaccount">
+            <caption>Register for Account</caption>
+          </text>
+          <actionButton name="ButtonDanger" class="gen-buttondanger">
+            <caption>ButtonDanger</caption>
+            <action>
+              <noAction/>
+            </action>
+          </actionButton>
+          <text name="PreliminaryTestForPoc" class="gen-preliminarytestforpoc">
+            <caption>PRELIMINARY TEST FOR POC </caption>
+          </text>
+          <container name="Group3" class="gen-group3">
+            <container name="Group1" class="gen-group1">
+              <text name="Name" class="gen-name">
+                <caption>Name</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group6" class="gen-group6">
+            <container name="Group1" class="gen-group1">
+              <text name="PasswordConfirmation" class="gen-passwordconfirmation">
+                <caption>Password Confirmation</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group5" class="gen-group5">
+            <container name="Group1" class="gen-group1">
+              <text name="Password" class="gen-password">
+                <caption>Password</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group4" class="gen-group4">
+            <container name="Group1" class="gen-group1">
+              <text name="UserEmail" class="gen-useremail">
+                <caption>User Email</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Frame" class="gen-frame">
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+          </container>
+        </container>
+      </placeholder>
+    </parameter>
+  </layoutCall>
+</page>

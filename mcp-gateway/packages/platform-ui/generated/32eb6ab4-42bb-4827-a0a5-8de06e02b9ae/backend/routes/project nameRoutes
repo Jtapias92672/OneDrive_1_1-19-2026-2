@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Project NameController } from '../controllers/project name.controller';
+import { Project NameService } from '../services/project name.service';
+
+export function createProject NameRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Project NameService(prisma);
+  const controller = new Project NameController(service);
+
+  router.get('/project names', controller.getAll.bind(controller));
+  router.get('/project names/:id', controller.getById.bind(controller));
+  router.post('/project names', controller.create.bind(controller));
+  router.put('/project names/:id', controller.update.bind(controller));
+  router.delete('/project names/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createProject NameRoutes;

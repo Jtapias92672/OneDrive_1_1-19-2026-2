@@ -3,11 +3,11 @@
  * Epic 14: Computational Accuracy Layer
  */
 
-import { WolframConfig, WolframResult, WolframQueryOptions, WolframPod } from './types';
-import { RateLimiter } from './rate-limiter';
-import { WolframCache } from './wolfram-cache';
-import { QueryFormatter } from './query-formatter';
-import { DetectedClaim } from '../claims/types';
+import { WolframConfig, WolframResult, WolframQueryOptions, WolframPod } from './types.js';
+import { RateLimiter } from './rate-limiter.js';
+import { WolframCache } from './wolfram-cache.js';
+import { QueryFormatter } from './query-formatter.js';
+import { DetectedClaim } from '../claims/types.js';
 
 const DEFAULT_CONFIG: WolframConfig = {
   appId: process.env.WOLFRAM_APP_ID || '',

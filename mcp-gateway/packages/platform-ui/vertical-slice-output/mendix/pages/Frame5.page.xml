@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://www.mendix.com/clientSystem/9.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      name="Generated.Frame5"
+      title="Frame 5">
+  <layoutCall layoutName="Atlas_Default">
+    <parameter name="Main">
+      <placeholder>        <container name="Frame5" class="gen-frame5">
+          <text name="TranslationProjects" class="gen-translationprojects">
+            <caption>Translation Projects</caption>
+          </text>
+          <actionButton name="ButtonDanger" class="gen-buttondanger">
+            <caption>ButtonDanger</caption>
+            <action>
+              <noAction/>
+            </action>
+          </actionButton>
+          <text name="PreliminaryTestForPoc" class="gen-preliminarytestforpoc">
+            <caption>PRELIMINARY TEST FOR POC </caption>
+          </text>
+          <text name="ProjectName" class="gen-projectname">
+            <caption>Project Name</caption>
+          </text>
+          <text name="FigmaDesignFileLink" class="gen-figmadesignfilelink">
+            <caption>Figma Design File Link</caption>
+          </text>
+          <text name="SharepointTargert" class="gen-sharepointtargert">
+            <caption>SharePoint Targert</caption>
+          </text>
+          <text name="MendixTeamServerLink" class="gen-mendixteamserverlink">
+            <caption>Mendix Team Server Link</caption>
+          </text>
+          <text name="SampleProjectName1" class="gen-sampleprojectname1">
+            <caption>Sample Project Name 1</caption>
+          </text>
+          <text name="SampleFigmaLink" class="gen-samplefigmalink">
+            <caption>Sample Figma Link</caption>
+          </text>
+          <text name="SampleSharepoint" class="gen-samplesharepoint">
+            <caption>Sample SharePoint</caption>
+          </text>
+          <text name="SampleMendixTeamServer" class="gen-samplemendixteamserver">
+            <caption>Sample Mendix Team Server</caption>
+          </text>
+          <actionButton name="ButtonDanger" class="gen-buttondanger">
+            <caption>ButtonDanger</caption>
+            <action>
+              <noAction/>
+            </action>
+          </actionButton>
+          <text name="SampleProjectName3" class="gen-sampleprojectname3">
+            <caption>Sample Project Name 3</caption>
+          </text>
+          <text name="SampleFigmaLink" class="gen-samplefigmalink">
+            <caption>Sample Figma Link</caption>
+          </text>
+          <text name="SampleSharepoint" class="gen-samplesharepoint">
+            <caption>Sample SharePoint</caption>
+          </text>
+          <text name="SampleMendixTeamServer" class="gen-samplemendixteamserver">
+            <caption>Sample Mendix Team Server</caption>
+          </text>
+          <actionButton name="ButtonDanger" class="gen-buttondanger">
+            <caption>ButtonDanger</caption>
+            <action>
+              <noAction/>
+            </action>
+          </actionButton>
+          <text name="SampleProjectName2" class="gen-sampleprojectname2">
+            <caption>Sample Project Name 2</caption>
+          </text>
+          <text name="SampleFigmaLink" class="gen-samplefigmalink">
+            <caption>Sample Figma Link</caption>
+          </text>
+          <text name="SampleSharepoint" class="gen-samplesharepoint">
+            <caption>Sample SharePoint</caption>
+          </text>
+          <text name="SampleMendixTeamServer" class="gen-samplemendixteamserver">
+            <caption>Sample Mendix Team Server</caption>
+          </text>
+          <container name="Frame" class="gen-frame">
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+          </container>
+          <actionButton name="ButtonDanger" class="gen-buttondanger">
+            <caption>ButtonDanger</caption>
+            <action>
+              <noAction/>
+            </action>
+          </actionButton>
+          <actionButton name="ButtonDanger" class="gen-buttondanger">
+            <caption>ButtonDanger</caption>
+            <action>
+              <noAction/>
+            </action>
+          </actionButton>
+        </container>
+      </placeholder>
+    </parameter>
+  </layoutCall>
+</page>

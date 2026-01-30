@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { IconController } from '../controllers/icon.controller';
+import { IconService } from '../services/icon.service';
+
+export function createIconRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new IconService(prisma);
+  const controller = new IconController(service);
+
+  router.get('/icons', controller.getAll.bind(controller));
+  router.get('/icons/:id', controller.getById.bind(controller));
+  router.post('/icons', controller.create.bind(controller));
+  router.put('/icons/:id', controller.update.bind(controller));
+  router.delete('/icons/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createIconRoutes;

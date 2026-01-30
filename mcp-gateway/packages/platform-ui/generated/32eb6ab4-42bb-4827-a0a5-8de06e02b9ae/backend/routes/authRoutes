@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { AuthController } from '../controllers/auth.controller';
+import { AuthService } from '../services/auth.service';
+
+export function createAuthRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new AuthService(prisma);
+  const controller = new AuthController(service);
+
+  router.get('/auths', controller.getAll.bind(controller));
+  router.get('/auths/:id', controller.getById.bind(controller));
+  router.post('/auths', controller.create.bind(controller));
+  router.put('/auths/:id', controller.update.bind(controller));
+  router.delete('/auths/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createAuthRoutes;

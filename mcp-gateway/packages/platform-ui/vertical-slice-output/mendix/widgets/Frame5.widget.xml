@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget xmlns="http://www.mendix.com/widget/1.0"
+        id="13:235"
+        name="Frame5"
+        type="Container">
+  <properties>
+    <property key="width">1440</property>
+    <property key="height">1024</property>
+  </properties>
+</widget>

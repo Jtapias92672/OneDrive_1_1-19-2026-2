@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { StarController } from '../controllers/star.controller';
+import { StarService } from '../services/star.service';
+
+export function createStarRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new StarService(prisma);
+  const controller = new StarController(service);
+
+  router.get('/stars', controller.getAll.bind(controller));
+  router.get('/stars/:id', controller.getById.bind(controller));
+  router.post('/stars', controller.create.bind(controller));
+  router.put('/stars/:id', controller.update.bind(controller));
+  router.delete('/stars/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createStarRoutes;

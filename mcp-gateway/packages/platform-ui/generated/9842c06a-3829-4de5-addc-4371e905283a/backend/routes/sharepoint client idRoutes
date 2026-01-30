@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { SharePoint Client IDController } from '../controllers/sharepoint client id.controller';
+import { SharePoint Client IDService } from '../services/sharepoint client id.service';
+
+export function createSharePoint Client IDRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new SharePoint Client IDService(prisma);
+  const controller = new SharePoint Client IDController(service);
+
+  router.get('/share-point client ids', controller.getAll.bind(controller));
+  router.get('/share-point client ids/:id', controller.getById.bind(controller));
+  router.post('/share-point client ids', controller.create.bind(controller));
+  router.put('/share-point client ids/:id', controller.update.bind(controller));
+  router.delete('/share-point client ids/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createSharePoint Client IDRoutes;

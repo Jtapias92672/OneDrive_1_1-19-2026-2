@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { XController } from '../controllers/x.controller';
+import { XService } from '../services/x.service';
+
+export function createXRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new XService(prisma);
+  const controller = new XController(service);
+
+  router.get('/xs', controller.getAll.bind(controller));
+  router.get('/xs/:id', controller.getById.bind(controller));
+  router.post('/xs', controller.create.bind(controller));
+  router.put('/xs/:id', controller.update.bind(controller));
+  router.delete('/xs/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createXRoutes;

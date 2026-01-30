@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { SharePoint Library FolderController } from '../controllers/sharepoint library folder.controller';
+import { SharePoint Library FolderService } from '../services/sharepoint library folder.service';
+
+export function createSharePoint Library FolderRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new SharePoint Library FolderService(prisma);
+  const controller = new SharePoint Library FolderController(service);
+
+  router.get('/share-point library folders', controller.getAll.bind(controller));
+  router.get('/share-point library folders/:id', controller.getById.bind(controller));
+  router.post('/share-point library folders', controller.create.bind(controller));
+  router.put('/share-point library folders/:id', controller.update.bind(controller));
+  router.delete('/share-point library folders/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createSharePoint Library FolderRoutes;

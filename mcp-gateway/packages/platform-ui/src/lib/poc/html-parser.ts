@@ -47,7 +47,7 @@ const ELEMENT_TYPE_MAP: Record<string, string> = {
   button: 'button',
 
   // Layout
-  div: 'container',
+  // Note: 'div' intentionally NOT mapped - should be inferred from class patterns
   section: 'container',
   article: 'card',
   aside: 'container',
@@ -84,18 +84,19 @@ const ELEMENT_TYPE_MAP: Record<string, string> = {
 };
 
 const CLASS_PATTERN_MAP: Array<{ pattern: RegExp; type: string }> = [
-  { pattern: /card|tile|panel/i, type: 'card' },
-  { pattern: /btn|button/i, type: 'button' },
-  { pattern: /form|input-group/i, type: 'form' },
-  { pattern: /nav|menu|sidebar/i, type: 'navigation' },
-  { pattern: /modal|dialog|popup/i, type: 'modal' },
-  { pattern: /list|grid|table/i, type: 'list' },
-  { pattern: /header|hero/i, type: 'navigation' },
-  { pattern: /footer/i, type: 'container' },
-  { pattern: /dashboard|stats|metrics/i, type: 'container' },
-  { pattern: /avatar|profile/i, type: 'card' },
-  { pattern: /badge|tag|chip/i, type: 'button' },
-  { pattern: /alert|toast|notification/i, type: 'container' },
+  { pattern: /\b(card|tile|panel)\b/i, type: 'card' },
+  { pattern: /\b(btn|button)\b/i, type: 'button' },
+  // ✅ FIXED: Use word boundaries to prevent "login-container" matching "form"
+  { pattern: /\b(form|input-group)\b/i, type: 'form' },
+  { pattern: /\b(nav|menu|sidebar)\b/i, type: 'navigation' },
+  { pattern: /\b(modal|dialog|popup)\b/i, type: 'modal' },
+  { pattern: /\b(list|grid|table)\b/i, type: 'list' },
+  { pattern: /\b(header|hero)\b/i, type: 'navigation' },
+  { pattern: /\bfooter\b/i, type: 'container' },
+  { pattern: /\b(dashboard|stats|metrics)\b/i, type: 'container' },
+  { pattern: /\b(avatar|profile)\b/i, type: 'card' },
+  { pattern: /\b(badge|tag|chip)\b/i, type: 'button' },
+  { pattern: /\b(alert|toast|notification)\b/i, type: 'container' },
 ];
 
 // =============================================================================
@@ -173,10 +174,9 @@ export class HTMLParser {
         const component = this.elementToComponent(child, depth);
         components.push(component);
 
-        // Extract nested components
+        // Extract nested components (preserve hierarchy, not flatten)
         const nestedComponents = this.extractComponents(child, depth + 1);
-        component.children = nestedComponents.map(c => c.id);
-        components.push(...nestedComponents);
+        component.children = nestedComponents; // ✅ CHANGED: Store actual components, not IDs
       } else {
         // Continue traversing without creating component
         components.push(...this.extractComponents(child, depth + 1));
@@ -195,7 +195,7 @@ export class HTMLParser {
     }
 
     const tagName = element.tagName.toLowerCase();
-    const className = element.className || '';
+    const className = element.getAttribute('class') || '';
     const id = element.id || '';
 
     // Skip script, style, and other non-visual elements
@@ -228,7 +228,10 @@ export class HTMLParser {
       const hasSubstantialContent = element.children.length > 0 ||
         (element.textContent?.trim().length || 0) > 20;
       const hasClasses = className.trim().length > 0;
-      return hasSubstantialContent && hasClasses;
+      const hasStyles = (element.getAttribute('style')?.trim().length || 0) > 0;
+
+      // ✅ CHANGED: Accept divs with styles OR classes (not just classes)
+      return hasSubstantialContent && (hasClasses || hasStyles);
     }
 
     return false;
@@ -262,7 +265,7 @@ export class HTMLParser {
    */
   private elementToComponent(element: Element, depth: number): ParsedComponent {
     const tagName = element.tagName.toLowerCase();
-    const className = element.className || '';
+    const className = element.getAttribute('class') || '';
     const id = element.id || '';
 
     const componentId = `html-${++this.componentCounter}`;
@@ -271,6 +274,9 @@ export class HTMLParser {
     const props = this.extractProps(element);
     const styles = this.extractStyles(element);
 
+    // Extract bounds from inline styles or set defaults
+    const bounds = this.extractBounds(element);
+
     return {
       id: componentId,
       name,
@@ -278,7 +284,28 @@ export class HTMLParser {
       props,
       styles,
       children: [],
+      bounds, // ✅ ADD: Required for generateDesignHTML()
     };
+  }
+
+  /**
+   * Extract bounds from element styles or set defaults
+   */
+  private extractBounds(element: Element): { x: number; y: number; width: number; height: number } {
+    const style = element.getAttribute('style') || '';
+
+    // Try to extract from inline styles
+    const widthMatch = style.match(/width:\s*(\d+)px/);
+    const heightMatch = style.match(/height:\s*(\d+)px/);
+    const leftMatch = style.match(/left:\s*(\d+)px/);
+    const topMatch = style.match(/top:\s*(\d+)px/);
+
+    const width = widthMatch ? parseInt(widthMatch[1]) : 100; // Default 100px
+    const height = heightMatch ? parseInt(heightMatch[1]) : 100;
+    const x = leftMatch ? parseInt(leftMatch[1]) : this.componentCounter * 10; // Stagger by default
+    const y = topMatch ? parseInt(topMatch[1]) : 0;
+
+    return { x, y, width, height };
   }
 
   /**
@@ -319,26 +346,28 @@ export class HTMLParser {
 
   /**
    * Infer component type from element
+   * Per agent ab56a0d: Check explicit semantic tags FIRST, then class patterns
    */
   private inferComponentType(element: Element, tagName: string, className: string): string {
-    // Check class patterns first (more specific)
+    // PRIORITY 1: Check tag name mapping (explicit semantic meaning)
+    // <form> → 'form', <nav> → 'navigation', <table> → 'list'
+    if (ELEMENT_TYPE_MAP[tagName]) {
+      return ELEMENT_TYPE_MAP[tagName];
+    }
+
+    // PRIORITY 2: Check class patterns (for ambiguous elements like divs)
     for (const { pattern, type } of CLASS_PATTERN_MAP) {
       if (pattern.test(className)) {
         return type;
       }
     }
 
-    // Check tag name mapping
-    if (ELEMENT_TYPE_MAP[tagName]) {
-      return ELEMENT_TYPE_MAP[tagName];
-    }
-
-    // Check for form-like content
-    if (element.querySelector('input, select, textarea')) {
+    // PRIORITY 3: Check for form-like content (but not if it wraps an actual form)
+    if (element.querySelector('input, select, textarea') && !element.querySelector('form')) {
       return 'form';
     }
 
-    // Check for list-like content
+    // PRIORITY 4: Check for list-like content
     if (element.querySelector('ul, ol, li') || element.children.length > 3) {
       return 'list';
     }

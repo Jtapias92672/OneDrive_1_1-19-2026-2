@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Mendix Import Module Package NameController } from '../controllers/mendix import module package name.controller';
+import { Mendix Import Module Package NameService } from '../services/mendix import module package name.service';
+
+export function createMendix Import Module Package NameRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Mendix Import Module Package NameService(prisma);
+  const controller = new Mendix Import Module Package NameController(service);
+
+  router.get('/mendix import module package names', controller.getAll.bind(controller));
+  router.get('/mendix import module package names/:id', controller.getById.bind(controller));
+  router.post('/mendix import module package names', controller.create.bind(controller));
+  router.put('/mendix import module package names/:id', controller.update.bind(controller));
+  router.delete('/mendix import module package names/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createMendix Import Module Package NameRoutes;

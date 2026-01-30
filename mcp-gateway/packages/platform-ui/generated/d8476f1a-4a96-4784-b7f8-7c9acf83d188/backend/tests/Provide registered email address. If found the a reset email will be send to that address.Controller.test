@@ -1,0 +1,55 @@
+import request from 'supertest';
+import express from 'express';
+import { Provide registered email address. If found the a reset email will be send to that address.Controller } from '../controllers/provide registered email address. if found the a reset email will be send to that address..controller';
+
+describe('Provide registered email address. If found the a reset email will be send to that address.Controller', () => {
+  const mockService = {
+    findAll: jest.fn(),
+    findById: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  };
+
+  const controller = new Provide registered email address. If found the a reset email will be send to that address.Controller(mockService as any);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getAll', () => {
+    it('returns all provide registered email address. if found the a reset email will be send to that address.s', async () => {
+      mockService.findAll.mockResolvedValue([{ id: '1' }]);
+      const app = express();
+      app.get('/', controller.getAll.bind(controller));
+
+      const response = await request(app).get('/');
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toHaveLength(1);
+    });
+  });
+
+  describe('getById', () => {
+    it('returns provide registered email address. if found the a reset email will be send to that address. by id', async () => {
+      mockService.findById.mockResolvedValue({ id: '1' });
+      const app = express();
+      app.get('/:id', controller.getById.bind(controller));
+
+      const response = await request(app).get('/1');
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.id).toBe('1');
+    });
+
+    it('returns 404 when provide registered email address. if found the a reset email will be send to that address. not found', async () => {
+      mockService.findById.mockResolvedValue(null);
+      const app = express();
+      app.get('/:id', controller.getById.bind(controller));
+
+      const response = await request(app).get('/nonexistent');
+
+      expect(response.status).toBe(404);
+    });
+  });
+});

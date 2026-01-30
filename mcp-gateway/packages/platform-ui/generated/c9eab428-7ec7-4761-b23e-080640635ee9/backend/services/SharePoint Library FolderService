@@ -1,0 +1,27 @@
+import { PrismaClient, SharePoint Library Folder } from '@prisma/client';
+
+export class SharePoint Library FolderService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<SharePoint Library Folder[]> {
+    return this.prisma.sharepoint library folder.findMany();
+  }
+
+  async findById(id: string): Promise<SharePoint Library Folder | null> {
+    return this.prisma.sharepoint library folder.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<SharePoint Library Folder, 'id' | 'createdAt' | 'updatedAt'>): Promise<SharePoint Library Folder> {
+    return this.prisma.sharepoint library folder.create({ data });
+  }
+
+  async update(id: string, data: Partial<SharePoint Library Folder>): Promise<SharePoint Library Folder> {
+    return this.prisma.sharepoint library folder.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.sharepoint library folder.delete({ where: { id } });
+  }
+}
+
+export default SharePoint Library FolderService;

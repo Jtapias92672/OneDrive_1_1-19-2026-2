@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { UsernameController } from '../controllers/username.controller';
+import { UsernameService } from '../services/username.service';
+
+export function createUsernameRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new UsernameService(prisma);
+  const controller = new UsernameController(service);
+
+  router.get('/usernames', controller.getAll.bind(controller));
+  router.get('/usernames/:id', controller.getById.bind(controller));
+  router.post('/usernames', controller.create.bind(controller));
+  router.put('/usernames/:id', controller.update.bind(controller));
+  router.delete('/usernames/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createUsernameRoutes;

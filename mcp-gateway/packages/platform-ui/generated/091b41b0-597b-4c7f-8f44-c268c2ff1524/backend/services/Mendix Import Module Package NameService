@@ -1,0 +1,27 @@
+import { PrismaClient, Mendix Import Module Package Name } from '@prisma/client';
+
+export class Mendix Import Module Package NameService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Mendix Import Module Package Name[]> {
+    return this.prisma.mendix import module package name.findMany();
+  }
+
+  async findById(id: string): Promise<Mendix Import Module Package Name | null> {
+    return this.prisma.mendix import module package name.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Mendix Import Module Package Name, 'id' | 'createdAt' | 'updatedAt'>): Promise<Mendix Import Module Package Name> {
+    return this.prisma.mendix import module package name.create({ data });
+  }
+
+  async update(id: string, data: Partial<Mendix Import Module Package Name>): Promise<Mendix Import Module Package Name> {
+    return this.prisma.mendix import module package name.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.mendix import module package name.delete({ where: { id } });
+  }
+}
+
+export default Mendix Import Module Package NameService;

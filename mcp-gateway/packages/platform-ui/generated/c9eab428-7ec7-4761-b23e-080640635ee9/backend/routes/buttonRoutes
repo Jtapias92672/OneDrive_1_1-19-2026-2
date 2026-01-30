@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { ButtonController } from '../controllers/button.controller';
+import { ButtonService } from '../services/button.service';
+
+export function createButtonRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new ButtonService(prisma);
+  const controller = new ButtonController(service);
+
+  router.get('/buttons', controller.getAll.bind(controller));
+  router.get('/buttons/:id', controller.getById.bind(controller));
+  router.post('/buttons', controller.create.bind(controller));
+  router.put('/buttons/:id', controller.update.bind(controller));
+  router.delete('/buttons/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createButtonRoutes;

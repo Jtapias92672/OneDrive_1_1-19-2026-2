@@ -1,0 +1,27 @@
+import { PrismaClient, Welcome to ArcFoundry } from '@prisma/client';
+
+export class Welcome to ArcFoundryService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Welcome to ArcFoundry[]> {
+    return this.prisma.welcome to arcfoundry.findMany();
+  }
+
+  async findById(id: string): Promise<Welcome to ArcFoundry | null> {
+    return this.prisma.welcome to arcfoundry.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Welcome to ArcFoundry, 'id' | 'createdAt' | 'updatedAt'>): Promise<Welcome to ArcFoundry> {
+    return this.prisma.welcome to arcfoundry.create({ data });
+  }
+
+  async update(id: string, data: Partial<Welcome to ArcFoundry>): Promise<Welcome to ArcFoundry> {
+    return this.prisma.welcome to arcfoundry.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.welcome to arcfoundry.delete({ where: { id } });
+  }
+}
+
+export default Welcome to ArcFoundryService;

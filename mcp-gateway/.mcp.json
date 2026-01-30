@@ -1,0 +1,74 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schema/mcp.json",
+  "version": "1.0",
+  "mcpServers": {
+    "figma": {
+      "command": "node",
+      "args": ["dist/mcp-servers/figma-server/server.js"],
+      "env": {
+        "FIGMA_ACCESS_TOKEN": "${FIGMA_ACCESS_TOKEN}"
+      },
+      "description": "Figma Design API integration for retrieving design files, nodes, and images",
+      "capabilities": {
+        "tools": [
+          "figma_getFile",
+          "figma_getFileNodes",
+          "figma_getImages",
+          "figma_getTeamProjects",
+          "figma_getProjectFiles"
+        ]
+      },
+      "transport": "stdio"
+    },
+    "bedrock": {
+      "command": "node",
+      "args": ["dist/mcp-servers/bedrock-server/server.js"],
+      "env": {
+        "AWS_REGION": "${AWS_REGION}",
+        "AWS_ACCESS_KEY_ID": "${AWS_ACCESS_KEY_ID}",
+        "AWS_SECRET_ACCESS_KEY": "${AWS_SECRET_ACCESS_KEY}"
+      },
+      "description": "AWS Bedrock foundation model integration for AI inference",
+      "capabilities": {
+        "tools": [
+          "bedrock_invokeModel",
+          "bedrock_invokeModelStream",
+          "bedrock_listModels",
+          "bedrock_getModelInfo"
+        ]
+      },
+      "transport": "stdio"
+    },
+    "wolfram": {
+      "command": "node",
+      "args": ["dist/mcp-servers/wolfram-server/server.js"],
+      "env": {
+        "WOLFRAM_APP_ID": "${WOLFRAM_APP_ID}"
+      },
+      "description": "Wolfram Alpha computational accuracy verification",
+      "capabilities": {
+        "tools": [
+          "wolfram_query",
+          "wolfram_validate"
+        ]
+      },
+      "transport": "stdio",
+      "rateLimits": {
+        "requestsPerMinute": 20,
+        "requestsPerMonth": 2000
+      }
+    }
+  },
+  "gateway": {
+    "mode": "hybrid",
+    "directIntegration": {
+      "enabled": true,
+      "description": "Use direct TypeScript clients in development mode"
+    },
+    "mcpProtocol": {
+      "enabled": true,
+      "description": "Use MCP protocol servers in production mode"
+    },
+    "defaultMode": "direct"
+  }
+}

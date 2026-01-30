@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Frame 5Controller } from '../controllers/frame 5.controller';
+import { Frame 5Service } from '../services/frame 5.service';
+
+export function createFrame 5Routes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Frame 5Service(prisma);
+  const controller = new Frame 5Controller(service);
+
+  router.get('/frame 5s', controller.getAll.bind(controller));
+  router.get('/frame 5s/:id', controller.getById.bind(controller));
+  router.post('/frame 5s', controller.create.bind(controller));
+  router.put('/frame 5s/:id', controller.update.bind(controller));
+  router.delete('/frame 5s/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createFrame 5Routes;

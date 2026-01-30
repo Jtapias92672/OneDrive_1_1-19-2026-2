@@ -422,6 +422,43 @@ Completed: Epics 00-07, 7.5, 10b, 13, 14, 15
 ## Skills
 See: `.forge/skills/MANIFEST.md`
 
+### Performance Debugging Skills (docs/skills/)
+When debugging "tests pass but feature broken" scenarios, READ these skill files:
+
+| Skill | When to Use |
+|-------|-------------|
+| `contract-validation.md` | Frontend/backend data mismatch, API schema issues |
+| `architectural-entropy-detector.md` | Accumulated "reasonable" decisions causing failures |
+| `referential-equality.md` | Broken caches, memoization issues, stale data |
+| `eliminating-waterfalls.md` | Sequential async operations that should be parallel |
+| `bundle-optimization.md` | Build/bundle caching issues, stale compiled code |
+
+**Usage:** `cat docs/skills/contract-validation.md` before debugging
+
+### Agent & Token Management (docs/skills/)
+| Skill | When to Use |
+|-------|-------------|
+| `agent-orchestration.md` | Multi-file exploration, complex debugging, token limits |
+
+**CRITICAL RULES:**
+1. **Use Explore agent** for any task touching 5+ files
+2. **Use general-purpose agent** for complex debugging investigations
+3. **Restart session** when reaching ~150k tokens or after major milestones
+4. **Agents return summaries**, not raw data
+5. **Fresh context = Peak performance** - restart is not failure
+
+**Token Limit Signs:**
+- Responses getting slower
+- Forgetting earlier context
+- Repeating work already done
+- Missing obvious patterns
+
+**When to Restart:**
+- After completing Epic phase
+- When response quality degrades
+- Before starting unrelated work
+- At ~150k tokens used
+
 ## Contacts
 - Owner: JT
 - Org: ArcFoundry
@@ -447,6 +484,38 @@ See: `.forge/skills/MANIFEST.md`
 4. **Check for skipped tests** - they indicate issues
 5. **Inspect actual uncovered lines**
 6. **Smaller, focused instructions** to avoid token limits
+
+---
+
+## KEY LESSONS LEARNED (2026-01-29)
+
+| Lesson | Impact |
+|--------|--------|
+| **Infrastructure must be USED, not just EXIST** | MCP servers, agents defined but bypassed |
+| **Dev mode disables security controls** | OAuth, sandbox, supply chain all disabled |
+| **Agent delegation prevents context bloat** | Manual file reads exhaust token limits |
+| **Hierarchy preservation > data preservation** | flattenComponents() destroyed Figma structure |
+| **Smoke tests find root causes faster** | Epic 7.5 v2 found bounds bug in minutes |
+| **Fresh sessions = peak performance** | Restart at ~150k tokens, not when forced |
+
+### Infrastructure Cross-Check (Before Starting Work)
+
+1. **Verify MCP servers configured** - `.mcp.json` exists
+2. **Use agents for exploration** - Don't manually read 5+ files
+3. **Check security controls status** - Dev mode disables critical controls
+4. **Test integrations are REAL** - Not mocked (Figma, Bedrock, Mendix)
+5. **Monitor token usage** - Restart before degradation
+
+### Root Cause Pattern (Figma-HTML Bug)
+
+```
+FigmaParser extracts: fills, strokes, effects, cornerRadius, typography ✅
+flattenComponents() preserves: only colors[] (and loses hierarchy) ❌
+generateDesignHTML() filters: components.filter(c => c.bounds) ❌
+HTML output: "No components with bounds" → empty ❌
+```
+
+**Fix:** Preserve hierarchy with convertComponents(), render recursively
 
 ---
 

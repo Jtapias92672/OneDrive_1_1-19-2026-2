@@ -1,0 +1,27 @@
+import { PrismaClient, PRELIMINARY TEST FOR POC } from '@prisma/client';
+
+export class PRELIMINARY TEST FOR POCService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<PRELIMINARY TEST FOR POC[]> {
+    return this.prisma.preliminary test for poc.findMany();
+  }
+
+  async findById(id: string): Promise<PRELIMINARY TEST FOR POC | null> {
+    return this.prisma.preliminary test for poc.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<PRELIMINARY TEST FOR POC, 'id' | 'createdAt' | 'updatedAt'>): Promise<PRELIMINARY TEST FOR POC> {
+    return this.prisma.preliminary test for poc.create({ data });
+  }
+
+  async update(id: string, data: Partial<PRELIMINARY TEST FOR POC>): Promise<PRELIMINARY TEST FOR POC> {
+    return this.prisma.preliminary test for poc.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.preliminary test for poc.delete({ where: { id } });
+  }
+}
+
+export default PRELIMINARY TEST FOR POCService;

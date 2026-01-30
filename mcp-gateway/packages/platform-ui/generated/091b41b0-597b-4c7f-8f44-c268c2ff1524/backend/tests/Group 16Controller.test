@@ -1,0 +1,55 @@
+import request from 'supertest';
+import express from 'express';
+import { Group 16Controller } from '../controllers/group 16.controller';
+
+describe('Group 16Controller', () => {
+  const mockService = {
+    findAll: jest.fn(),
+    findById: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  };
+
+  const controller = new Group 16Controller(mockService as any);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getAll', () => {
+    it('returns all group 16s', async () => {
+      mockService.findAll.mockResolvedValue([{ id: '1' }]);
+      const app = express();
+      app.get('/', controller.getAll.bind(controller));
+
+      const response = await request(app).get('/');
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toHaveLength(1);
+    });
+  });
+
+  describe('getById', () => {
+    it('returns group 16 by id', async () => {
+      mockService.findById.mockResolvedValue({ id: '1' });
+      const app = express();
+      app.get('/:id', controller.getById.bind(controller));
+
+      const response = await request(app).get('/1');
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.id).toBe('1');
+    });
+
+    it('returns 404 when group 16 not found', async () => {
+      mockService.findById.mockResolvedValue(null);
+      const app = express();
+      app.get('/:id', controller.getById.bind(controller));
+
+      const response = await request(app).get('/nonexistent');
+
+      expect(response.status).toBe(404);
+    });
+  });
+});

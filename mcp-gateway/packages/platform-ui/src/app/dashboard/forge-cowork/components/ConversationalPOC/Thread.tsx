@@ -31,6 +31,16 @@ export const Thread = memo(function Thread({
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
+  if (messages.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="text-center text-gray-500">
+          <p>Initializing conversation...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-6">
       {messages.map((message, index) => (

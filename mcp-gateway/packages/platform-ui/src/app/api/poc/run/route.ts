@@ -19,8 +19,10 @@ import type { POCRunInput, POCProgressEvent, POCRunResult } from '@/lib/poc/type
 const runResults = new Map<string, POCRunResult>();
 
 export async function POST(request: NextRequest) {
+  console.log('=== POC RUN API CALLED ===');
   try {
     const body = await request.json();
+    console.log('[API] Request body:', { figmaUrl: body.figmaUrl?.substring(0, 50), hasHtml: !!body.htmlContent, hasPath: !!body.htmlPath });
     const { figmaUrl, htmlContent, htmlPath, options } = body as POCRunInput & { figmaToken?: string };
 
     // Get Figma token from request or environment
@@ -47,8 +49,13 @@ export async function POST(request: NextRequest) {
 
         try {
           // Create orchestrator
+          // TODO: Enable MCP gateway routing by passing gateway instance
+          // For now, using direct FigmaClient calls (hybrid mode)
           const orchestrator = createPOCOrchestrator({
             figmaToken,
+            // gateway: mcpGateway, // MCP routing (when integrated)
+            // tenantId: 'default',
+            // userId: 'poc-user',
           });
 
           // Set up progress callback
@@ -64,7 +71,7 @@ export async function POST(request: NextRequest) {
             options: {
               generateTests: options?.generateTests ?? true,
               generateStories: options?.generateStories ?? true,
-              generateHtml: options?.generateHtml ?? false,
+              generateHtml: options?.generateHtml ?? true,  // CHANGED: Enable HTML generation by default
               skipJira: options?.skipJira ?? true,
               deployFrontend: options?.deployFrontend ?? false,
               deployBackend: options?.deployBackend ?? false,

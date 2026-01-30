@@ -1,0 +1,27 @@
+import { PrismaClient, Button Danger } from '@prisma/client';
+
+export class Button DangerService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Button Danger[]> {
+    return this.prisma.button danger.findMany();
+  }
+
+  async findById(id: string): Promise<Button Danger | null> {
+    return this.prisma.button danger.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Button Danger, 'id' | 'createdAt' | 'updatedAt'>): Promise<Button Danger> {
+    return this.prisma.button danger.create({ data });
+  }
+
+  async update(id: string, data: Partial<Button Danger>): Promise<Button Danger> {
+    return this.prisma.button danger.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.button danger.delete({ where: { id } });
+  }
+}
+
+export default Button DangerService;

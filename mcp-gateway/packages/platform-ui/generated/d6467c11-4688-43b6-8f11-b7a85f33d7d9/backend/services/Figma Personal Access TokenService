@@ -1,0 +1,27 @@
+import { PrismaClient, Figma Personal Access Token } from '@prisma/client';
+
+export class Figma Personal Access TokenService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Figma Personal Access Token[]> {
+    return this.prisma.figma personal access token.findMany();
+  }
+
+  async findById(id: string): Promise<Figma Personal Access Token | null> {
+    return this.prisma.figma personal access token.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Figma Personal Access Token, 'id' | 'createdAt' | 'updatedAt'>): Promise<Figma Personal Access Token> {
+    return this.prisma.figma personal access token.create({ data });
+  }
+
+  async update(id: string, data: Partial<Figma Personal Access Token>): Promise<Figma Personal Access Token> {
+    return this.prisma.figma personal access token.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.figma personal access token.delete({ where: { id } });
+  }
+}
+
+export default Figma Personal Access TokenService;

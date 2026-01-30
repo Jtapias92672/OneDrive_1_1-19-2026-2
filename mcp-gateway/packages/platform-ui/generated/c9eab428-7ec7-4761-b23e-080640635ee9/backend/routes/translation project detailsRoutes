@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Translation Project DetailsController } from '../controllers/translation project details.controller';
+import { Translation Project DetailsService } from '../services/translation project details.service';
+
+export function createTranslation Project DetailsRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Translation Project DetailsService(prisma);
+  const controller = new Translation Project DetailsController(service);
+
+  router.get('/translation project detailss', controller.getAll.bind(controller));
+  router.get('/translation project detailss/:id', controller.getById.bind(controller));
+  router.post('/translation project detailss', controller.create.bind(controller));
+  router.put('/translation project detailss/:id', controller.update.bind(controller));
+  router.delete('/translation project detailss/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createTranslation Project DetailsRoutes;

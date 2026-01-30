@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { User EmailController } from '../controllers/user email.controller';
+import { User EmailService } from '../services/user email.service';
+
+export function createUser EmailRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new User EmailService(prisma);
+  const controller = new User EmailController(service);
+
+  router.get('/user emails', controller.getAll.bind(controller));
+  router.get('/user emails/:id', controller.getById.bind(controller));
+  router.post('/user emails', controller.create.bind(controller));
+  router.put('/user emails/:id', controller.update.bind(controller));
+  router.delete('/user emails/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createUser EmailRoutes;

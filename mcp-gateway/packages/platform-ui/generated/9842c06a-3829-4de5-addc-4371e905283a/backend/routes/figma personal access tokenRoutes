@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Figma Personal Access TokenController } from '../controllers/figma personal access token.controller';
+import { Figma Personal Access TokenService } from '../services/figma personal access token.service';
+
+export function createFigma Personal Access TokenRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Figma Personal Access TokenService(prisma);
+  const controller = new Figma Personal Access TokenController(service);
+
+  router.get('/figma personal access tokens', controller.getAll.bind(controller));
+  router.get('/figma personal access tokens/:id', controller.getById.bind(controller));
+  router.post('/figma personal access tokens', controller.create.bind(controller));
+  router.put('/figma personal access tokens/:id', controller.update.bind(controller));
+  router.delete('/figma personal access tokens/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createFigma Personal Access TokenRoutes;

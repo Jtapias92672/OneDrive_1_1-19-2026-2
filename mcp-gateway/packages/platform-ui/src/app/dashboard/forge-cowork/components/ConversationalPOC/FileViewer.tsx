@@ -6,7 +6,7 @@
  */
 
 import { memo, useState } from 'react';
-import { X, File, Download, Copy, Check, Folder, Archive } from 'lucide-react';
+import { X, File, Download, Copy, Check, Folder, Archive, Eye, ExternalLink } from 'lucide-react';
 
 interface FileViewerProps {
   result: {
@@ -34,8 +34,12 @@ export const FileViewer = memo(function FileViewer({
 }: FileViewerProps) {
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [copiedFile, setCopiedFile] = useState<string | null>(null);
+  const [previewFile, setPreviewFile] = useState<FileItem | null>(null);
+
+  // Smart initial expansion: Collapse React if HTML files exist (to show HTML folder)
+  const hasHtmlFiles = (result.htmlFiles?.length ?? 0) > 0;
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
-    react: true,
+    react: !hasHtmlFiles, // Collapse React when HTML exists to show HTML folder first
     html: true,
     backend: false,
   });
@@ -187,6 +191,25 @@ export const FileViewer = memo(function FileViewer({
     }));
   };
 
+  const handlePreview = (file: FileItem) => {
+    setPreviewFile(file);
+  };
+
+  const handlePreviewAll = () => {
+    // Look for design.html first (the full page reconstruction)
+    const designFile = filesByFolder.html.find(f => f.name === 'design.html');
+    if (designFile) {
+      setPreviewFile(designFile);
+      return;
+    }
+
+    // Fallback to index.html (component gallery)
+    const indexFile = filesByFolder.html.find(f => f.name === 'index.html');
+    if (indexFile) {
+      setPreviewFile(indexFile);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[80vh] flex flex-col">
@@ -294,6 +317,16 @@ export const FileViewer = memo(function FileViewer({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              handlePreviewAll();
+                            }}
+                            className="p-1 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded"
+                            title="Preview Complete Design"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
                               handleDownloadFolder('html');
                             }}
                             className="p-1 text-gray-400 hover:text-orange-600 rounded"
@@ -309,20 +342,32 @@ export const FileViewer = memo(function FileViewer({
                       {expandedFolders.html && (
                         <div className="border-t border-gray-200 py-1">
                           {filesByFolder.html.map((file, index) => (
-                            <button
+                            <div
                               key={index}
-                              onClick={() => setSelectedFile(file)}
-                              className={`w-full text-left px-4 py-1.5 text-xs transition-colors ${
+                              className={`flex items-center justify-between px-4 py-1.5 text-xs transition-colors ${
                                 selectedFile === file
-                                  ? 'bg-orange-50 text-orange-700 font-medium'
+                                  ? 'bg-orange-50 text-orange-700'
                                   : 'text-gray-700 hover:bg-gray-50'
                               }`}
                             >
-                              <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => setSelectedFile(file)}
+                                className="flex items-center gap-2 flex-1 text-left"
+                              >
                                 <File className="w-3 h-3 flex-shrink-0" />
                                 <span className="truncate">{file.name}</span>
-                              </div>
-                            </button>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePreview(file);
+                                }}
+                                className="p-1 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded flex-shrink-0"
+                                title="Preview HTML"
+                              >
+                                <Eye className="w-3 h-3" />
+                              </button>
+                            </div>
                           ))}
                         </div>
                       )}
@@ -449,6 +494,51 @@ export const FileViewer = memo(function FileViewer({
           </button>
         </div>
       </div>
+
+      {/* HTML Preview Modal */}
+      {previewFile && previewFile.folder === 'html' && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
+              <div className="flex items-center gap-3">
+                <Eye className="w-5 h-5 text-orange-500" />
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">HTML Preview</h3>
+                  <p className="text-sm text-gray-500">{previewFile.name}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const blob = new Blob([previewFile.content], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Open in New Tab
+                </button>
+                <button
+                  onClick={() => setPreviewFile(null)}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <iframe
+                srcDoc={previewFile.content}
+                className="w-full h-full border-0"
+                title={`Preview of ${previewFile.name}`}
+                sandbox="allow-scripts allow-same-origin"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

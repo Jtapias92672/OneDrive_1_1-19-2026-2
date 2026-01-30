@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Mendix Repository NameController } from '../controllers/mendix repository name.controller';
+import { Mendix Repository NameService } from '../services/mendix repository name.service';
+
+export function createMendix Repository NameRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Mendix Repository NameService(prisma);
+  const controller = new Mendix Repository NameController(service);
+
+  router.get('/mendix repository names', controller.getAll.bind(controller));
+  router.get('/mendix repository names/:id', controller.getById.bind(controller));
+  router.post('/mendix repository names', controller.create.bind(controller));
+  router.put('/mendix repository names/:id', controller.update.bind(controller));
+  router.delete('/mendix repository names/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createMendix Repository NameRoutes;

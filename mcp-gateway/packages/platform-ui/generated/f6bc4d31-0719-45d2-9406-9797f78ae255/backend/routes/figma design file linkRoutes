@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Figma Design File LinkController } from '../controllers/figma design file link.controller';
+import { Figma Design File LinkService } from '../services/figma design file link.service';
+
+export function createFigma Design File LinkRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Figma Design File LinkService(prisma);
+  const controller = new Figma Design File LinkController(service);
+
+  router.get('/figma design file links', controller.getAll.bind(controller));
+  router.get('/figma design file links/:id', controller.getById.bind(controller));
+  router.post('/figma design file links', controller.create.bind(controller));
+  router.put('/figma design file links/:id', controller.update.bind(controller));
+  router.delete('/figma design file links/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createFigma Design File LinkRoutes;

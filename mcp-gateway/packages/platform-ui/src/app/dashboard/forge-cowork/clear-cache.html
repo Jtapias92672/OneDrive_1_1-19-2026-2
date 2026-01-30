@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clear FORGE Cache</title>
+</head>
+<body>
+  <h1>Clearing FORGE localStorage...</h1>
+  <script>
+    localStorage.removeItem('forge-poc-conversation');
+    document.body.innerHTML = '<h1>Cache cleared!</h1><p>Go back to <a href="/dashboard/forge-cowork">FORGE Cowork</a></p>';
+  </script>
+</body>
+</html>

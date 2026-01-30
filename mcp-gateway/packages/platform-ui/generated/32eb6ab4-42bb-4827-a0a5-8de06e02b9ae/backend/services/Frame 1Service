@@ -1,0 +1,27 @@
+import { PrismaClient, Frame 1 } from '@prisma/client';
+
+export class Frame 1Service {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Frame 1[]> {
+    return this.prisma.frame 1.findMany();
+  }
+
+  async findById(id: string): Promise<Frame 1 | null> {
+    return this.prisma.frame 1.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Frame 1, 'id' | 'createdAt' | 'updatedAt'>): Promise<Frame 1> {
+    return this.prisma.frame 1.create({ data });
+  }
+
+  async update(id: string, data: Partial<Frame 1>): Promise<Frame 1> {
+    return this.prisma.frame 1.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.frame 1.delete({ where: { id } });
+  }
+}
+
+export default Frame 1Service;

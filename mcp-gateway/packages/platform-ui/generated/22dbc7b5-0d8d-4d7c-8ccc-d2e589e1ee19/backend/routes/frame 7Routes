@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Frame 7Controller } from '../controllers/frame 7.controller';
+import { Frame 7Service } from '../services/frame 7.service';
+
+export function createFrame 7Routes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Frame 7Service(prisma);
+  const controller = new Frame 7Controller(service);
+
+  router.get('/frame 7s', controller.getAll.bind(controller));
+  router.get('/frame 7s/:id', controller.getById.bind(controller));
+  router.post('/frame 7s', controller.create.bind(controller));
+  router.put('/frame 7s/:id', controller.update.bind(controller));
+  router.delete('/frame 7s/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createFrame 7Routes;

@@ -1,0 +1,7 @@
+model Provide registered email address. If found the a reset email will be send to that address. {
+  id String @id @default(uuid())
+  email String
+  password String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

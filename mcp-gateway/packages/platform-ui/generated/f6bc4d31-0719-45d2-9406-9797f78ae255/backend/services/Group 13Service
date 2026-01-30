@@ -1,0 +1,27 @@
+import { PrismaClient, Group 13 } from '@prisma/client';
+
+export class Group 13Service {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Group 13[]> {
+    return this.prisma.group 13.findMany();
+  }
+
+  async findById(id: string): Promise<Group 13 | null> {
+    return this.prisma.group 13.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Group 13, 'id' | 'createdAt' | 'updatedAt'>): Promise<Group 13> {
+    return this.prisma.group 13.create({ data });
+  }
+
+  async update(id: string, data: Partial<Group 13>): Promise<Group 13> {
+    return this.prisma.group 13.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.group 13.delete({ where: { id } });
+  }
+}
+
+export default Group 13Service;

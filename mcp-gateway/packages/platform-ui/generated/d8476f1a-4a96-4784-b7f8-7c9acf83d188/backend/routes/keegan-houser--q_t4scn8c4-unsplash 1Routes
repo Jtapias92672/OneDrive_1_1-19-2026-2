@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { keegan-houser--Q_t4SCN8c4-unsplash 1Controller } from '../controllers/keegan-houser--q_t4scn8c4-unsplash 1.controller';
+import { keegan-houser--Q_t4SCN8c4-unsplash 1Service } from '../services/keegan-houser--q_t4scn8c4-unsplash 1.service';
+
+export function createkeegan-houser--Q_t4SCN8c4-unsplash 1Routes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new keegan-houser--Q_t4SCN8c4-unsplash 1Service(prisma);
+  const controller = new keegan-houser--Q_t4SCN8c4-unsplash 1Controller(service);
+
+  router.get('/keegan-houser--q_t4scn8c4-unsplash 1s', controller.getAll.bind(controller));
+  router.get('/keegan-houser--q_t4scn8c4-unsplash 1s/:id', controller.getById.bind(controller));
+  router.post('/keegan-houser--q_t4scn8c4-unsplash 1s', controller.create.bind(controller));
+  router.put('/keegan-houser--q_t4scn8c4-unsplash 1s/:id', controller.update.bind(controller));
+  router.delete('/keegan-houser--q_t4scn8c4-unsplash 1s/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createkeegan-houser--Q_t4SCN8c4-unsplash 1Routes;

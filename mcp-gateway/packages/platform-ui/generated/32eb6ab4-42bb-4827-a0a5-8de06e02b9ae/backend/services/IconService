@@ -1,0 +1,27 @@
+import { PrismaClient, Icon } from '@prisma/client';
+
+export class IconService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Icon[]> {
+    return this.prisma.icon.findMany();
+  }
+
+  async findById(id: string): Promise<Icon | null> {
+    return this.prisma.icon.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Icon, 'id' | 'createdAt' | 'updatedAt'>): Promise<Icon> {
+    return this.prisma.icon.create({ data });
+  }
+
+  async update(id: string, data: Partial<Icon>): Promise<Icon> {
+    return this.prisma.icon.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.icon.delete({ where: { id } });
+  }
+}
+
+export default IconService;

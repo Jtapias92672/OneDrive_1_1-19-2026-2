@@ -410,18 +410,55 @@ describe('HTMLParser', () => {
       const result = parser.parse(html);
 
       expect(result.metadata.title).toBe('Dashboard');
-      expect(result.components.length).toBeGreaterThan(5);
+
+      // Helper: Count all components recursively
+      const countAllComponents = (components: any[]): number => {
+        let count = components.length;
+        for (const comp of components) {
+          if (Array.isArray(comp.children)) {
+            count += countAllComponents(comp.children);
+          }
+        }
+        return count;
+      };
+
+      // Helper: Search recursively
+      const findComponent = (components: any[], predicate: (c: any) => boolean): any => {
+        for (const comp of components) {
+          if (predicate(comp)) return comp;
+          if (Array.isArray(comp.children)) {
+            const found = findComponent(comp.children, predicate);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+
+      // Should extract >5 total components (counting nested)
+      expect(countAllComponents(result.components)).toBeGreaterThan(5);
 
       // Should have navigation
-      const nav = result.components.find(c => c.type === 'navigation');
+      const nav = findComponent(result.components, c => c.type === 'navigation');
       expect(nav).toBeDefined();
 
+      // Helper: Find all matching components recursively
+      const findAllComponents = (components: any[], predicate: (c: any) => boolean): any[] => {
+        let results: any[] = [];
+        for (const comp of components) {
+          if (predicate(comp)) results.push(comp);
+          if (Array.isArray(comp.children)) {
+            results = results.concat(findAllComponents(comp.children, predicate));
+          }
+        }
+        return results;
+      };
+
       // Should have cards
-      const cards = result.components.filter(c => c.type === 'card');
+      const cards = findAllComponents(result.components, c => c.type === 'card');
       expect(cards.length).toBeGreaterThanOrEqual(2);
 
       // Should have list
-      const list = result.components.find(c => c.type === 'list');
+      const list = findComponent(result.components, c => c.type === 'list');
       expect(list).toBeDefined();
     });
 
@@ -454,17 +491,41 @@ describe('HTMLParser', () => {
 
       expect(result.metadata.title).toBe('Login');
 
-      // Should have form
-      const form = result.components.find(c => c.type === 'form');
+      // Helper: Search recursively through component tree
+      const findComponent = (components: any[], predicate: (c: any) => boolean): any => {
+        for (const comp of components) {
+          if (predicate(comp)) return comp;
+          if (Array.isArray(comp.children)) {
+            const found = findComponent(comp.children, predicate);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+
+      // Should have form (searches recursively since hierarchy is preserved)
+      const form = findComponent(result.components, c => c.type === 'form');
       expect(form).toBeDefined();
       expect(form?.name).toBe('LoginForm');
 
-      // Should have inputs
-      const inputs = result.components.filter(c => c.type === 'input');
+      // Helper: Find all matching components recursively
+      const findAllComponents = (components: any[], predicate: (c: any) => boolean): any[] => {
+        let results: any[] = [];
+        for (const comp of components) {
+          if (predicate(comp)) results.push(comp);
+          if (Array.isArray(comp.children)) {
+            results = results.concat(findAllComponents(comp.children, predicate));
+          }
+        }
+        return results;
+      };
+
+      // Should have inputs (searches recursively)
+      const inputs = findAllComponents(result.components, c => c.type === 'input');
       expect(inputs.length).toBeGreaterThanOrEqual(2);
 
       // Email input should have correct props
-      const emailInput = result.components.find(c => c.name === 'Email');
+      const emailInput = findComponent(result.components, c => c.name === 'Email');
       expect(emailInput?.props).toContainEqual(
         expect.objectContaining({ name: 'type', defaultValue: 'email' })
       );
@@ -494,7 +555,19 @@ describe('HTMLParser', () => {
 
       const result = parser.parse(html);
 
-      const table = result.components.find(c => c.type === 'list');
+      // Helper: Search recursively (tables may be nested in containers)
+      const findComponent = (components: any[], predicate: (c: any) => boolean): any => {
+        for (const comp of components) {
+          if (predicate(comp)) return comp;
+          if (Array.isArray(comp.children)) {
+            const found = findComponent(comp.children, predicate);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+
+      const table = findComponent(result.components, c => c.type === 'list');
       expect(table).toBeDefined();
     });
   });

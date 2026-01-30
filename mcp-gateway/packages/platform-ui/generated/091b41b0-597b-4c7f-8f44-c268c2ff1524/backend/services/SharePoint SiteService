@@ -1,0 +1,27 @@
+import { PrismaClient, SharePoint Site } from '@prisma/client';
+
+export class SharePoint SiteService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<SharePoint Site[]> {
+    return this.prisma.sharepoint site.findMany();
+  }
+
+  async findById(id: string): Promise<SharePoint Site | null> {
+    return this.prisma.sharepoint site.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<SharePoint Site, 'id' | 'createdAt' | 'updatedAt'>): Promise<SharePoint Site> {
+    return this.prisma.sharepoint site.create({ data });
+  }
+
+  async update(id: string, data: Partial<SharePoint Site>): Promise<SharePoint Site> {
+    return this.prisma.sharepoint site.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.sharepoint site.delete({ where: { id } });
+  }
+}
+
+export default SharePoint SiteService;

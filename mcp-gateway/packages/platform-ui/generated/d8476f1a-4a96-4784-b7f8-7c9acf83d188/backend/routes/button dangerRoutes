@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Button DangerController } from '../controllers/button danger.controller';
+import { Button DangerService } from '../services/button danger.service';
+
+export function createButton DangerRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Button DangerService(prisma);
+  const controller = new Button DangerController(service);
+
+  router.get('/button dangers', controller.getAll.bind(controller));
+  router.get('/button dangers/:id', controller.getById.bind(controller));
+  router.post('/button dangers', controller.create.bind(controller));
+  router.put('/button dangers/:id', controller.update.bind(controller));
+  router.delete('/button dangers/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createButton DangerRoutes;

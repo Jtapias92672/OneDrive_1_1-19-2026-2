@@ -1,0 +1,27 @@
+import { PrismaClient, SharePoint Path } from '@prisma/client';
+
+export class SharePoint PathService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<SharePoint Path[]> {
+    return this.prisma.sharepoint path.findMany();
+  }
+
+  async findById(id: string): Promise<SharePoint Path | null> {
+    return this.prisma.sharepoint path.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<SharePoint Path, 'id' | 'createdAt' | 'updatedAt'>): Promise<SharePoint Path> {
+    return this.prisma.sharepoint path.create({ data });
+  }
+
+  async update(id: string, data: Partial<SharePoint Path>): Promise<SharePoint Path> {
+    return this.prisma.sharepoint path.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.sharepoint path.delete({ where: { id } });
+  }
+}
+
+export default SharePoint PathService;

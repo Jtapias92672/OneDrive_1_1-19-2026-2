@@ -1,36 +1,25 @@
-/** @type {import('jest').Config} */
 export default {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
-  roots: ['<rootDir>/tests'],
-  testMatch: ['**/*.test.ts'],
+  extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      {
-        useESM: true,
-        tsconfig: {
-          module: 'ESNext',
-          moduleResolution: 'Node',
-        },
-      },
-    ],
+    '^.+\\.ts$': ['ts-jest', {
+      useESM: true,
+    }],
   },
-  // Transform ESM packages in node_modules (jose is an ESM package)
-  transformIgnorePatterns: [
-    'node_modules/(?!(jose)/)',
+  testMatch: [
+    '**/__tests__/**/*.ts',
+    '**/?(*.)+(spec|test).ts'
   ],
-  extensionsToTreatAsEsm: ['.ts'],
   collectCoverageFrom: [
-    '**/*.ts',
-    '!**/*.test.ts',
-    '!**/node_modules/**',
-    '!**/dist/**',
+    'src/**/*.ts',
+    'core/**/*.ts',
+    'mcp-protocol/**/*.ts',
+    '!**/*.d.ts'
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
-  verbose: true,
 };

@@ -1,0 +1,27 @@
+import { PrismaClient, Vector } from '@prisma/client';
+
+export class VectorService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Vector[]> {
+    return this.prisma.vector.findMany();
+  }
+
+  async findById(id: string): Promise<Vector | null> {
+    return this.prisma.vector.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Vector, 'id' | 'createdAt' | 'updatedAt'>): Promise<Vector> {
+    return this.prisma.vector.create({ data });
+  }
+
+  async update(id: string, data: Partial<Vector>): Promise<Vector> {
+    return this.prisma.vector.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.vector.delete({ where: { id } });
+  }
+}
+
+export default VectorService;

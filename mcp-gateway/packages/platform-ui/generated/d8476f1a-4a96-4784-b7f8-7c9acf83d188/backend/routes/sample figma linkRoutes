@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Sample Figma LinkController } from '../controllers/sample figma link.controller';
+import { Sample Figma LinkService } from '../services/sample figma link.service';
+
+export function createSample Figma LinkRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Sample Figma LinkService(prisma);
+  const controller = new Sample Figma LinkController(service);
+
+  router.get('/sample figma links', controller.getAll.bind(controller));
+  router.get('/sample figma links/:id', controller.getById.bind(controller));
+  router.post('/sample figma links', controller.create.bind(controller));
+  router.put('/sample figma links/:id', controller.update.bind(controller));
+  router.delete('/sample figma links/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createSample Figma LinkRoutes;

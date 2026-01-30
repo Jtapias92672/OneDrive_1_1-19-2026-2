@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { VectorController } from '../controllers/vector.controller';
+import { VectorService } from '../services/vector.service';
+
+export function createVectorRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new VectorService(prisma);
+  const controller = new VectorController(service);
+
+  router.get('/vectors', controller.getAll.bind(controller));
+  router.get('/vectors/:id', controller.getById.bind(controller));
+  router.post('/vectors', controller.create.bind(controller));
+  router.put('/vectors/:id', controller.update.bind(controller));
+  router.delete('/vectors/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createVectorRoutes;

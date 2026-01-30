@@ -72,9 +72,11 @@ export class ForgePOCOrchestrator {
   private apiTestGenerator: APITestGenerator;
   private vercelClient?: VercelClient;
   private jiraClient?: JiraClient;
+  private gateway?: any; // MCP Gateway instance
 
   constructor(config: POCOrchestratorConfig) {
     this.config = config;
+    this.gateway = config.gateway;
 
     // Initialize Figma services
     this.figmaClient = new FigmaClient({ accessToken: config.figmaToken });
@@ -124,7 +126,12 @@ export class ForgePOCOrchestrator {
    * Main entry point - run the full POC workflow
    */
   async run(input: POCRunInput): Promise<POCRunResult> {
+    console.log('=== ORCHESTRATOR.RUN CALLED ===');
+    console.log('[Orchestrator] Input:', { hasFigmaUrl: !!input.figmaUrl, hasHtmlContent: !!input.htmlContent, hasHtmlPath: !!input.htmlPath });
+
     const runId = randomUUID();
+    console.log('[Orchestrator] Generated runId:', runId);
+
     const startTime = new Date().toISOString();
 
     const result: POCRunResult = {
@@ -151,12 +158,16 @@ export class ForgePOCOrchestrator {
       timestamps: { started: startTime },
     };
 
+    console.log('[Orchestrator] POCRunResult initialized, entering try block');
+
     try {
       // Stage 1: Parse source (Figma or HTML)
+      console.log('[Orchestrator] Stage 1: Starting source parsing');
       let components: ParsedComponent[];
 
       if (input.htmlContent || input.htmlPath) {
         // Parse HTML
+        console.log('[Orchestrator] Detected HTML input, parsing HTML...');
         this.emitProgress(runId, 'parsing_html', 5, 'Parsing HTML content...');
         const parseResult = input.htmlContent
           ? this.htmlParser.parse(input.htmlContent)
@@ -172,7 +183,11 @@ export class ForgePOCOrchestrator {
         // Parse Figma
         this.emitProgress(runId, 'parsing_figma', 5, 'Parsing Figma design...');
         result.figmaMetadata = await this.parseFigmaMetadata(input.figmaUrl);
-        components = await this.parseFigmaComponents(input.figmaUrl);
+        components = await this.parseFigmaComponents(input.figmaUrl, {
+          fetchImages: input.options?.fetchImages,
+          imageFormat: input.options?.imageFormat,
+          imageScale: input.options?.imageScale,
+        });
       } else {
         throw new Error('Either figmaUrl, htmlContent, or htmlPath is required');
       }
@@ -253,6 +268,71 @@ export class ForgePOCOrchestrator {
   }
 
   // ===========================================================================
+  // Figma API Adapter Methods (Route through MCP Gateway or Direct Client)
+  // ===========================================================================
+
+  /**
+   * Fetch Figma file data (routes through MCP gateway if configured)
+   */
+  private async getFigmaFile(fileKey: string): Promise<any> {
+    if (this.gateway) {
+      console.log('[getFigmaFile] Routing through MCP Gateway');
+      const response = await this.gateway.processRequest({
+        id: randomUUID(),
+        tool: 'figma_getFile',
+        params: { fileKey },
+        context: {
+          tenantId: this.config.tenantId || 'default',
+          userId: this.config.userId || 'orchestrator',
+          source: 'poc-orchestrator',
+        },
+        timestamp: new Date().toISOString(),
+      });
+
+      if (!response.success) {
+        throw new Error(`Figma API error: ${response.error?.message || 'Unknown error'}`);
+      }
+
+      return response.result;
+    } else {
+      console.log('[getFigmaFile] Using direct FigmaClient');
+      return this.figmaClient.getFile(fileKey);
+    }
+  }
+
+  /**
+   * Fetch Figma image URLs (routes through MCP gateway if configured)
+   */
+  private async getFigmaImages(
+    fileKey: string,
+    options: { ids: string[]; format?: 'png' | 'jpg' | 'svg' | 'pdf'; scale?: number }
+  ): Promise<any> {
+    if (this.gateway) {
+      console.log('[getFigmaImages] Routing through MCP Gateway');
+      const response = await this.gateway.processRequest({
+        id: randomUUID(),
+        tool: 'figma_getImages',
+        params: { fileKey, ...options },
+        context: {
+          tenantId: this.config.tenantId || 'default',
+          userId: this.config.userId || 'orchestrator',
+          source: 'poc-orchestrator',
+        },
+        timestamp: new Date().toISOString(),
+      });
+
+      if (!response.success) {
+        throw new Error(`Figma Images API error: ${response.error?.message || 'Unknown error'}`);
+      }
+
+      return response.result;
+    } else {
+      console.log('[getFigmaImages] Using direct FigmaClient');
+      return this.figmaClient.getImages(fileKey, options);
+    }
+  }
+
+  // ===========================================================================
   // Stage Methods (to be implemented)
   // ===========================================================================
 
@@ -262,8 +342,8 @@ export class ForgePOCOrchestrator {
   async parseFigmaMetadata(figmaUrl: string): Promise<FigmaMetadata> {
     const fileKey = this.extractFigmaFileKey(figmaUrl);
 
-    // Fetch file data from Figma API
-    const fileData = await this.figmaClient.getFile(fileKey);
+    // Fetch file data from Figma API (routes through gateway if configured)
+    const fileData = await this.getFigmaFile(fileKey);
 
     return {
       fileKey,
@@ -277,53 +357,332 @@ export class ForgePOCOrchestrator {
   /**
    * Parse Figma file to extract components
    */
-  async parseFigmaComponents(figmaUrl: string): Promise<ParsedComponent[]> {
+  async parseFigmaComponents(
+    figmaUrl: string,
+    options?: { fetchImages?: boolean; imageFormat?: 'png' | 'jpg' | 'svg' | 'pdf'; imageScale?: number }
+  ): Promise<ParsedComponent[]> {
+    console.log('[parseFigmaComponents] Starting with URL:', figmaUrl);
     const fileKey = this.extractFigmaFileKey(figmaUrl);
+    console.log('[parseFigmaComponents] File key:', fileKey);
 
-    // Fetch file data from Figma API
-    const fileData = await this.figmaClient.getFile(fileKey);
+    // Fetch file data from Figma API (routes through gateway if configured)
+    console.log('[parseFigmaComponents] Fetching from Figma API...');
+    const fetchStart = Date.now();
+    const fileData = await this.getFigmaFile(fileKey);
+    console.log(`[parseFigmaComponents] Figma API fetch completed in ${Date.now() - fetchStart}ms`);
 
     // Parse using FigmaParser
+    console.log('[parseFigmaComponents] Parsing Figma data...');
+    const parseStart = Date.now();
     const parsedDesign = this.figmaParser.parse(fileData);
+    console.log(`[parseFigmaComponents] Parsing completed in ${Date.now() - parseStart}ms`);
+    console.log(`[parseFigmaComponents] Found ${parsedDesign.components.length} top-level components`);
 
     // Convert to ParsedComponent format
-    return this.convertToParsedComponents(parsedDesign);
+    console.log('[parseFigmaComponents] Converting to ParsedComponent format...');
+    const convertStart = Date.now();
+    const result = this.convertToParsedComponents(parsedDesign);
+    console.log(`[parseFigmaComponents] Conversion completed in ${Date.now() - convertStart}ms`);
+    console.log(`[parseFigmaComponents] Total components after conversion: ${result.length}`);
+
+    // Fetch images if enabled (default: true)
+    const shouldFetchImages = options?.fetchImages !== false;
+    if (shouldFetchImages) {
+      console.log('[parseFigmaComponents] Image fetching enabled, collecting image references...');
+
+      // Collect all image refs from the component tree
+      const imageRefs = this.collectImageRefs(parsedDesign.components);
+
+      if (imageRefs.size > 0) {
+        console.log(`[parseFigmaComponents] Found ${imageRefs.size} images in design`);
+
+        // Fetch image URLs from Figma API
+        // ✅ Use SVG for vectors (better quality, scalable) and PNG for bitmaps
+        const imageMap = await this.fetchImagesFromFigma(fileKey, imageRefs, {
+          format: options?.imageFormat || 'svg', // SVG for vectors, will fallback to PNG for bitmaps
+          scale: options?.imageScale || 2,
+        });
+
+        // Enrich components with image URLs
+        if (imageMap.size > 0) {
+          console.log('[parseFigmaComponents] Enriching components with image URLs...');
+          this.enrichComponentsWithImageUrls(result, imageMap);
+          console.log(`[parseFigmaComponents] Successfully enriched ${imageMap.size} images`);
+        } else {
+          console.warn('[parseFigmaComponents] No image URLs retrieved - images will show placeholders');
+        }
+      } else {
+        console.log('[parseFigmaComponents] No images found in this design');
+      }
+    } else {
+      console.log('[parseFigmaComponents] Image fetching disabled by options');
+    }
+
+    return result;
   }
 
   /**
    * Convert FigmaParser output to ParsedComponent array
    */
   private convertToParsedComponents(parsedDesign: ReturnType<FigmaParser['parse']>): ParsedComponent[] {
-    return this.flattenComponents(parsedDesign.components);
+    return this.convertComponents(parsedDesign.components);
   }
 
   /**
-   * Recursively flatten Figma components to POC format
+   * Convert Figma components preserving hierarchy (not flattening)
    */
-  private flattenComponents(figmaComponents: FigmaParsedComponent[]): ParsedComponent[] {
-    const result: ParsedComponent[] = [];
+  private convertComponents(figmaComponents: FigmaParsedComponent[], depth: number = 0): ParsedComponent[] {
+    const start = Date.now();
+    console.log(`[convertComponents] Processing ${figmaComponents.length} components at depth ${depth}`);
 
-    for (const component of figmaComponents) {
-      result.push({
-        id: component.id,
-        name: component.name,
-        type: this.mapComponentType(component.type),
-        props: this.extractPropsFromFigma(component),
-        styles: {
-          layout: component.autoLayout?.direction === 'HORIZONTAL' ? 'flex' : 'grid',
-          spacing: component.autoLayout?.spacing,
-          colors: this.extractColors(component.fills),
-        },
-        children: component.children?.map(c => c.id) || [],
+    try {
+      // Safety: prevent infinite recursion
+      if (depth > 50) {
+        console.warn('[convertComponents] Max depth reached, returning empty');
+        return [];
+      }
+
+      const result = figmaComponents.map((component, index) => {
+        if (index % 50 === 0) {
+          console.log(`[convertComponents] Processing component ${index}/${figmaComponents.length} at depth ${depth}`);
+        }
+
+        const mappedType = this.mapComponentType(component.type);
+
+        return {
+          id: component.id,
+          name: component.name,
+          type: mappedType,
+          props: this.extractPropsFromFigma(component),
+          styles: {
+            layout: (component.autoLayout?.direction === 'HORIZONTAL' ? 'flex' : 'grid') as 'flex' | 'grid',
+            spacing: component.autoLayout?.spacing,
+            colors: this.extractColors(component.fills),
+            typography: component.text ? {
+              fontFamily: component.text.fontFamily,
+              fontSize: component.text.fontSize,
+              fontWeight: component.text.fontWeight,
+              lineHeight: component.text.lineHeight,
+            } : undefined,
+          },
+          children: component.children ? this.convertComponents(component.children, depth + 1) : [],
+          bounds: component.bounds,
+          text: component.text,
+          fills: component.fills,
+          strokes: component.strokes, // ✅ Copy strokes for icon/shape rendering
+          imageUrl: component.imageUrl, // ✅ FIX: Copy imageUrl from enriched component
+        };
       });
 
-      // Recursively process children
-      if (component.children?.length) {
-        result.push(...this.flattenComponents(component.children));
+      const elapsed = Date.now() - start;
+      console.log(`[convertComponents] Completed ${figmaComponents.length} components at depth ${depth} in ${elapsed}ms`);
+      return result;
+
+    } catch (error) {
+      console.error(`[convertComponents] Error at depth ${depth}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Recursively collect all image refs from Figma components
+   * Handles any component tree structure, no matter how complex
+   */
+  private collectImageRefs(components: FigmaParsedComponent[]): Set<string> {
+    const imageRefs = new Set<string>();
+
+    const traverse = (component: FigmaParsedComponent) => {
+      // Check if this component is an IMAGE type with imageUrl (node.imageRef)
+      if (component.type === 'IMAGE' && component.imageUrl) {
+        console.log('[collectImageRefs] Found IMAGE node:', component.name, component.imageUrl);
+        imageRefs.add(component.imageUrl);
       }
+
+      // For IMAGE fills, collect the COMPONENT ID not the imageRef hash
+      // Figma API /images endpoint needs node IDs, not imageRef hashes
+      if (component.fills && Array.isArray(component.fills)) {
+        const hasImageFill = component.fills.some(fill => fill.type === 'IMAGE' && fill.imageRef);
+        if (hasImageFill && component.id) {
+          console.log('[collectImageRefs] Found IMAGE fill in component:', component.name, 'using node ID:', component.id);
+          imageRefs.add(component.id);
+        }
+      }
+
+      // ✅ FIX: Check if FRAME/GROUP contains only vector children (logo pattern)
+      // Render the parent as single image instead of individual pieces
+      const isVectorContainer = ['FRAME', 'GROUP'].includes(component.type) &&
+        component.children &&
+        component.children.length > 0 &&
+        component.children.every(child =>
+          ['VECTOR', 'ELLIPSE', 'LINE', 'BOOLEAN_OPERATION'].includes(child.type)
+        );
+
+      if (isVectorContainer && component.id) {
+        console.log(`[collectImageRefs] Found vector container (logo): "${component.name}" with ${component.children!.length} vectors - rendering as single image`);
+        imageRefs.add(component.id);
+        // Skip traversing children since we're rendering parent as image
+        return;
+      }
+
+      // ✅ Individual vectors only if not in a container already marked above
+      if (component.type === 'VECTOR' && component.id) {
+        console.log('[collectImageRefs] Found VECTOR node:', component.name, 'using node ID:', component.id);
+        imageRefs.add(component.id);
+      }
+
+      // Also collect ELLIPSE, LINE, BOOLEAN_OPERATION (other vector types)
+      if (['ELLIPSE', 'LINE', 'BOOLEAN_OPERATION'].includes(component.type) && component.id) {
+        console.log('[collectImageRefs] Found vector shape:', component.type, component.name, 'using node ID:', component.id);
+        imageRefs.add(component.id);
+      }
+
+      // Recursively traverse children
+      if (component.children && component.children.length > 0) {
+        component.children.forEach(child => traverse(child));
+      }
+    };
+
+    components.forEach(comp => traverse(comp));
+    console.log(`[collectImageRefs] Total image refs found: ${imageRefs.size}`);
+    return imageRefs;
+  }
+
+  /**
+   * Fetch image URLs from Figma API
+   * Gracefully handles errors and missing images
+   */
+  private async fetchImagesFromFigma(
+    fileKey: string,
+    imageRefs: Set<string>,
+    options: { format?: 'png' | 'jpg' | 'svg' | 'pdf'; scale?: number } = {}
+  ): Promise<Map<string, string>> {
+    const imageMap = new Map<string, string>();
+
+    if (imageRefs.size === 0) {
+      console.log('[fetchImagesFromFigma] No images to fetch');
+      return imageMap;
     }
 
-    return result;
+    const format = options.format || 'png';
+    const scale = options.scale || 2;
+
+    console.log(`[fetchImagesFromFigma] Fetching ${imageRefs.size} images (format=${format}, scale=${scale}x)...`);
+
+    try {
+      const fetchStart = Date.now();
+      const response = await this.getFigmaImages(fileKey, {
+        ids: Array.from(imageRefs),
+        format,
+        scale,
+      });
+
+      const fetchDuration = Date.now() - fetchStart;
+      console.log(`[fetchImagesFromFigma] Figma API call completed in ${fetchDuration}ms`);
+
+      // Map imageRef -> URL
+      if (response.images) {
+        Object.entries(response.images).forEach(([nodeId, url]) => {
+          if (url && typeof url === 'string') {
+            imageMap.set(nodeId, url as string);
+          } else {
+            console.warn(`[fetchImagesFromFigma] No URL returned for image: ${nodeId}`);
+          }
+        });
+
+        console.log(`[fetchImagesFromFigma] Successfully fetched ${imageMap.size}/${imageRefs.size} images`);
+      } else {
+        console.warn('[fetchImagesFromFigma] API response missing images object');
+      }
+
+      // Log any missing images
+      imageRefs.forEach(ref => {
+        if (!imageMap.has(ref)) {
+          console.warn(`[fetchImagesFromFigma] Missing image URL for ref: ${ref}`);
+        }
+      });
+
+    } catch (error) {
+      console.error('[fetchImagesFromFigma] Error fetching images from Figma API:', error);
+      console.warn('[fetchImagesFromFigma] Continuing with placeholders for images');
+      // Continue gracefully - images will show placeholders
+    }
+
+    return imageMap;
+  }
+
+  /**
+   * Enrich parsed components with image URLs
+   * Recursively walks the tree and adds imageUrl property
+   */
+  private enrichComponentsWithImageUrls(
+    components: ParsedComponent[],
+    imageMap: Map<string, string>
+  ): void {
+    const enrich = (component: ParsedComponent) => {
+      // If this is an image component and we have a URL, add it
+      if (component.type === 'image' && component.id) {
+        const url = imageMap.get(component.id);
+        if (url) {
+          component.imageUrl = url;
+          console.log(`[enrichComponentsWithImageUrls] Added URL for image: ${component.name}`);
+        } else {
+          console.log(`[enrichComponentsWithImageUrls] No URL found for image: ${component.name} (id: ${component.id})`);
+        }
+      }
+
+      // Check fills for IMAGE type - use component.id to look up URL
+      if (component.fills && Array.isArray(component.fills)) {
+        const hasImageFill = component.fills.some(f => f.type === 'IMAGE');
+        if (hasImageFill && component.id) {
+          const url = imageMap.get(component.id);
+          if (url) {
+            // Add imageUrl to the component itself (for rendering)
+            component.imageUrl = url;
+            console.log(`[enrichComponentsWithImageUrls] 🖼️  Added imageUrl to component: ${component.name} -> ${url}`);
+
+            // Also add imageUrl to the IMAGE fill (for reference)
+            component.fills.forEach(fill => {
+              if (fill.type === 'IMAGE') {
+                (fill as any).imageUrl = url;
+              }
+            });
+          } else {
+            console.log(`[enrichComponentsWithImageUrls] ⚠️  No URL found for IMAGE fill in: ${component.name} (id: ${component.id})`);
+          }
+        }
+      }
+
+      // ✅ FIX: Enrich VECTOR nodes (icons) with SVG URLs
+      if (component.type === 'icon' && component.id) {
+        const url = imageMap.get(component.id);
+        if (url) {
+          component.imageUrl = url;
+          console.log(`[enrichComponentsWithImageUrls] 🎨 Added SVG URL to vector icon: ${component.name} -> ${url}`);
+        }
+      }
+
+      // ✅ FIX: Enrich containers that are logos (rendered as single image)
+      if (component.type === 'container' && component.id) {
+        const url = imageMap.get(component.id);
+        if (url) {
+          component.imageUrl = url;
+          console.log(`[enrichComponentsWithImageUrls] 🖼️  Added URL to vector container (logo): ${component.name} -> ${url}`);
+          // Don't recurse into children since they'll be part of the parent image
+          return;
+        }
+      }
+
+      // Recursively enrich children
+      if (component.children && Array.isArray(component.children)) {
+        component.children.forEach(child => {
+          if (typeof child !== 'string') {
+            enrich(child);
+          }
+        });
+      }
+    };
+
+    components.forEach(comp => enrich(comp));
   }
 
   /**
@@ -341,8 +700,37 @@ export class ForgePOCOrchestrator {
       ELLIPSE: 'icon',
       LINE: 'icon',
       BOOLEAN_OPERATION: 'icon',
+      IMAGE: 'image',
     };
     return typeMap[figmaType] || 'container';
+  }
+
+  /**
+   * Check if component should be treated as an image
+   * based on its properties (not just type)
+   */
+  private shouldTreatAsImage(component: FigmaParsedComponent): boolean {
+    // Explicit IMAGE type
+    if (component.type === 'IMAGE') return true;
+
+    // Has IMAGE fill
+    const hasImageFill = component.fills?.some(f => f.type === 'IMAGE' && f.imageRef);
+    if (hasImageFill) {
+      console.log(`[shouldTreatAsImage] Component "${component.name}" has IMAGE fill`);
+      return true;
+    }
+
+    // INSTANCE/COMPONENT with no children and no text might be an image
+    if (['COMPONENT', 'INSTANCE'].includes(component.type)) {
+      const hasNoChildren = !component.children || component.children.length === 0;
+      const hasNoText = !component.text;
+      if (hasNoChildren && hasNoText && component.fills && component.fills.length > 0) {
+        console.log(`[shouldTreatAsImage] Component "${component.name}" looks like an image (COMPONENT/INSTANCE with fills, no children/text)`);
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -358,6 +746,210 @@ export class ForgePOCOrchestrator {
         const b = Math.round(c.b * 255);
         return `rgba(${r}, ${g}, ${b}, ${c.a})`;
       });
+  }
+
+  /**
+   * Extract background color from fills (for containers/shapes)
+   */
+  private extractBackgroundColor(fills?: ParsedComponent['fills']): string | null {
+    if (!fills || fills.length === 0) return null;
+
+    const solidFill = fills.find(f => f.type === 'SOLID' && f.color);
+    if (!solidFill?.color) return null;
+
+    const { r, g, b, a } = solidFill.color;
+    return `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${a})`;
+  }
+
+  /**
+   * Extract text color from TEXT nodes (from fills array)
+   * Per agent acd24f7: Text color is in fills array, NOT text.color property
+   */
+  private extractTextColor(component: ParsedComponent): string | null {
+    // Text color comes from fills array (first SOLID fill)
+    if (component.fills && component.fills.length > 0) {
+      const solidFill = component.fills.find(f => f.type === 'SOLID' && f.color);
+      if (solidFill?.color) {
+        const { r, g, b, a } = solidFill.color;
+        return `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${a})`;
+      }
+    }
+
+    // No color found - inherit from parent
+    return null;
+  }
+
+  /**
+   * Extract stroke styles for borders (icons, shapes)
+   */
+  private extractStrokeStyles(strokes?: ParsedComponent['strokes']): string[] {
+    if (!strokes || strokes.length === 0) return [];
+
+    const stroke = strokes.find(s => s.type === 'SOLID' && s.color);
+    if (!stroke?.color) return [];
+
+    const { r, g, b, a } = stroke.color;
+    const color = `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${a})`;
+    const weight = stroke.weight || 1;
+
+    return [
+      `border: ${weight}px solid ${color}`,
+    ];
+  }
+
+  /**
+   * Render component tree recursively preserving hierarchy
+   */
+  private renderComponentTree(component: ParsedComponent, depth: number = 0): string {
+    // Safety: prevent infinite recursion
+    if (depth > 50) {
+      console.warn(`Max render depth reached for component: ${component.name}`);
+      return `<div><!-- Max depth reached --></div>`;
+    }
+
+    const { bounds, fills, strokes, text, children, type, imageUrl } = component;
+    const textContent = text?.content || '';
+
+    // Determine node types
+    const isTextNode = type === 'text' || (textContent && (!children || children.length === 0));
+    const isIconNode = type === 'icon';
+    const isImageNode = type === 'image';
+    // ✅ FIX: Containers with imageUrl are logos (vector groups rendered as single image)
+    const isVectorContainer = type === 'container' && imageUrl;
+
+    // Debug logging for icons
+    if (isIconNode) {
+      console.log(`[renderComponentTree] Icon "${component.name}": type=${type}, imageUrl=${imageUrl ? 'SET' : 'MISSING'}`);
+    }
+    if (isVectorContainer) {
+      console.log(`[renderComponentTree] Vector container (logo) "${component.name}": rendering as single image`);
+    }
+
+    // Extract colors and styles based on node type
+    const fillColor = isTextNode ? null : this.extractBackgroundColor(fills);
+    const textColor = isTextNode ? this.extractTextColor(component) : null;
+    const strokeStyles = !isTextNode ? this.extractStrokeStyles(strokes) : [];
+
+    // Check for IMAGE fill with URL
+    const imageFill = fills?.find(f => f.type === 'IMAGE' && (f as any).imageUrl);
+    const imageUrl_fill = imageFill ? (imageFill as any).imageUrl : null;
+
+    if (imageFill) {
+      console.log('[renderComponentTree] Rendering IMAGE fill for:', component.name, imageUrl_fill);
+    }
+
+    // Base styles for container
+    const containerStyles = [
+      bounds ? `width: ${bounds.width}px` : '',
+      bounds ? `height: ${bounds.height}px` : '',
+      // Use background image for IMAGE fills, otherwise use background color
+      imageUrl_fill ? `background-image: url('${imageUrl_fill}')` : '',
+      imageUrl_fill ? `background-size: cover` : '',
+      imageUrl_fill ? `background-position: center` : '',
+      // Background color for icons and containers (skip for text nodes, image fills, and empty icons)
+      !isTextNode && !imageUrl_fill && fillColor && !(isIconNode && !imageUrl) ? `background-color: ${fillColor}` : '',
+      // ✅ FIX: Only add stroke/border if NOT an empty icon (ghost image fix)
+      // Icons without imageUrl should be invisible, not show borders
+      ...(isIconNode && !imageUrl ? [] : strokeStyles),
+      // ✅ FIX: Hide empty icons completely (prevents ghost images on buttons)
+      isIconNode && !imageUrl ? 'opacity: 0' : '',
+      // ✅ FIX: Prevent text wrapping in labels (form field text wrapping issue)
+      isTextNode ? 'white-space: nowrap' : '',
+      isTextNode ? 'overflow: visible' : '',
+      // ✅ FIX: text-align must be on container div, not inline span
+      text?.textAlign ? `text-align: ${text.textAlign.toLowerCase()}` : '',
+      'position: relative',
+      'box-sizing: border-box',
+    ].filter(Boolean).join('; ');
+
+    // Text styles (for inline span element)
+    const textStyles = [
+      text?.fontSize ? `font-size: ${text.fontSize}px` : '',
+      text?.fontFamily ? `font-family: '${text.fontFamily}', Inter, -apple-system, sans-serif` : 'font-family: Inter, -apple-system, sans-serif',
+      text?.fontWeight ? `font-weight: ${text.fontWeight}` : '',
+      // ✅ FIXED: Use extractTextColor() for TEXT nodes, inherit if no color specified
+      isTextNode && textColor ? `color: ${textColor}` : (isTextNode ? 'color: inherit' : ''),
+    ].filter(Boolean).join('; ');
+
+    // Render children recursively
+    const childrenHtml = Array.isArray(children) && children.length > 0
+      ? children.map(child => {
+          if (typeof child === 'string') return ''; // Skip string IDs
+
+          const childBounds = child.bounds;
+          if (!childBounds || !bounds) return this.renderComponentTree(child, depth + 1);
+
+          const relativeX = childBounds.x - bounds.x;
+          const relativeY = childBounds.y - bounds.y;
+
+          return `
+          <div style="position: absolute; left: ${relativeX}px; top: ${relativeY}px;">
+            ${this.renderComponentTree(child, depth + 1)}
+          </div>`;
+        }).join('\n')
+      : '';
+
+    // Render image nodes as <img> tags
+    if (isImageNode && imageUrl) {
+      const imgStyles = [
+        'width: 100%',
+        'height: 100%',
+        'object-fit: cover',
+      ].join('; ');
+
+      return `
+    <div class="figma-component" data-name="${component.name}" data-type="${type}" style="${containerStyles}">
+      <img src="${imageUrl}" alt="${component.name}" style="${imgStyles}" />
+      ${childrenHtml}
+    </div>`;
+    }
+
+    // ✅ FIX: Render icon nodes with imageUrl (vectors exported as SVG)
+    if (isIconNode && imageUrl) {
+      const imgStyles = [
+        'width: 100%',
+        'height: 100%',
+        'object-fit: contain', // Use contain for vectors to preserve aspect ratio
+      ].join('; ');
+
+      return `
+    <div class="figma-component" data-name="${component.name}" data-type="${type}" style="${containerStyles}">
+      <img src="${imageUrl}" alt="${component.name}" style="${imgStyles}" />
+      ${childrenHtml}
+    </div>`;
+    }
+
+    // ✅ FIX: Render vector containers (logos) as single image
+    if (isVectorContainer) {
+      const imgStyles = [
+        'width: 100%',
+        'height: 100%',
+        'object-fit: contain',
+      ].join('; ');
+
+      return `
+    <div class="figma-component" data-name="${component.name}" data-type="logo" style="${containerStyles}">
+      <img src="${imageUrl}" alt="${component.name}" style="${imgStyles}" />
+    </div>`;
+    }
+
+    // Render placeholder for images without URL
+    if (isImageNode && !imageUrl) {
+      return `
+    <div class="figma-component" data-name="${component.name}" data-type="${type}" style="${containerStyles}">
+      <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f0f0; color: #999;">
+        [Image: ${component.name}]
+      </div>
+      ${childrenHtml}
+    </div>`;
+    }
+
+    // Default rendering for other nodes
+    return `
+    <div class="figma-component" data-name="${component.name}" data-type="${type}" style="${containerStyles}">
+      ${textContent ? `<span style="${textStyles}">${textContent}</span>` : ''}
+      ${childrenHtml}
+    </div>`;
   }
 
   /**
@@ -639,6 +1231,15 @@ export const Default: Story = {
   ): Promise<GeneratedFile[]> {
     const htmlFiles: GeneratedFile[] = [];
 
+    // Generate design.html - full Figma design with hierarchy
+    const designHtml = this.generateDesignHTML(originalComponents);
+    htmlFiles.push({
+      name: 'design.html',
+      content: designHtml,
+      path: 'html/design.html',
+    });
+
+    // Generate individual component HTML files
     for (const component of generatedComponents) {
       const originalComponent = originalComponents.find(c => this.toPascalCase(c.name) === component.name);
       const htmlContent = this.generateHTMLFile(component, originalComponent);
@@ -662,6 +1263,70 @@ export const Default: Story = {
   }
 
   /**
+   * Generate design.html - complete Figma design with preserved hierarchy
+   */
+  private generateDesignHTML(originalComponents: ParsedComponent[]): string {
+    // Only render top-level frames for canvas sizing
+    const topLevelFrames = originalComponents.filter(c => c.bounds);
+
+    if (topLevelFrames.length === 0) {
+      return '<html><body>No components with bounds found</body></html>';
+    }
+
+    // Calculate canvas dimensions from top-level frames only
+    const boundsArray = topLevelFrames.map(c => c.bounds!);
+    const maxX = Math.max(...boundsArray.map(b => b.x + b.width));
+    const maxY = Math.max(...boundsArray.map(b => b.y + b.height));
+    const minX = Math.min(...boundsArray.map(b => b.x));
+    const minY = Math.min(...boundsArray.map(b => b.y));
+
+    const canvasWidth = maxX - minX;
+    const canvasHeight = maxY - minY;
+
+    // Render each top-level frame hierarchically
+    const componentsHtml = topLevelFrames.map(component => {
+      const bounds = component.bounds!;
+      return `
+      <div style="position: absolute; left: ${bounds.x - minX}px; top: ${bounds.y - minY}px;">
+        ${this.renderComponentTree(component)}
+      </div>`;
+    }).join('\n');
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Figma Design</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f3f4f6;
+      padding: 2rem;
+    }
+    .design-canvas {
+      position: relative;
+      width: ${canvasWidth}px;
+      height: ${canvasHeight}px;
+      background: white;
+      margin: 0 auto;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="design-canvas">
+    ${componentsHtml}
+  </div>
+</body>
+</html>`;
+  }
+
+  /**
    * Generate individual HTML file for a component
    */
   private generateHTMLFile(component: GeneratedComponent, original?: ParsedComponent): string {
@@ -673,6 +1338,9 @@ export const Default: Story = {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${component.name}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     ${styles}
@@ -715,7 +1383,7 @@ export const Default: Story = {
       <p>Generated from Figma design</p>
     </div>
     <div id="component-preview">
-      ${this.reactToHTML(component, original)}
+      ${original ? this.renderComponentTree(original) : `<div class="text-gray-500 p-4">Component preview not available (original Figma data not found for "${component.name}")</div>`}
     </div>
   </div>
   <script>
@@ -893,6 +1561,9 @@ export const Default: Story = {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Generated Components</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {

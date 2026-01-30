@@ -1,0 +1,19 @@
+{
+  "name": "@forge/figma-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server wrapper for Figma API integration",
+  "type": "module",
+  "main": "dist/server.js",
+  "bin": {
+    "figma-mcp-server": "./dist/server.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/server.js",
+    "test": "echo 'Testing via main gateway tests'"
+  },
+  "keywords": ["mcp", "figma", "protocol"],
+  "author": "ArcFoundry",
+  "license": "UNLICENSED"
+}

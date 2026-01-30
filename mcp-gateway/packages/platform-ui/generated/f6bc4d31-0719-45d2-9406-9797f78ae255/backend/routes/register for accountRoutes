@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Register for AccountController } from '../controllers/register for account.controller';
+import { Register for AccountService } from '../services/register for account.service';
+
+export function createRegister for AccountRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Register for AccountService(prisma);
+  const controller = new Register for AccountController(service);
+
+  router.get('/register for accounts', controller.getAll.bind(controller));
+  router.get('/register for accounts/:id', controller.getById.bind(controller));
+  router.post('/register for accounts', controller.create.bind(controller));
+  router.put('/register for accounts/:id', controller.update.bind(controller));
+  router.delete('/register for accounts/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createRegister for AccountRoutes;

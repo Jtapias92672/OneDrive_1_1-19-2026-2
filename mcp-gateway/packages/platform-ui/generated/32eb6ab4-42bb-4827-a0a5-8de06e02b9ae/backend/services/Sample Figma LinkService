@@ -1,0 +1,27 @@
+import { PrismaClient, Sample Figma Link } from '@prisma/client';
+
+export class Sample Figma LinkService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Sample Figma Link[]> {
+    return this.prisma.sample figma link.findMany();
+  }
+
+  async findById(id: string): Promise<Sample Figma Link | null> {
+    return this.prisma.sample figma link.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Sample Figma Link, 'id' | 'createdAt' | 'updatedAt'>): Promise<Sample Figma Link> {
+    return this.prisma.sample figma link.create({ data });
+  }
+
+  async update(id: string, data: Partial<Sample Figma Link>): Promise<Sample Figma Link> {
+    return this.prisma.sample figma link.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.sample figma link.delete({ where: { id } });
+  }
+}
+
+export default Sample Figma LinkService;

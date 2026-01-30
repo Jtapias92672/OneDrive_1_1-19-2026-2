@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Welcome to ArcFoundryController } from '../controllers/welcome to arcfoundry.controller';
+import { Welcome to ArcFoundryService } from '../services/welcome to arcfoundry.service';
+
+export function createWelcome to ArcFoundryRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Welcome to ArcFoundryService(prisma);
+  const controller = new Welcome to ArcFoundryController(service);
+
+  router.get('/welcome to arc-foundrys', controller.getAll.bind(controller));
+  router.get('/welcome to arc-foundrys/:id', controller.getById.bind(controller));
+  router.post('/welcome to arc-foundrys', controller.create.bind(controller));
+  router.put('/welcome to arc-foundrys/:id', controller.update.bind(controller));
+  router.delete('/welcome to arc-foundrys/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createWelcome to ArcFoundryRoutes;

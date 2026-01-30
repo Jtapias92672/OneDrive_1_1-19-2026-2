@@ -1,0 +1,27 @@
+import { PrismaClient, Figma Design File Link } from '@prisma/client';
+
+export class Figma Design File LinkService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Figma Design File Link[]> {
+    return this.prisma.figma design file link.findMany();
+  }
+
+  async findById(id: string): Promise<Figma Design File Link | null> {
+    return this.prisma.figma design file link.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Figma Design File Link, 'id' | 'createdAt' | 'updatedAt'>): Promise<Figma Design File Link> {
+    return this.prisma.figma design file link.create({ data });
+  }
+
+  async update(id: string, data: Partial<Figma Design File Link>): Promise<Figma Design File Link> {
+    return this.prisma.figma design file link.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.figma design file link.delete({ where: { id } });
+  }
+}
+
+export default Figma Design File LinkService;

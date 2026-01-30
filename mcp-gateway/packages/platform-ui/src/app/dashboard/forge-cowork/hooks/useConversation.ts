@@ -57,6 +57,7 @@ export interface POCResult {
   outputPath: string;
   files: string[];
   frontendComponents?: any[];
+  htmlFiles?: any[];
   backendFiles?: any;
 }
 

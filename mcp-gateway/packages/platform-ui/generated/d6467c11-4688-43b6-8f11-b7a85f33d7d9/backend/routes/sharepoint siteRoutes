@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { SharePoint SiteController } from '../controllers/sharepoint site.controller';
+import { SharePoint SiteService } from '../services/sharepoint site.service';
+
+export function createSharePoint SiteRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new SharePoint SiteService(prisma);
+  const controller = new SharePoint SiteController(service);
+
+  router.get('/share-point sites', controller.getAll.bind(controller));
+  router.get('/share-point sites/:id', controller.getById.bind(controller));
+  router.post('/share-point sites', controller.create.bind(controller));
+  router.put('/share-point sites/:id', controller.update.bind(controller));
+  router.delete('/share-point sites/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createSharePoint SiteRoutes;

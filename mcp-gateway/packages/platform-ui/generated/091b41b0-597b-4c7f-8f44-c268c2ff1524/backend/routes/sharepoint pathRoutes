@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { SharePoint PathController } from '../controllers/sharepoint path.controller';
+import { SharePoint PathService } from '../services/sharepoint path.service';
+
+export function createSharePoint PathRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new SharePoint PathService(prisma);
+  const controller = new SharePoint PathController(service);
+
+  router.get('/share-point paths', controller.getAll.bind(controller));
+  router.get('/share-point paths/:id', controller.getById.bind(controller));
+  router.post('/share-point paths', controller.create.bind(controller));
+  router.put('/share-point paths/:id', controller.update.bind(controller));
+  router.delete('/share-point paths/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createSharePoint PathRoutes;

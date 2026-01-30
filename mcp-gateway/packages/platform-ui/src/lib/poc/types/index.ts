@@ -16,6 +16,9 @@ export interface POCOrchestratorConfig {
   projectKey?: string; // Jira project key
   frontendBaseUrl?: string; // For test generation
   backendBaseUrl?: string; // For test generation
+  gateway?: any; // MCP Gateway instance (optional - routes through zero-trust pipeline)
+  tenantId?: string; // For MCP gateway requests
+  userId?: string; // For MCP gateway requests
 }
 
 export interface JiraIntegrationConfig {
@@ -48,6 +51,12 @@ export interface POCRunOptions {
   skipJira?: boolean;
   /** Directory to write generated files. If not specified, files are not written. */
   outputDir?: string;
+  /** Fetch images from Figma (default: true) */
+  fetchImages?: boolean;
+  /** Image format for Figma images (default: 'png') */
+  imageFormat?: 'png' | 'jpg' | 'svg' | 'pdf';
+  /** Image scale multiplier (default: 2) */
+  imageScale?: number;
 }
 
 // =============================================================================
@@ -87,6 +96,11 @@ export interface ParsedComponent {
   props: ComponentProp[];
   children?: string[] | ParsedComponent[]; // Child IDs or nested components
   styles: ComponentStyles;
+  bounds?: { x: number; y: number; width: number; height: number };
+  text?: { content: string; fontFamily: string; fontSize: number; textAlign: string; fontWeight?: number; lineHeight?: number };
+  fills?: Array<{ type: string; color?: { r: number; g: number; b: number; a: number }; opacity: number }>;
+  strokes?: Array<{ type: string; color?: { r: number; g: number; b: number; a: number }; weight?: number }>; // For borders/strokes
+  imageUrl?: string; // For IMAGE nodes
 }
 
 export type ComponentType =
@@ -98,6 +112,9 @@ export type ComponentType =
   | 'modal'
   | 'navigation'
   | 'container'
+  | 'image'
+  | 'icon'
+  | 'text'
   | 'unknown';
 
 export interface ComponentProp {

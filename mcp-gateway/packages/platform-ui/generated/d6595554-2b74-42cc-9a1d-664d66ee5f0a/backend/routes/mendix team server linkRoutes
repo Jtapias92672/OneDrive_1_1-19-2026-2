@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Mendix Team Server LinkController } from '../controllers/mendix team server link.controller';
+import { Mendix Team Server LinkService } from '../services/mendix team server link.service';
+
+export function createMendix Team Server LinkRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Mendix Team Server LinkService(prisma);
+  const controller = new Mendix Team Server LinkController(service);
+
+  router.get('/mendix team server links', controller.getAll.bind(controller));
+  router.get('/mendix team server links/:id', controller.getById.bind(controller));
+  router.post('/mendix team server links', controller.create.bind(controller));
+  router.put('/mendix team server links/:id', controller.update.bind(controller));
+  router.delete('/mendix team server links/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createMendix Team Server LinkRoutes;

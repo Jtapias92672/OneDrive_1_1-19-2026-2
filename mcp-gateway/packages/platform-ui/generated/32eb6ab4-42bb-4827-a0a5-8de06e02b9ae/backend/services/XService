@@ -1,0 +1,27 @@
+import { PrismaClient, X } from '@prisma/client';
+
+export class XService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<X[]> {
+    return this.prisma.x.findMany();
+  }
+
+  async findById(id: string): Promise<X | null> {
+    return this.prisma.x.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<X, 'id' | 'createdAt' | 'updatedAt'>): Promise<X> {
+    return this.prisma.x.create({ data });
+  }
+
+  async update(id: string, data: Partial<X>): Promise<X> {
+    return this.prisma.x.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.x.delete({ where: { id } });
+  }
+}
+
+export default XService;

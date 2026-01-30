@@ -1,0 +1,57 @@
+import { Request, Response, NextFunction } from 'express';
+import { Group 10Service } from '../services/group 10.service';
+
+export class Group 10Controller {
+  constructor(private service: Group 10Service) {}
+
+  async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const items = await this.service.findAll();
+      res.json({ data: items });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const item = await this.service.findById(req.params.id);
+      if (!item) {
+        res.status(404).json({ error: 'Group 10 not found' });
+        return;
+      }
+      res.json({ data: item });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const item = await this.service.create(req.body);
+      res.status(201).json({ data: item });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const item = await this.service.update(req.params.id, req.body);
+      res.json({ data: item });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      await this.service.delete(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+
+export default Group 10Controller;

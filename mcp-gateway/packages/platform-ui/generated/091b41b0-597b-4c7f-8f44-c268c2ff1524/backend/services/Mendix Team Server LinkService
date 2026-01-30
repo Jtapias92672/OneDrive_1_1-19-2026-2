@@ -1,0 +1,27 @@
+import { PrismaClient, Mendix Team Server Link } from '@prisma/client';
+
+export class Mendix Team Server LinkService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Mendix Team Server Link[]> {
+    return this.prisma.mendix team server link.findMany();
+  }
+
+  async findById(id: string): Promise<Mendix Team Server Link | null> {
+    return this.prisma.mendix team server link.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Mendix Team Server Link, 'id' | 'createdAt' | 'updatedAt'>): Promise<Mendix Team Server Link> {
+    return this.prisma.mendix team server link.create({ data });
+  }
+
+  async update(id: string, data: Partial<Mendix Team Server Link>): Promise<Mendix Team Server Link> {
+    return this.prisma.mendix team server link.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.mendix team server link.delete({ where: { id } });
+  }
+}
+
+export default Mendix Team Server LinkService;

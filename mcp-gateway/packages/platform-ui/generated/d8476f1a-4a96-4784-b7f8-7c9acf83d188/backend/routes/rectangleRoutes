@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { RectangleController } from '../controllers/rectangle.controller';
+import { RectangleService } from '../services/rectangle.service';
+
+export function createRectangleRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new RectangleService(prisma);
+  const controller = new RectangleController(service);
+
+  router.get('/rectangles', controller.getAll.bind(controller));
+  router.get('/rectangles/:id', controller.getById.bind(controller));
+  router.post('/rectangles', controller.create.bind(controller));
+  router.put('/rectangles/:id', controller.update.bind(controller));
+  router.delete('/rectangles/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createRectangleRoutes;

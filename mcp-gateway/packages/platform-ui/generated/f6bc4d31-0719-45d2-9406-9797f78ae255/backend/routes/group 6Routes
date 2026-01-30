@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Group 6Controller } from '../controllers/group 6.controller';
+import { Group 6Service } from '../services/group 6.service';
+
+export function createGroup 6Routes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Group 6Service(prisma);
+  const controller = new Group 6Controller(service);
+
+  router.get('/group 6s', controller.getAll.bind(controller));
+  router.get('/group 6s/:id', controller.getById.bind(controller));
+  router.post('/group 6s', controller.create.bind(controller));
+  router.put('/group 6s/:id', controller.update.bind(controller));
+  router.delete('/group 6s/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createGroup 6Routes;

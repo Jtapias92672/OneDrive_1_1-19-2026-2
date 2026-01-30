@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Frame 1Controller } from '../controllers/frame 1.controller';
+import { Frame 1Service } from '../services/frame 1.service';
+
+export function createFrame 1Routes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Frame 1Service(prisma);
+  const controller = new Frame 1Controller(service);
+
+  router.get('/frame 1s', controller.getAll.bind(controller));
+  router.get('/frame 1s/:id', controller.getById.bind(controller));
+  router.post('/frame 1s', controller.create.bind(controller));
+  router.put('/frame 1s/:id', controller.update.bind(controller));
+  router.delete('/frame 1s/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createFrame 1Routes;

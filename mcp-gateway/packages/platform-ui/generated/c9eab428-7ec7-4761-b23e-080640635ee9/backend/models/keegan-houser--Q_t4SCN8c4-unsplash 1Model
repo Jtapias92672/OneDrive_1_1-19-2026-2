@@ -1,0 +1,6 @@
+model keegan-houser--Q_t4SCN8c4-unsplash 1 {
+  id String @id @default(uuid())
+  name String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

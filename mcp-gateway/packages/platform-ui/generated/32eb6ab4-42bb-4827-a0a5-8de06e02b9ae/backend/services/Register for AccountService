@@ -1,0 +1,27 @@
+import { PrismaClient, Register for Account } from '@prisma/client';
+
+export class Register for AccountService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Register for Account[]> {
+    return this.prisma.register for account.findMany();
+  }
+
+  async findById(id: string): Promise<Register for Account | null> {
+    return this.prisma.register for account.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Register for Account, 'id' | 'createdAt' | 'updatedAt'>): Promise<Register for Account> {
+    return this.prisma.register for account.create({ data });
+  }
+
+  async update(id: string, data: Partial<Register for Account>): Promise<Register for Account> {
+    return this.prisma.register for account.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.register for account.delete({ where: { id } });
+  }
+}
+
+export default Register for AccountService;

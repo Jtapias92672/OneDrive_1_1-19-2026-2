@@ -22,6 +22,9 @@ export interface ParsedComponent {
   // Text (if type === 'TEXT')
   text?: ParsedText;
 
+  // Image (if type === 'IMAGE')
+  imageUrl?: string;
+
   // Auto-layout
   autoLayout?: ParsedAutoLayout;
 
@@ -45,7 +48,8 @@ export type ParsedNodeType =
   | 'VECTOR'
   | 'ELLIPSE'
   | 'LINE'
-  | 'BOOLEAN_OPERATION';
+  | 'BOOLEAN_OPERATION'
+  | 'IMAGE';
 
 export interface ParsedBounds {
   x: number;
@@ -74,6 +78,9 @@ export interface ParsedFill {
   color?: ParsedColor;
   gradient?: ParsedGradient;
   opacity: number;
+  imageRef?: string; // For IMAGE type fills (from Figma)
+  imageUrl?: string; // Resolved URL from Figma API
+  scaleMode?: 'FILL' | 'FIT' | 'CROP' | 'TILE';
 }
 
 export interface ParsedStroke {

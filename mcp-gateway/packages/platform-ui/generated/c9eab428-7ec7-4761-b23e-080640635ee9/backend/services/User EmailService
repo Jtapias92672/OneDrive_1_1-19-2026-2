@@ -1,0 +1,27 @@
+import { PrismaClient, User Email } from '@prisma/client';
+
+export class User EmailService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<User Email[]> {
+    return this.prisma.user email.findMany();
+  }
+
+  async findById(id: string): Promise<User Email | null> {
+    return this.prisma.user email.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<User Email, 'id' | 'createdAt' | 'updatedAt'>): Promise<User Email> {
+    return this.prisma.user email.create({ data });
+  }
+
+  async update(id: string, data: Partial<User Email>): Promise<User Email> {
+    return this.prisma.user email.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.user email.delete({ where: { id } });
+  }
+}
+
+export default User EmailService;

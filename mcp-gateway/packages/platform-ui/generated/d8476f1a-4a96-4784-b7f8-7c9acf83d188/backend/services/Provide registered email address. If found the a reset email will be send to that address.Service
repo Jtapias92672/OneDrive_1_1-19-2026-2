@@ -1,0 +1,27 @@
+import { PrismaClient, Provide registered email address. If found the a reset email will be send to that address. } from '@prisma/client';
+
+export class Provide registered email address. If found the a reset email will be send to that address.Service {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Provide registered email address. If found the a reset email will be send to that address.[]> {
+    return this.prisma.provide registered email address. if found the a reset email will be send to that address..findMany();
+  }
+
+  async findById(id: string): Promise<Provide registered email address. If found the a reset email will be send to that address. | null> {
+    return this.prisma.provide registered email address. if found the a reset email will be send to that address..findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Provide registered email address. If found the a reset email will be send to that address., 'id' | 'createdAt' | 'updatedAt'>): Promise<Provide registered email address. If found the a reset email will be send to that address.> {
+    return this.prisma.provide registered email address. if found the a reset email will be send to that address..create({ data });
+  }
+
+  async update(id: string, data: Partial<Provide registered email address. If found the a reset email will be send to that address.>): Promise<Provide registered email address. If found the a reset email will be send to that address.> {
+    return this.prisma.provide registered email address. if found the a reset email will be send to that address..update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.provide registered email address. if found the a reset email will be send to that address..delete({ where: { id } });
+  }
+}
+
+export default Provide registered email address. If found the a reset email will be send to that address.Service;

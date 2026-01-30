@@ -1,0 +1,55 @@
+import request from 'supertest';
+import express from 'express';
+import { Figma Personal Access TokenController } from '../controllers/figma personal access token.controller';
+
+describe('Figma Personal Access TokenController', () => {
+  const mockService = {
+    findAll: jest.fn(),
+    findById: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  };
+
+  const controller = new Figma Personal Access TokenController(mockService as any);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getAll', () => {
+    it('returns all figma personal access tokens', async () => {
+      mockService.findAll.mockResolvedValue([{ id: '1' }]);
+      const app = express();
+      app.get('/', controller.getAll.bind(controller));
+
+      const response = await request(app).get('/');
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toHaveLength(1);
+    });
+  });
+
+  describe('getById', () => {
+    it('returns figma personal access token by id', async () => {
+      mockService.findById.mockResolvedValue({ id: '1' });
+      const app = express();
+      app.get('/:id', controller.getById.bind(controller));
+
+      const response = await request(app).get('/1');
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.id).toBe('1');
+    });
+
+    it('returns 404 when figma personal access token not found', async () => {
+      mockService.findById.mockResolvedValue(null);
+      const app = express();
+      app.get('/:id', controller.getById.bind(controller));
+
+      const response = await request(app).get('/nonexistent');
+
+      expect(response.status).toBe(404);
+    });
+  });
+});

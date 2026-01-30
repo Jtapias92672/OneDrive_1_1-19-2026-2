@@ -1,0 +1,19 @@
+{
+  "name": "@forge/wolfram-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server wrapper for Wolfram Alpha computational accuracy integration",
+  "type": "module",
+  "main": "dist/server.js",
+  "bin": {
+    "wolfram-mcp-server": "./dist/server.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/server.js",
+    "test": "echo 'Testing via main gateway tests'"
+  },
+  "keywords": ["mcp", "wolfram", "computational", "accuracy", "protocol"],
+  "author": "ArcFoundry",
+  "license": "UNLICENSED"
+}

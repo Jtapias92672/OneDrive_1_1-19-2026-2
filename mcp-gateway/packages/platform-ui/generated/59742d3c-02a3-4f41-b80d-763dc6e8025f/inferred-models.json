@@ -1,0 +1,275 @@
+[
+  {
+    "name": "Frame 1",
+    "source": "Frame 1",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 1s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 1s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 1s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 1s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 1s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Frame 2",
+    "source": "Frame 2",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 2s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 2s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 2s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 2s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 2s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Frame 3",
+    "source": "Frame 3",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 3s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 3s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 3s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 3s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 3s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Frame 4",
+    "source": "Frame 4",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 4s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 4s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 4s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 4s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 4s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Frame 5",
+    "source": "Frame 5",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 5s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 5s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 5s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 5s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 5s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Frame 6",
+    "source": "Frame 6",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 6s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 6s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 6s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 6s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 6s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Frame 7",
+    "source": "Frame 7",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 7s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 7s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 7s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 7s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 7s/:id"
+      }
+    ],
+    "confidence": 0.4
+  }
+]

@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { SharePoint Tenant IDController } from '../controllers/sharepoint tenant id.controller';
+import { SharePoint Tenant IDService } from '../services/sharepoint tenant id.service';
+
+export function createSharePoint Tenant IDRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new SharePoint Tenant IDService(prisma);
+  const controller = new SharePoint Tenant IDController(service);
+
+  router.get('/share-point tenant ids', controller.getAll.bind(controller));
+  router.get('/share-point tenant ids/:id', controller.getById.bind(controller));
+  router.post('/share-point tenant ids', controller.create.bind(controller));
+  router.put('/share-point tenant ids/:id', controller.update.bind(controller));
+  router.delete('/share-point tenant ids/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createSharePoint Tenant IDRoutes;

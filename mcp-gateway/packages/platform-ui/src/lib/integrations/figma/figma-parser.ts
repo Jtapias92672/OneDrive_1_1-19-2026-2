@@ -24,10 +24,16 @@ export class FigmaParser {
    * Parse a Figma file into a structured ParsedDesign
    */
   parse(file: FigmaFile): ParsedDesign {
+    console.log('[FigmaParser.parse] Starting parse');
+    console.log('[FigmaParser.parse] File name:', file.name);
+    console.log('[FigmaParser.parse] Document children:', file.document.children?.length);
+
     const pages = file.document.children || [];
+    console.log('[FigmaParser.parse] Processing', pages.length, 'pages');
     const components: ParsedComponent[] = [];
 
     for (const page of pages) {
+      console.log('[FigmaParser.parse] Processing page:', page.name, 'Children:', page.children?.length);
       if (page.children) {
         for (const child of page.children) {
           components.push(this.parseNode(child));
@@ -55,6 +61,26 @@ export class FigmaParser {
       fills: this.parseFills(node.fills || []),
       strokes: this.parseStrokes(node.strokes || [], node.strokeWeight, node.strokeAlign),
       text: node.type === 'TEXT' ? this.parseText(node) : undefined,
+      imageUrl: (() => {
+        // Check for IMAGE node type
+        if (node.type === 'IMAGE' && 'imageRef' in node) {
+          console.log(`[FigmaParser] IMAGE node "${node.name}" has imageRef:`, node.imageRef);
+          return node.imageRef as string;
+        }
+
+        // Check if COMPONENT/INSTANCE/FRAME has IMAGE fill
+        if (['COMPONENT', 'INSTANCE', 'FRAME', 'RECTANGLE'].includes(node.type)) {
+          const fills = node.fills as Paint[] | undefined;
+          const imageFill = fills?.find(f => f.type === 'IMAGE' && f.imageRef);
+          if (imageFill?.imageRef) {
+            console.log(`[FigmaParser] ${node.type} "${node.name}" has IMAGE fill:`, imageFill.imageRef);
+            // For IMAGE fills, we'll use the node ID later to fetch the image
+            return undefined; // Don't set imageUrl here - will be set via fills
+          }
+        }
+
+        return undefined;
+      })(),
       autoLayout: node.layoutMode && node.layoutMode !== 'NONE' ? this.parseAutoLayout(node) : undefined,
       effects: this.parseEffects(node.effects || []),
       cornerRadius: node.cornerRadius,
@@ -77,6 +103,7 @@ export class FigmaParser {
       ELLIPSE: 'ELLIPSE',
       LINE: 'LINE',
       BOOLEAN_OPERATION: 'BOOLEAN_OPERATION',
+      IMAGE: 'IMAGE',
     };
     return typeMap[type] || 'FRAME';
   }
@@ -85,21 +112,29 @@ export class FigmaParser {
    * Parse fill paints into ParsedFill array
    */
   private parseFills(fills: Paint[]): ParsedFill[] {
-    return fills
+    const result = fills
       .filter((f) => f.visible !== false)
-      .map((f) => ({
-        type: f.type,
-        color: f.color
-          ? {
-              r: f.color.r,
-              g: f.color.g,
-              b: f.color.b,
-              a: f.color.a ?? 1,
-            }
-          : undefined,
-        gradient: undefined, // TODO: Parse gradient stops when present
-        opacity: f.opacity ?? 1,
-      }));
+      .map((f) => {
+        if (f.type === 'IMAGE') {
+          console.log('[FigmaParser] IMAGE fill detected:', { imageRef: f.imageRef, scaleMode: f.scaleMode });
+        }
+        return {
+          type: f.type,
+          color: f.color
+            ? {
+                r: f.color.r,
+                g: f.color.g,
+                b: f.color.b,
+                a: f.color.a ?? 1,
+              }
+            : undefined,
+          gradient: undefined, // TODO: Parse gradient stops when present
+          opacity: f.opacity ?? 1,
+          imageRef: f.type === 'IMAGE' ? f.imageRef : undefined,
+          scaleMode: f.type === 'IMAGE' ? f.scaleMode : undefined,
+        };
+      });
+    return result;
   }
 
   /**

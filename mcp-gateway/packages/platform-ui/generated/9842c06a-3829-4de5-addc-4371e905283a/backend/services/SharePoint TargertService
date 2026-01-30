@@ -1,0 +1,27 @@
+import { PrismaClient, SharePoint Targert } from '@prisma/client';
+
+export class SharePoint TargertService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<SharePoint Targert[]> {
+    return this.prisma.sharepoint targert.findMany();
+  }
+
+  async findById(id: string): Promise<SharePoint Targert | null> {
+    return this.prisma.sharepoint targert.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<SharePoint Targert, 'id' | 'createdAt' | 'updatedAt'>): Promise<SharePoint Targert> {
+    return this.prisma.sharepoint targert.create({ data });
+  }
+
+  async update(id: string, data: Partial<SharePoint Targert>): Promise<SharePoint Targert> {
+    return this.prisma.sharepoint targert.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.sharepoint targert.delete({ where: { id } });
+  }
+}
+
+export default SharePoint TargertService;

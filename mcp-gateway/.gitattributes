@@ -1,0 +1,3 @@
+# Exclude test datasets from GitHub secret scanning
+tests/datasets/** -diff linguist-generated=true
+tests/datasets/*.json binary

@@ -1,0 +1,27 @@
+import { PrismaClient, Sample Project Name 3 } from '@prisma/client';
+
+export class Sample Project Name 3Service {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Sample Project Name 3[]> {
+    return this.prisma.sample project name 3.findMany();
+  }
+
+  async findById(id: string): Promise<Sample Project Name 3 | null> {
+    return this.prisma.sample project name 3.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Sample Project Name 3, 'id' | 'createdAt' | 'updatedAt'>): Promise<Sample Project Name 3> {
+    return this.prisma.sample project name 3.create({ data });
+  }
+
+  async update(id: string, data: Partial<Sample Project Name 3>): Promise<Sample Project Name 3> {
+    return this.prisma.sample project name 3.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.sample project name 3.delete({ where: { id } });
+  }
+}
+
+export default Sample Project Name 3Service;

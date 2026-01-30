@@ -1,0 +1,27 @@
+import { PrismaClient, Group 8 } from '@prisma/client';
+
+export class Group 8Service {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Group 8[]> {
+    return this.prisma.group 8.findMany();
+  }
+
+  async findById(id: string): Promise<Group 8 | null> {
+    return this.prisma.group 8.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Group 8, 'id' | 'createdAt' | 'updatedAt'>): Promise<Group 8> {
+    return this.prisma.group 8.create({ data });
+  }
+
+  async update(id: string, data: Partial<Group 8>): Promise<Group 8> {
+    return this.prisma.group 8.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.group 8.delete({ where: { id } });
+  }
+}
+
+export default Group 8Service;

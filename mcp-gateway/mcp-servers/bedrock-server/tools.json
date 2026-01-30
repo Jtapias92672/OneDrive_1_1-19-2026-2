@@ -1,0 +1,83 @@
+{
+  "tools": [
+    {
+      "name": "bedrock_invokeModel",
+      "description": "Invoke an AWS Bedrock foundation model synchronously for text generation, analysis, or other AI tasks",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "modelId": {
+            "type": "string",
+            "description": "Bedrock model ID (e.g., 'anthropic.claude-3-sonnet-20240229-v1:0')"
+          },
+          "body": {
+            "type": "string",
+            "description": "Request body as JSON string (format varies by model)"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "Content type (default: 'application/json')"
+          },
+          "accept": {
+            "type": "string",
+            "description": "Accept header (default: 'application/json')"
+          }
+        },
+        "required": ["modelId", "body"]
+      }
+    },
+    {
+      "name": "bedrock_invokeModelStream",
+      "description": "Invoke an AWS Bedrock foundation model with streaming response for real-time text generation",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "modelId": {
+            "type": "string",
+            "description": "Bedrock model ID"
+          },
+          "body": {
+            "type": "string",
+            "description": "Request body as JSON string"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "Content type (default: 'application/json')"
+          },
+          "accept": {
+            "type": "string",
+            "description": "Accept header (default: 'application/json')"
+          }
+        },
+        "required": ["modelId", "body"]
+      }
+    },
+    {
+      "name": "bedrock_listModels",
+      "description": "List all available AWS Bedrock foundation models, optionally filtered by provider",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "byProvider": {
+            "type": "string",
+            "description": "Optional: Filter by provider (e.g., 'Anthropic', 'Amazon', 'AI21')"
+          }
+        }
+      }
+    },
+    {
+      "name": "bedrock_getModelInfo",
+      "description": "Get detailed information about a specific Bedrock foundation model",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "modelId": {
+            "type": "string",
+            "description": "Bedrock model ID to retrieve information for"
+          }
+        },
+        "required": ["modelId"]
+      }
+    }
+  ]
+}

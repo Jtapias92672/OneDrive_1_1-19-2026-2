@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { No account, register here.Controller } from '../controllers/no account, register here..controller';
+import { No account, register here.Service } from '../services/no account, register here..service';
+
+export function createNo account, register here.Routes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new No account, register here.Service(prisma);
+  const controller = new No account, register here.Controller(service);
+
+  router.get('/no account, register here.s', controller.getAll.bind(controller));
+  router.get('/no account, register here.s/:id', controller.getById.bind(controller));
+  router.post('/no account, register here.s', controller.create.bind(controller));
+  router.put('/no account, register here.s/:id', controller.update.bind(controller));
+  router.delete('/no account, register here.s/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createNo account, register here.Routes;

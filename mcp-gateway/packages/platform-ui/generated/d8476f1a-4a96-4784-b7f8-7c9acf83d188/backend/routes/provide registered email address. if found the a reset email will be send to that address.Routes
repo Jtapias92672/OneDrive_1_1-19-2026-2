@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Provide registered email address. If found the a reset email will be send to that address.Controller } from '../controllers/provide registered email address. if found the a reset email will be send to that address..controller';
+import { Provide registered email address. If found the a reset email will be send to that address.Service } from '../services/provide registered email address. if found the a reset email will be send to that address..service';
+
+export function createProvide registered email address. If found the a reset email will be send to that address.Routes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Provide registered email address. If found the a reset email will be send to that address.Service(prisma);
+  const controller = new Provide registered email address. If found the a reset email will be send to that address.Controller(service);
+
+  router.get('/provide registered email address. if found the a reset email will be send to that address.s', controller.getAll.bind(controller));
+  router.get('/provide registered email address. if found the a reset email will be send to that address.s/:id', controller.getById.bind(controller));
+  router.post('/provide registered email address. if found the a reset email will be send to that address.s', controller.create.bind(controller));
+  router.put('/provide registered email address. if found the a reset email will be send to that address.s/:id', controller.update.bind(controller));
+  router.delete('/provide registered email address. if found the a reset email will be send to that address.s/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createProvide registered email address. If found the a reset email will be send to that address.Routes;

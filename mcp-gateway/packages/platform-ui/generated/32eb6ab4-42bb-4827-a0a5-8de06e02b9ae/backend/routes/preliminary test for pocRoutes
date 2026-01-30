@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { PRELIMINARY TEST FOR POCController } from '../controllers/preliminary test for poc.controller';
+import { PRELIMINARY TEST FOR POCService } from '../services/preliminary test for poc.service';
+
+export function createPRELIMINARY TEST FOR POCRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new PRELIMINARY TEST FOR POCService(prisma);
+  const controller = new PRELIMINARY TEST FOR POCController(service);
+
+  router.get('/preliminary test for pocs', controller.getAll.bind(controller));
+  router.get('/preliminary test for pocs/:id', controller.getById.bind(controller));
+  router.post('/preliminary test for pocs', controller.create.bind(controller));
+  router.put('/preliminary test for pocs/:id', controller.update.bind(controller));
+  router.delete('/preliminary test for pocs/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createPRELIMINARY TEST FOR POCRoutes;

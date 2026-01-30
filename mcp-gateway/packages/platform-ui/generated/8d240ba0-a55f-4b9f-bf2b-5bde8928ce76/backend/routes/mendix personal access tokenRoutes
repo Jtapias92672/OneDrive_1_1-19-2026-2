@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Mendix Personal Access TokenController } from '../controllers/mendix personal access token.controller';
+import { Mendix Personal Access TokenService } from '../services/mendix personal access token.service';
+
+export function createMendix Personal Access TokenRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Mendix Personal Access TokenService(prisma);
+  const controller = new Mendix Personal Access TokenController(service);
+
+  router.get('/mendix personal access tokens', controller.getAll.bind(controller));
+  router.get('/mendix personal access tokens/:id', controller.getById.bind(controller));
+  router.post('/mendix personal access tokens', controller.create.bind(controller));
+  router.put('/mendix personal access tokens/:id', controller.update.bind(controller));
+  router.delete('/mendix personal access tokens/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createMendix Personal Access TokenRoutes;

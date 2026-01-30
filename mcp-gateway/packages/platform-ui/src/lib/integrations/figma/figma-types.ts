@@ -79,7 +79,8 @@ export type FigmaNodeType =
   | 'SLICE'
   | 'COMPONENT'
   | 'COMPONENT_SET'
-  | 'INSTANCE';
+  | 'INSTANCE'
+  | 'IMAGE';
 
 export interface FigmaComponent {
   key: string;
@@ -112,6 +113,8 @@ export interface Paint {
   visible?: boolean;
   opacity?: number;
   color?: Color;
+  imageRef?: string; // For IMAGE type fills
+  scaleMode?: 'FILL' | 'FIT' | 'CROP' | 'TILE';
 }
 
 export interface Color {

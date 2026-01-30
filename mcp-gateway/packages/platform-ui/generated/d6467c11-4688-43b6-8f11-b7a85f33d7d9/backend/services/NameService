@@ -1,0 +1,27 @@
+import { PrismaClient, Name } from '@prisma/client';
+
+export class NameService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Name[]> {
+    return this.prisma.name.findMany();
+  }
+
+  async findById(id: string): Promise<Name | null> {
+    return this.prisma.name.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Name, 'id' | 'createdAt' | 'updatedAt'>): Promise<Name> {
+    return this.prisma.name.create({ data });
+  }
+
+  async update(id: string, data: Partial<Name>): Promise<Name> {
+    return this.prisma.name.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.name.delete({ where: { id } });
+  }
+}
+
+export default NameService;

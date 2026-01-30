@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://www.mendix.com/clientSystem/9.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      name="Generated.Frame6"
+      title="Frame 6">
+  <layoutCall layoutName="Atlas_Default">
+    <parameter name="Main">
+      <placeholder>        <container name="Frame6" class="gen-frame6">
+          <text name="TranslationProjectDetails" class="gen-translationprojectdetails">
+            <caption>Translation Project Details</caption>
+          </text>
+          <text name="PreliminaryTestForPoc" class="gen-preliminarytestforpoc">
+            <caption>PRELIMINARY TEST FOR POC </caption>
+          </text>
+          <actionButton name="ButtonDanger" class="gen-buttondanger">
+            <caption>ButtonDanger</caption>
+            <action>
+              <noAction/>
+            </action>
+          </actionButton>
+          <actionButton name="ButtonDanger" class="gen-buttondanger">
+            <caption>ButtonDanger</caption>
+            <action>
+              <noAction/>
+            </action>
+          </actionButton>
+          <container name="Frame" class="gen-frame">
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+            <container name="Vector" class="gen-vector">
+            </container>
+          </container>
+          <container name="Group3" class="gen-group3">
+            <container name="Group1" class="gen-group1">
+              <text name="ProjectName" class="gen-projectname">
+                <caption>Project Name</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group7" class="gen-group7">
+            <container name="Group1" class="gen-group1">
+              <text name="FigmaDesignFileLink" class="gen-figmadesignfilelink">
+                <caption>Figma Design File Link</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group8" class="gen-group8">
+            <container name="Group1" class="gen-group1">
+              <text name="FigmaPersonalAccessToken" class="gen-figmapersonalaccesstoken">
+                <caption>Figma Personal Access Token</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group9" class="gen-group9">
+            <container name="Group1" class="gen-group1">
+              <text name="SharepointClientId" class="gen-sharepointclientid">
+                <caption>SharePoint Client ID</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group14" class="gen-group14">
+            <container name="Group1" class="gen-group1">
+              <text name="SharepointLibraryFolder" class="gen-sharepointlibraryfolder">
+                <caption>SharePoint Library Folder</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group12" class="gen-group12">
+            <container name="Group1" class="gen-group1">
+              <text name="SharepointSite" class="gen-sharepointsite">
+                <caption>SharePoint Site</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group11" class="gen-group11">
+            <container name="Group1" class="gen-group1">
+              <text name="SharepointTenantId" class="gen-sharepointtenantid">
+                <caption>SharePoint Tenant ID</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group10" class="gen-group10">
+            <container name="Group1" class="gen-group1">
+              <text name="SharepointClientSecret" class="gen-sharepointclientsecret">
+                <caption>SharePoint Client Secret</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group13" class="gen-group13">
+            <container name="Group1" class="gen-group1">
+              <text name="SharepointPath" class="gen-sharepointpath">
+                <caption>SharePoint Path</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group15" class="gen-group15">
+            <container name="Group1" class="gen-group1">
+              <text name="MendixRepositoryName" class="gen-mendixrepositoryname">
+                <caption>Mendix Repository Name</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group16" class="gen-group16">
+            <container name="Group1" class="gen-group1">
+              <text name="MendixImportModulePackageName" class="gen-mendiximportmodulepackagename">
+                <caption>Mendix Import Module Package Name</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+          <container name="Group17" class="gen-group17">
+            <container name="Group1" class="gen-group1">
+              <text name="MendixPersonalAccessToken" class="gen-mendixpersonalaccesstoken">
+                <caption>Mendix Personal Access Token</caption>
+              </text>
+              <container name="Rectangle" class="gen-rectangle">
+              </container>
+            </container>
+          </container>
+        </container>
+      </placeholder>
+    </parameter>
+  </layoutCall>
+</page>

@@ -1,0 +1,2592 @@
+[
+  {
+    "name": "Frame 1",
+    "source": "Frame 1",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 1s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 1s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 1s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 1s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 1s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Welcome to ArcFoundry",
+    "source": "Welcome to ArcFoundry",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/welcome to -arc-foundrys"
+      },
+      {
+        "method": "GET",
+        "path": "/welcome to -arc-foundrys/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/welcome to -arc-foundrys"
+      },
+      {
+        "method": "PUT",
+        "path": "/welcome to -arc-foundrys/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/welcome to -arc-foundrys/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Button Danger",
+    "source": "Button Danger, Button Danger, Button Danger, Button Danger, Button Danger, Button Danger, Button Danger, Button Danger, Button Danger, Button Danger, Button Danger, Button Danger",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/button -dangers"
+      },
+      {
+        "method": "GET",
+        "path": "/button -dangers/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/button -dangers"
+      },
+      {
+        "method": "PUT",
+        "path": "/button -dangers/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/button -dangers/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Star",
+    "source": "Star, Star, Star, Star, Star, Star, Star, Star, Star, Star, Star, Star",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/stars"
+      },
+      {
+        "method": "GET",
+        "path": "/stars/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/stars"
+      },
+      {
+        "method": "PUT",
+        "path": "/stars/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/stars/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Icon",
+    "source": "Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon, Icon",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/icons"
+      },
+      {
+        "method": "GET",
+        "path": "/icons/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/icons"
+      },
+      {
+        "method": "PUT",
+        "path": "/icons/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/icons/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Button",
+    "source": "Button, Button, Button, Button, Button, Button, Button, Button, Button, Button, Button, Button",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/buttons"
+      },
+      {
+        "method": "GET",
+        "path": "/buttons/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/buttons"
+      },
+      {
+        "method": "PUT",
+        "path": "/buttons/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/buttons/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "X",
+    "source": "X, X, X, X, X, X, X, X, X, X, X, X",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/xs"
+      },
+      {
+        "method": "GET",
+        "path": "/xs/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/xs"
+      },
+      {
+        "method": "PUT",
+        "path": "/xs/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/xs/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "PRELIMINARY TEST FOR POC",
+    "source": "PRELIMINARY TEST FOR POC, PRELIMINARY TEST FOR POC, PRELIMINARY TEST FOR POC, PRELIMINARY TEST FOR POC, PRELIMINARY TEST FOR POC, PRELIMINARY TEST FOR POC, PRELIMINARY TEST FOR POC",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/p-r-e-l-i-m-i-n-a-r-y -t-e-s-t -f-o-r -p-o-cs"
+      },
+      {
+        "method": "GET",
+        "path": "/p-r-e-l-i-m-i-n-a-r-y -t-e-s-t -f-o-r -p-o-cs/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/p-r-e-l-i-m-i-n-a-r-y -t-e-s-t -f-o-r -p-o-cs"
+      },
+      {
+        "method": "PUT",
+        "path": "/p-r-e-l-i-m-i-n-a-r-y -t-e-s-t -f-o-r -p-o-cs/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/p-r-e-l-i-m-i-n-a-r-y -t-e-s-t -f-o-r -p-o-cs/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "keegan-houser--Q_t4SCN8c4-unsplash 1",
+    "source": "keegan-houser--Q_t4SCN8c4-unsplash 1",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/keegan-houser---q_t4-s-c-n8c4-unsplash 1s"
+      },
+      {
+        "method": "GET",
+        "path": "/keegan-houser---q_t4-s-c-n8c4-unsplash 1s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/keegan-houser---q_t4-s-c-n8c4-unsplash 1s"
+      },
+      {
+        "method": "PUT",
+        "path": "/keegan-houser---q_t4-s-c-n8c4-unsplash 1s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/keegan-houser---q_t4-s-c-n8c4-unsplash 1s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Frame",
+    "source": "Frame, Frame, Frame, Frame, Frame, Frame, Frame",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frames"
+      },
+      {
+        "method": "GET",
+        "path": "/frames/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frames"
+      },
+      {
+        "method": "PUT",
+        "path": "/frames/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frames/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Vector",
+    "source": "Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector, Vector",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/vectors"
+      },
+      {
+        "method": "GET",
+        "path": "/vectors/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/vectors"
+      },
+      {
+        "method": "PUT",
+        "path": "/vectors/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/vectors/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Frame 2",
+    "source": "Frame 2",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 2s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 2s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 2s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 2s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 2s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Auth",
+    "source": "Login",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "email",
+        "type": "email",
+        "required": true
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/auth/login"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/logout"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 1",
+    "source": "Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1, Group 1",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 1s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 1s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 1s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 1s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 1s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Username",
+    "source": "Username",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/usernames"
+      },
+      {
+        "method": "GET",
+        "path": "/usernames/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/usernames"
+      },
+      {
+        "method": "PUT",
+        "path": "/usernames/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/usernames/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Rectangle",
+    "source": "Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle, Rectangle",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/rectangles"
+      },
+      {
+        "method": "GET",
+        "path": "/rectangles/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/rectangles"
+      },
+      {
+        "method": "PUT",
+        "path": "/rectangles/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/rectangles/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 2",
+    "source": "Group 2",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 2s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 2s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 2s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 2s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 2s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Password",
+    "source": "Password, Password",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "email",
+        "type": "email",
+        "required": true
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/auth/login"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/logout"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Forgot password?",
+    "source": "Forgot password?",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "email",
+        "type": "email",
+        "required": true
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/auth/login"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/logout"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "No account, register here.",
+    "source": "No account, register here.",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "email",
+        "type": "email",
+        "required": true
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/auth/login"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/logout"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Frame 3",
+    "source": "Frame 3",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 3s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 3s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 3s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 3s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 3s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Reset Password",
+    "source": "Reset Password",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "email",
+        "type": "email",
+        "required": true
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/auth/login"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/logout"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Provide registered email address. If found the a reset email will be send to that address.",
+    "source": "Provide registered email address. If found the a reset email will be send to that address.",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "email",
+        "type": "email",
+        "required": true
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/auth/login"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/logout"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "User Email",
+    "source": "User Email, User Email",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/user -emails"
+      },
+      {
+        "method": "GET",
+        "path": "/user -emails/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/user -emails"
+      },
+      {
+        "method": "PUT",
+        "path": "/user -emails/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/user -emails/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Frame 4",
+    "source": "Frame 4",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 4s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 4s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 4s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 4s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 4s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Register for Account",
+    "source": "Register for Account",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "email",
+        "type": "email",
+        "required": true
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/auth/login"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/logout"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 3",
+    "source": "Group 3, Group 3, Group 3",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 3s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 3s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 3s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 3s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 3s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Name",
+    "source": "Name",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/names"
+      },
+      {
+        "method": "GET",
+        "path": "/names/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/names"
+      },
+      {
+        "method": "PUT",
+        "path": "/names/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/names/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 6",
+    "source": "Group 6",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 6s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 6s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 6s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 6s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 6s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Password Confirmation",
+    "source": "Password Confirmation",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "email",
+        "type": "email",
+        "required": true
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/auth/login"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/logout"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 5",
+    "source": "Group 5",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 5s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 5s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 5s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 5s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 5s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 4",
+    "source": "Group 4",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 4s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 4s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 4s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 4s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 4s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Frame 5",
+    "source": "Frame 5",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 5s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 5s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 5s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 5s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 5s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Translation Projects",
+    "source": "Translation Projects",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/translation -projectss"
+      },
+      {
+        "method": "GET",
+        "path": "/translation -projectss/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/translation -projectss"
+      },
+      {
+        "method": "PUT",
+        "path": "/translation -projectss/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/translation -projectss/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Project Name",
+    "source": "Project Name, Project Name, Project Name",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/project -names"
+      },
+      {
+        "method": "GET",
+        "path": "/project -names/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/project -names"
+      },
+      {
+        "method": "PUT",
+        "path": "/project -names/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/project -names/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Figma Design File Link",
+    "source": "Figma Design File Link, Figma Design File Link, Figma Design File Link",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/figma -design -file -links"
+      },
+      {
+        "method": "GET",
+        "path": "/figma -design -file -links/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/figma -design -file -links"
+      },
+      {
+        "method": "PUT",
+        "path": "/figma -design -file -links/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/figma -design -file -links/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "SharePoint Targert",
+    "source": "SharePoint Targert",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/share-point -targerts"
+      },
+      {
+        "method": "GET",
+        "path": "/share-point -targerts/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/share-point -targerts"
+      },
+      {
+        "method": "PUT",
+        "path": "/share-point -targerts/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/share-point -targerts/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Mendix Team Server Link",
+    "source": "Mendix Team Server Link",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/mendix -team -server -links"
+      },
+      {
+        "method": "GET",
+        "path": "/mendix -team -server -links/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/mendix -team -server -links"
+      },
+      {
+        "method": "PUT",
+        "path": "/mendix -team -server -links/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/mendix -team -server -links/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Sample Project Name 1",
+    "source": "Sample Project Name 1",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/sample -project -name 1s"
+      },
+      {
+        "method": "GET",
+        "path": "/sample -project -name 1s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/sample -project -name 1s"
+      },
+      {
+        "method": "PUT",
+        "path": "/sample -project -name 1s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/sample -project -name 1s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Sample Figma Link",
+    "source": "Sample Figma Link, Sample Figma Link, Sample Figma Link",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/sample -figma -links"
+      },
+      {
+        "method": "GET",
+        "path": "/sample -figma -links/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/sample -figma -links"
+      },
+      {
+        "method": "PUT",
+        "path": "/sample -figma -links/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/sample -figma -links/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Sample SharePoint",
+    "source": "Sample SharePoint, Sample SharePoint, Sample SharePoint",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/sample -share-points"
+      },
+      {
+        "method": "GET",
+        "path": "/sample -share-points/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/sample -share-points"
+      },
+      {
+        "method": "PUT",
+        "path": "/sample -share-points/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/sample -share-points/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Sample Mendix Team Server",
+    "source": "Sample Mendix Team Server, Sample Mendix Team Server, Sample Mendix Team Server",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/sample -mendix -team -servers"
+      },
+      {
+        "method": "GET",
+        "path": "/sample -mendix -team -servers/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/sample -mendix -team -servers"
+      },
+      {
+        "method": "PUT",
+        "path": "/sample -mendix -team -servers/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/sample -mendix -team -servers/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Sample Project Name 3",
+    "source": "Sample Project Name 3",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/sample -project -name 3s"
+      },
+      {
+        "method": "GET",
+        "path": "/sample -project -name 3s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/sample -project -name 3s"
+      },
+      {
+        "method": "PUT",
+        "path": "/sample -project -name 3s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/sample -project -name 3s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Sample Project Name 2",
+    "source": "Sample Project Name 2",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/sample -project -name 2s"
+      },
+      {
+        "method": "GET",
+        "path": "/sample -project -name 2s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/sample -project -name 2s"
+      },
+      {
+        "method": "PUT",
+        "path": "/sample -project -name 2s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/sample -project -name 2s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Frame 6",
+    "source": "Frame 6",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 6s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 6s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 6s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 6s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 6s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Translation Project Details",
+    "source": "Translation Project Details, Translation Project Details",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "required": false
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "required": false
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/translation -project -detailss/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 7",
+    "source": "Group 7, Group 7",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 7s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 7s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 7s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 7s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 7s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 8",
+    "source": "Group 8, Group 8",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 8s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 8s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 8s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 8s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 8s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Figma Personal Access Token",
+    "source": "Figma Personal Access Token, Figma Personal Access Token",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/figma -personal -access -tokens"
+      },
+      {
+        "method": "GET",
+        "path": "/figma -personal -access -tokens/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/figma -personal -access -tokens"
+      },
+      {
+        "method": "PUT",
+        "path": "/figma -personal -access -tokens/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/figma -personal -access -tokens/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 9",
+    "source": "Group 9, Group 9",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 9s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 9s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 9s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 9s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 9s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "SharePoint Client ID",
+    "source": "SharePoint Client ID, SharePoint Client ID",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/share-point -client -i-ds"
+      },
+      {
+        "method": "GET",
+        "path": "/share-point -client -i-ds/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/share-point -client -i-ds"
+      },
+      {
+        "method": "PUT",
+        "path": "/share-point -client -i-ds/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/share-point -client -i-ds/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 14",
+    "source": "Group 14, Group 14",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 14s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 14s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 14s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 14s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 14s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "SharePoint Library Folder",
+    "source": "SharePoint Library Folder, SharePoint Library Folder",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/share-point -library -folders"
+      },
+      {
+        "method": "GET",
+        "path": "/share-point -library -folders/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/share-point -library -folders"
+      },
+      {
+        "method": "PUT",
+        "path": "/share-point -library -folders/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/share-point -library -folders/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 12",
+    "source": "Group 12, Group 12",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 12s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 12s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 12s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 12s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 12s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "SharePoint Site",
+    "source": "SharePoint Site, SharePoint Site",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/share-point -sites"
+      },
+      {
+        "method": "GET",
+        "path": "/share-point -sites/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/share-point -sites"
+      },
+      {
+        "method": "PUT",
+        "path": "/share-point -sites/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/share-point -sites/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 11",
+    "source": "Group 11, Group 11",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 11s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 11s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 11s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 11s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 11s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "SharePoint Tenant ID",
+    "source": "SharePoint Tenant ID, SharePoint Tenant ID",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/share-point -tenant -i-ds"
+      },
+      {
+        "method": "GET",
+        "path": "/share-point -tenant -i-ds/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/share-point -tenant -i-ds"
+      },
+      {
+        "method": "PUT",
+        "path": "/share-point -tenant -i-ds/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/share-point -tenant -i-ds/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 10",
+    "source": "Group 10, Group 10",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 10s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 10s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 10s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 10s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 10s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "SharePoint Client Secret",
+    "source": "SharePoint Client Secret, SharePoint Client Secret",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/share-point -client -secrets"
+      },
+      {
+        "method": "GET",
+        "path": "/share-point -client -secrets/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/share-point -client -secrets"
+      },
+      {
+        "method": "PUT",
+        "path": "/share-point -client -secrets/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/share-point -client -secrets/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 13",
+    "source": "Group 13, Group 13",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 13s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 13s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 13s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 13s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 13s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "SharePoint Path",
+    "source": "SharePoint Path, SharePoint Path",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/share-point -paths"
+      },
+      {
+        "method": "GET",
+        "path": "/share-point -paths/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/share-point -paths"
+      },
+      {
+        "method": "PUT",
+        "path": "/share-point -paths/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/share-point -paths/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 15",
+    "source": "Group 15, Group 15",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 15s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 15s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 15s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 15s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 15s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Mendix Repository Name",
+    "source": "Mendix Repository Name, Mendix Repository Name",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/mendix -repository -names"
+      },
+      {
+        "method": "GET",
+        "path": "/mendix -repository -names/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/mendix -repository -names"
+      },
+      {
+        "method": "PUT",
+        "path": "/mendix -repository -names/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/mendix -repository -names/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 16",
+    "source": "Group 16, Group 16",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 16s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 16s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 16s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 16s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 16s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Mendix Import Module Package Name",
+    "source": "Mendix Import Module Package Name, Mendix Import Module Package Name",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/mendix -import -module -package -names"
+      },
+      {
+        "method": "GET",
+        "path": "/mendix -import -module -package -names/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/mendix -import -module -package -names"
+      },
+      {
+        "method": "PUT",
+        "path": "/mendix -import -module -package -names/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/mendix -import -module -package -names/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Group 17",
+    "source": "Group 17, Group 17",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/group 17s"
+      },
+      {
+        "method": "GET",
+        "path": "/group 17s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/group 17s"
+      },
+      {
+        "method": "PUT",
+        "path": "/group 17s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/group 17s/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Mendix Personal Access Token",
+    "source": "Mendix Personal Access Token, Mendix Personal Access Token",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/mendix -personal -access -tokens"
+      },
+      {
+        "method": "GET",
+        "path": "/mendix -personal -access -tokens/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/mendix -personal -access -tokens"
+      },
+      {
+        "method": "PUT",
+        "path": "/mendix -personal -access -tokens/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/mendix -personal -access -tokens/:id"
+      }
+    ],
+    "confidence": 0.4
+  },
+  {
+    "name": "Frame 7",
+    "source": "Frame 7",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frame 7s"
+      },
+      {
+        "method": "GET",
+        "path": "/frame 7s/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/frame 7s"
+      },
+      {
+        "method": "PUT",
+        "path": "/frame 7s/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/frame 7s/:id"
+      }
+    ],
+    "confidence": 0.4
+  }
+]

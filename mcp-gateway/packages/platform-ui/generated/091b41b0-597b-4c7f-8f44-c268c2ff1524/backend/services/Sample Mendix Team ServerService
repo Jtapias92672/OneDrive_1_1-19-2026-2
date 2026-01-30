@@ -1,0 +1,27 @@
+import { PrismaClient, Sample Mendix Team Server } from '@prisma/client';
+
+export class Sample Mendix Team ServerService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Sample Mendix Team Server[]> {
+    return this.prisma.sample mendix team server.findMany();
+  }
+
+  async findById(id: string): Promise<Sample Mendix Team Server | null> {
+    return this.prisma.sample mendix team server.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Sample Mendix Team Server, 'id' | 'createdAt' | 'updatedAt'>): Promise<Sample Mendix Team Server> {
+    return this.prisma.sample mendix team server.create({ data });
+  }
+
+  async update(id: string, data: Partial<Sample Mendix Team Server>): Promise<Sample Mendix Team Server> {
+    return this.prisma.sample mendix team server.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.sample mendix team server.delete({ where: { id } });
+  }
+}
+
+export default Sample Mendix Team ServerService;

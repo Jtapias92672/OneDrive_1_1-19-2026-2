@@ -1,0 +1,27 @@
+import { PrismaClient, Mendix Repository Name } from '@prisma/client';
+
+export class Mendix Repository NameService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Mendix Repository Name[]> {
+    return this.prisma.mendix repository name.findMany();
+  }
+
+  async findById(id: string): Promise<Mendix Repository Name | null> {
+    return this.prisma.mendix repository name.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Mendix Repository Name, 'id' | 'createdAt' | 'updatedAt'>): Promise<Mendix Repository Name> {
+    return this.prisma.mendix repository name.create({ data });
+  }
+
+  async update(id: string, data: Partial<Mendix Repository Name>): Promise<Mendix Repository Name> {
+    return this.prisma.mendix repository name.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.mendix repository name.delete({ where: { id } });
+  }
+}
+
+export default Mendix Repository NameService;

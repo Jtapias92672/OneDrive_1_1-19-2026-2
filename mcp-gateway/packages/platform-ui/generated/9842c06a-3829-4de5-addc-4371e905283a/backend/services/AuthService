@@ -1,0 +1,27 @@
+import { PrismaClient, Auth } from '@prisma/client';
+
+export class AuthService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Auth[]> {
+    return this.prisma.auth.findMany();
+  }
+
+  async findById(id: string): Promise<Auth | null> {
+    return this.prisma.auth.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Auth, 'id' | 'createdAt' | 'updatedAt'>): Promise<Auth> {
+    return this.prisma.auth.create({ data });
+  }
+
+  async update(id: string, data: Partial<Auth>): Promise<Auth> {
+    return this.prisma.auth.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.auth.delete({ where: { id } });
+  }
+}
+
+export default AuthService;

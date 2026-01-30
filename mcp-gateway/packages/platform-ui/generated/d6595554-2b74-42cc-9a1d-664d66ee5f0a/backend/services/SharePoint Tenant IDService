@@ -1,0 +1,27 @@
+import { PrismaClient, SharePoint Tenant ID } from '@prisma/client';
+
+export class SharePoint Tenant IDService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<SharePoint Tenant ID[]> {
+    return this.prisma.sharepoint tenant id.findMany();
+  }
+
+  async findById(id: string): Promise<SharePoint Tenant ID | null> {
+    return this.prisma.sharepoint tenant id.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<SharePoint Tenant ID, 'id' | 'createdAt' | 'updatedAt'>): Promise<SharePoint Tenant ID> {
+    return this.prisma.sharepoint tenant id.create({ data });
+  }
+
+  async update(id: string, data: Partial<SharePoint Tenant ID>): Promise<SharePoint Tenant ID> {
+    return this.prisma.sharepoint tenant id.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.sharepoint tenant id.delete({ where: { id } });
+  }
+}
+
+export default SharePoint Tenant IDService;

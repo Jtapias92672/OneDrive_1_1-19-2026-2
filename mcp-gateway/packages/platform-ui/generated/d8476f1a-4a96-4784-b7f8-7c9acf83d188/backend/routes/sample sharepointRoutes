@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { Sample SharePointController } from '../controllers/sample sharepoint.controller';
+import { Sample SharePointService } from '../services/sample sharepoint.service';
+
+export function createSample SharePointRoutes(prisma: PrismaClient): Router {
+  const router = Router();
+  const service = new Sample SharePointService(prisma);
+  const controller = new Sample SharePointController(service);
+
+  router.get('/sample share-points', controller.getAll.bind(controller));
+  router.get('/sample share-points/:id', controller.getById.bind(controller));
+  router.post('/sample share-points', controller.create.bind(controller));
+  router.put('/sample share-points/:id', controller.update.bind(controller));
+  router.delete('/sample share-points/:id', controller.delete.bind(controller));
+
+  return router;
+}
+
+export default createSample SharePointRoutes;

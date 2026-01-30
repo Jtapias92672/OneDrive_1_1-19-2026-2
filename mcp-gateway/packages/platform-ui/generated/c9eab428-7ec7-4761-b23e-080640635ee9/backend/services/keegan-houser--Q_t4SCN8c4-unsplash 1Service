@@ -1,0 +1,27 @@
+import { PrismaClient, keegan-houser--Q_t4SCN8c4-unsplash 1 } from '@prisma/client';
+
+export class keegan-houser--Q_t4SCN8c4-unsplash 1Service {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<keegan-houser--Q_t4SCN8c4-unsplash 1[]> {
+    return this.prisma.keegan-houser--q_t4scn8c4-unsplash 1.findMany();
+  }
+
+  async findById(id: string): Promise<keegan-houser--Q_t4SCN8c4-unsplash 1 | null> {
+    return this.prisma.keegan-houser--q_t4scn8c4-unsplash 1.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<keegan-houser--Q_t4SCN8c4-unsplash 1, 'id' | 'createdAt' | 'updatedAt'>): Promise<keegan-houser--Q_t4SCN8c4-unsplash 1> {
+    return this.prisma.keegan-houser--q_t4scn8c4-unsplash 1.create({ data });
+  }
+
+  async update(id: string, data: Partial<keegan-houser--Q_t4SCN8c4-unsplash 1>): Promise<keegan-houser--Q_t4SCN8c4-unsplash 1> {
+    return this.prisma.keegan-houser--q_t4scn8c4-unsplash 1.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.keegan-houser--q_t4scn8c4-unsplash 1.delete({ where: { id } });
+  }
+}
+
+export default keegan-houser--Q_t4SCN8c4-unsplash 1Service;

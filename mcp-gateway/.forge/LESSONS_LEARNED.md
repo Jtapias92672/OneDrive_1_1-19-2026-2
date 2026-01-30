@@ -79,3 +79,107 @@ If session hits compaction:
 3. Generate handoff summary
 4. Fresh session for verification
 5. Document in LESSONS_LEARNED.md
+
+---
+
+## Epic 7.5 v2: Figma-HTML Image Rendering (2026-01-29)
+
+### What Happened
+- **Task:** Fix Figma images not rendering in generated HTML
+- **Duration:** ~4 hours, ~100 turns
+- **Token consumption:** ~120K
+- **Outcome:** ✅ Root cause identified via systematic analysis
+
+### Root Causes
+1. **Chased symptoms (20+ turns)** — "missing error components" message was React hydration failure, NOT missing files
+2. **Port mismatch undetected** — JavaScript bundles 404'd (port 3000 vs 3003), caused blank center section
+3. **Never validated fix** — Applied image enrichment code, assumed it worked, moved on
+4. **HTML generation fallback** — `generateHTMLFile()` line 1283 bypasses `renderComponentTree()` when `original=undefined`
+
+### Critical Mistakes
+
+| Mistake | Impact | Turns Wasted |
+|---------|--------|--------------|
+| Didn't check browser Console FIRST | Created unnecessary error boundaries | 20 |
+| Assumed build success = fix works | Original problem remained unsolved entire session | N/A |
+| Reacted to symptom not cause | Created files that didn't fix anything | 15 |
+
+### What Went Right
+1. **User intervention** — "STOP and run Epic 7.5 v2" broke fixation loop
+2. **Smoke tests** — Proved orchestrator logic was sound, narrowed search to Next.js app
+3. **Plan Mode + 3 Explore agents** — Found root cause in 15 minutes via systematic exploration
+4. **Hypothesis validation** — Systematically invalidated Options A, B, C with evidence
+
+### Lessons
+
+| Lesson | Rule | Application |
+|--------|------|-------------|
+| Browser Console is ground truth | Check Console FIRST before any code changes | All Next.js/React debugging |
+| End-to-end validation mandatory | Build → RUN FEATURE → Inspect Output → Verify | After EVERY fix, not just build |
+| Port mismatch symptoms | 404s on /_next/static/chunks → check port | Next.js dev server issues |
+| Symptoms ≠ Root Cause | Error message may be diagnostic, not literal | Use evidence-based debugging |
+| Plan Mode for stuck loops | If same action 3x → STOP → Plan Mode → Explore | When fixated on wrong path |
+
+### Prevention Checklist (Next.js Debugging)
+
+Before changing any code:
+- [ ] Check browser Console (F12) for actual JavaScript errors
+- [ ] Check Network tab for 404s or failed requests
+- [ ] Identify error type: build/runtime/network/port
+- [ ] THEN diagnose code based on evidence
+
+After applying ANY fix:
+- [ ] Build succeeds
+- [ ] Tests pass
+- [ ] **RUN actual feature in browser** ← MANDATORY
+- [ ] Inspect output (HTML, Console logs)
+- [ ] Take screenshot as proof
+- [ ] ONLY THEN claim success
+
+### Technical Findings
+
+**Image Rendering Pipeline (Validated as Working):**
+```
+Figma API → FigmaParser → collectImageRefs → fetchImagesFromFigma →
+enrichComponentsWithImageUrls → renderComponentTree → HTML
+```
+
+**Actual Problem:** HTML generation bypasses pipeline
+```typescript
+// orchestrator.ts:1283
+${original ? this.renderComponentTree(original) : `<div>${component.name}</div>`}
+// When original=undefined → plain text fallback
+```
+
+**Fix:** Use enriched `component` parameter:
+```typescript
+${this.renderComponentTree(component)}
+```
+
+### Token Budget Analysis
+
+| Phase | Tokens | Notes |
+|-------|--------|-------|
+| Image fixes (wasted) | ~10K | Applied but never validated |
+| Error boundaries (wasted) | ~30K | Chasing symptom not cause |
+| Port mismatch diagnosis | ~10K | Trial and error |
+| Plan Mode + Explore | ~15K | Systematic root cause analysis |
+| Documentation | ~20K | This entry + plan file |
+| **Total** | ~120K | 40K wasted on wrong path |
+
+**Lesson:** 33% of tokens wasted by not checking browser Console first
+
+### Updated Recovery Protocol
+
+When stuck (same action 3+ times):
+1. STOP current approach
+2. Run smoke tests to validate core logic
+3. Enter Plan Mode
+4. Launch Explore agents (max 3 parallel)
+5. Systematic hypothesis validation
+6. Document findings before implementing
+
+### Related Documentation
+- Plan file: `.claude/plans/noble-toasting-boole.md`
+- Root cause: `orchestrator.ts:1283` fallback bypass
+- Fix: One-line change to use enriched component

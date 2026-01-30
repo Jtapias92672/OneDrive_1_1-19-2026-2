@@ -1,0 +1,27 @@
+import { PrismaClient, No account, register here. } from '@prisma/client';
+
+export class No account, register here.Service {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<No account, register here.[]> {
+    return this.prisma.no account, register here..findMany();
+  }
+
+  async findById(id: string): Promise<No account, register here. | null> {
+    return this.prisma.no account, register here..findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<No account, register here., 'id' | 'createdAt' | 'updatedAt'>): Promise<No account, register here.> {
+    return this.prisma.no account, register here..create({ data });
+  }
+
+  async update(id: string, data: Partial<No account, register here.>): Promise<No account, register here.> {
+    return this.prisma.no account, register here..update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.no account, register here..delete({ where: { id } });
+  }
+}
+
+export default No account, register here.Service;

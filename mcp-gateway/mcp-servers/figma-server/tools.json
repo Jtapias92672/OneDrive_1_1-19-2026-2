@@ -1,0 +1,101 @@
+{
+  "tools": [
+    {
+      "name": "figma_getFile",
+      "description": "Get Figma file design data including document structure, components, and styles",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "fileKey": {
+            "type": "string",
+            "description": "Figma file key (from URL: figma.com/file/{fileKey}/...)"
+          },
+          "version": {
+            "type": "string",
+            "description": "Optional: Specific version ID to retrieve"
+          },
+          "depth": {
+            "type": "number",
+            "description": "Optional: How many levels of the document tree to return"
+          }
+        },
+        "required": ["fileKey"]
+      }
+    },
+    {
+      "name": "figma_getFileNodes",
+      "description": "Get specific nodes from a Figma file by their IDs",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "fileKey": {
+            "type": "string",
+            "description": "Figma file key"
+          },
+          "ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Array of node IDs to retrieve"
+          }
+        },
+        "required": ["fileKey", "ids"]
+      }
+    },
+    {
+      "name": "figma_getImages",
+      "description": "Get rendered images for specific nodes in a Figma file",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "fileKey": {
+            "type": "string",
+            "description": "Figma file key"
+          },
+          "ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Array of node IDs to render as images"
+          },
+          "format": {
+            "type": "string",
+            "enum": ["jpg", "png", "svg", "pdf"],
+            "description": "Image format (default: png)"
+          },
+          "scale": {
+            "type": "number",
+            "description": "Scaling factor (1-4, default: 1)"
+          }
+        },
+        "required": ["fileKey", "ids"]
+      }
+    },
+    {
+      "name": "figma_getTeamProjects",
+      "description": "List all projects in a Figma team",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "description": "Figma team ID"
+          }
+        },
+        "required": ["teamId"]
+      }
+    },
+    {
+      "name": "figma_getProjectFiles",
+      "description": "List all files in a Figma project",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "description": "Figma project ID"
+          }
+        },
+        "required": ["projectId"]
+      }
+    }
+  ]
+}

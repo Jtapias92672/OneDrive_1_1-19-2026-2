@@ -1,0 +1,27 @@
+import { PrismaClient, Star } from '@prisma/client';
+
+export class StarService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Star[]> {
+    return this.prisma.star.findMany();
+  }
+
+  async findById(id: string): Promise<Star | null> {
+    return this.prisma.star.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Star, 'id' | 'createdAt' | 'updatedAt'>): Promise<Star> {
+    return this.prisma.star.create({ data });
+  }
+
+  async update(id: string, data: Partial<Star>): Promise<Star> {
+    return this.prisma.star.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.star.delete({ where: { id } });
+  }
+}
+
+export default StarService;

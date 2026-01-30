@@ -1,0 +1,27 @@
+import { PrismaClient, Mendix Personal Access Token } from '@prisma/client';
+
+export class Mendix Personal Access TokenService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Mendix Personal Access Token[]> {
+    return this.prisma.mendix personal access token.findMany();
+  }
+
+  async findById(id: string): Promise<Mendix Personal Access Token | null> {
+    return this.prisma.mendix personal access token.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Mendix Personal Access Token, 'id' | 'createdAt' | 'updatedAt'>): Promise<Mendix Personal Access Token> {
+    return this.prisma.mendix personal access token.create({ data });
+  }
+
+  async update(id: string, data: Partial<Mendix Personal Access Token>): Promise<Mendix Personal Access Token> {
+    return this.prisma.mendix personal access token.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.mendix personal access token.delete({ where: { id } });
+  }
+}
+
+export default Mendix Personal Access TokenService;

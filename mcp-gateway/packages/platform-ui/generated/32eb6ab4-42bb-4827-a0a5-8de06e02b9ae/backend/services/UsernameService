@@ -1,0 +1,27 @@
+import { PrismaClient, Username } from '@prisma/client';
+
+export class UsernameService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Username[]> {
+    return this.prisma.username.findMany();
+  }
+
+  async findById(id: string): Promise<Username | null> {
+    return this.prisma.username.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Username, 'id' | 'createdAt' | 'updatedAt'>): Promise<Username> {
+    return this.prisma.username.create({ data });
+  }
+
+  async update(id: string, data: Partial<Username>): Promise<Username> {
+    return this.prisma.username.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.username.delete({ where: { id } });
+  }
+}
+
+export default UsernameService;

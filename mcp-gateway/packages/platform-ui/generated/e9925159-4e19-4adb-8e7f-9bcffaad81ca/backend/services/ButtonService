@@ -1,0 +1,27 @@
+import { PrismaClient, Button } from '@prisma/client';
+
+export class ButtonService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Button[]> {
+    return this.prisma.button.findMany();
+  }
+
+  async findById(id: string): Promise<Button | null> {
+    return this.prisma.button.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Button, 'id' | 'createdAt' | 'updatedAt'>): Promise<Button> {
+    return this.prisma.button.create({ data });
+  }
+
+  async update(id: string, data: Partial<Button>): Promise<Button> {
+    return this.prisma.button.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.button.delete({ where: { id } });
+  }
+}
+
+export default ButtonService;

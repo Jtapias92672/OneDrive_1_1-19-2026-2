@@ -1,0 +1,77 @@
+{
+  "timestamp": "2026-01-27T21:13:18.700Z",
+  "duration": "0.96s",
+  "success": true,
+  "source": {
+    "fileKey": "6GefaVgI8xnuDIHhSbfzsJ",
+    "fileName": "POC_Test_Design",
+    "lastModified": "2026-01-27T19:31:45Z"
+  },
+  "output": {
+    "reactComponents": 7,
+    "mendixPages": 7,
+    "mendixWidgets": 7,
+    "scssLines": 3635
+  },
+  "results": [
+    {
+      "step": "Figma API",
+      "success": true,
+      "message": "Retrieved \"POC_Test_Design\"",
+      "details": [
+        "Last modified: 2026-01-27T19:31:45Z"
+      ]
+    },
+    {
+      "step": "FigmaParser",
+      "success": true,
+      "message": "Parsed 7 components",
+      "details": [
+        "Fills: 253",
+        "Text: 76",
+        "Auto-layout: 12"
+      ]
+    },
+    {
+      "step": "ReactGenerator",
+      "success": true,
+      "message": "Generated 7 components",
+      "details": [
+        "Frame1.tsx",
+        "Frame2.tsx",
+        "Frame3.tsx",
+        "Frame4.tsx",
+        "Frame5.tsx",
+        "Frame6.tsx",
+        "Frame7.tsx"
+      ]
+    },
+    {
+      "step": "MendixGenerator",
+      "success": true,
+      "message": "Generated 7 pages, 7 widgets",
+      "details": [
+        "pages/Frame1.page.xml",
+        "pages/Frame2.page.xml",
+        "pages/Frame3.page.xml",
+        "pages/Frame4.page.xml",
+        "pages/Frame5.page.xml",
+        "pages/Frame6.page.xml",
+        "pages/Frame7.page.xml",
+        "widgets/Frame1.widget.xml",
+        "widgets/Frame2.widget.xml",
+        "widgets/Frame3.widget.xml"
+      ]
+    },
+    {
+      "step": "Verification",
+      "success": true,
+      "message": "All outputs valid",
+      "details": [
+        "React: 7/7 valid",
+        "Mendix: 7/7 valid",
+        "SCSS: 3635 lines"
+      ]
+    }
+  ]
+}

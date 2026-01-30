@@ -1,0 +1,56 @@
+{
+  "tools": [
+    {
+      "name": "wolfram_query",
+      "description": "Query Wolfram Alpha computational engine for mathematical, scientific, or factual information",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "string",
+            "description": "Query string (e.g., 'speed of light', '2+2', 'solve x^2 + 3x - 4 = 0')"
+          },
+          "units": {
+            "type": "string",
+            "description": "Optional: Unit system ('metric' or 'imperial')"
+          },
+          "timeout": {
+            "type": "number",
+            "description": "Optional: Request timeout in milliseconds (default: 30000)"
+          }
+        },
+        "required": ["input"]
+      }
+    },
+    {
+      "name": "wolfram_validate",
+      "description": "Validate a detected claim using Wolfram Alpha computational accuracy verification",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "object",
+            "description": "Detected claim object with text and category",
+            "properties": {
+              "text": {
+                "type": "string",
+                "description": "The claim text to validate"
+              },
+              "category": {
+                "type": "string",
+                "enum": ["MATHEMATICAL", "SCIENTIFIC", "FACTUAL", "TEMPORAL"],
+                "description": "Category of claim"
+              },
+              "confidence": {
+                "type": "number",
+                "description": "Detection confidence (0-1)"
+              }
+            },
+            "required": ["text", "category"]
+          }
+        },
+        "required": ["claim"]
+      }
+    }
+  ]
+}

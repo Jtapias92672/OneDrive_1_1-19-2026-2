@@ -1,0 +1,70 @@
+{
+  "runId": "d361fe23-7e12-4467-a579-7e14f9ae654c",
+  "status": "initializing",
+  "sourceType": "figma",
+  "sourceId": "6GefaVgI8xnuDIHhSbfzsJ",
+  "sourceName": "POC_Test_Design",
+  "generatedAt": "2026-01-29T19:33:25.766Z",
+  "summary": {
+    "frontendComponents": 7,
+    "backendControllers": 7,
+    "backendServices": 7,
+    "backendModels": 7,
+    "inferredModels": 7,
+    "tests": 0,
+    "htmlFiles": 9
+  },
+  "files": {
+    "react": [
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/react/components/Frame1.tsx",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/react/components/Frame2.tsx",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/react/components/Frame3.tsx",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/react/components/Frame4.tsx",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/react/components/Frame5.tsx",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/react/components/Frame6.tsx",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/react/components/Frame7.tsx"
+    ],
+    "html": [
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/html/design.html",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/html/Frame1.html",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/html/Frame2.html",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/html/Frame3.html",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/html/Frame4.html",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/html/Frame5.html",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/html/Frame6.html",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/html/Frame7.html",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/html/index.html"
+    ],
+    "backend": [
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/controllers/Frame 1Controller",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/controllers/Frame 2Controller",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/controllers/Frame 3Controller",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/controllers/Frame 4Controller",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/controllers/Frame 5Controller",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/controllers/Frame 6Controller",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/controllers/Frame 7Controller",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/services/Frame 1Service",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/services/Frame 2Service",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/services/Frame 3Service",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/services/Frame 4Service",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/services/Frame 5Service",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/services/Frame 6Service",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/services/Frame 7Service",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/models/Frame 1Model",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/models/Frame 2Model",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/models/Frame 3Model",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/models/Frame 4Model",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/models/Frame 5Model",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/models/Frame 6Model",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/models/Frame 7Model",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/routes/frame 1Routes",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/routes/frame 2Routes",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/routes/frame 3Routes",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/routes/frame 4Routes",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/routes/frame 5Routes",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/routes/frame 6Routes",
+      "generated/d361fe23-7e12-4467-a579-7e14f9ae654c/backend/routes/frame 7Routes"
+    ],
+    "tests": []
+  }
+}

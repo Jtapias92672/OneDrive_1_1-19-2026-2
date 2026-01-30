@@ -1,0 +1,27 @@
+import { PrismaClient, Translation Projects } from '@prisma/client';
+
+export class Translation ProjectsService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Translation Projects[]> {
+    return this.prisma.translation projects.findMany();
+  }
+
+  async findById(id: string): Promise<Translation Projects | null> {
+    return this.prisma.translation projects.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Translation Projects, 'id' | 'createdAt' | 'updatedAt'>): Promise<Translation Projects> {
+    return this.prisma.translation projects.create({ data });
+  }
+
+  async update(id: string, data: Partial<Translation Projects>): Promise<Translation Projects> {
+    return this.prisma.translation projects.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.translation projects.delete({ where: { id } });
+  }
+}
+
+export default Translation ProjectsService;

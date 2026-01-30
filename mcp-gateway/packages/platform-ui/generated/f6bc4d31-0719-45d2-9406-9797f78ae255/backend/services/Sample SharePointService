@@ -1,0 +1,27 @@
+import { PrismaClient, Sample SharePoint } from '@prisma/client';
+
+export class Sample SharePointService {
+  constructor(private prisma: PrismaClient) {}
+
+  async findAll(): Promise<Sample SharePoint[]> {
+    return this.prisma.sample sharepoint.findMany();
+  }
+
+  async findById(id: string): Promise<Sample SharePoint | null> {
+    return this.prisma.sample sharepoint.findUnique({ where: { id } });
+  }
+
+  async create(data: Omit<Sample SharePoint, 'id' | 'createdAt' | 'updatedAt'>): Promise<Sample SharePoint> {
+    return this.prisma.sample sharepoint.create({ data });
+  }
+
+  async update(id: string, data: Partial<Sample SharePoint>): Promise<Sample SharePoint> {
+    return this.prisma.sample sharepoint.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.sample sharepoint.delete({ where: { id } });
+  }
+}
+
+export default Sample SharePointService;
