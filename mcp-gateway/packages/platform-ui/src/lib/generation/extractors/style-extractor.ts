@@ -148,8 +148,8 @@ export class StyleExtractor {
     const fills = component.fills;
     if (!fills || fills.length === 0) return null;
 
-    const imageFill = fills.find(f => f.type === 'IMAGE' && (f as any).imageUrl);
-    return imageFill ? (imageFill as any).imageUrl : null;
+    const imageFill = fills.find(f => f.type === 'IMAGE' && f.imageUrl);
+    return imageFill?.imageUrl ?? null;
   }
 
   /**

@@ -58,7 +58,7 @@ export class ImageResolver {
   hasImageFill(component: ParsedComponent): boolean {
     if (!component.fills || component.fills.length === 0) return false;
 
-    return component.fills.some(f => f.type === 'IMAGE' && (f as any).imageUrl);
+    return component.fills.some(f => f.type === 'IMAGE' && f.imageUrl);
   }
 
   /**
@@ -76,9 +76,9 @@ export class ImageResolver {
 
     // 2. Check IMAGE fills
     if (component.fills && component.fills.length > 0) {
-      const imageFill = component.fills.find(f => f.type === 'IMAGE' && (f as any).imageUrl);
-      if (imageFill) {
-        return (imageFill as any).imageUrl;
+      const imageFill = component.fills.find(f => f.type === 'IMAGE' && f.imageUrl);
+      if (imageFill?.imageUrl) {
+        return imageFill.imageUrl;
       }
     }
 

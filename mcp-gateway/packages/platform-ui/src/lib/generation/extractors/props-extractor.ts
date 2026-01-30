@@ -41,7 +41,7 @@ export class PropsExtractor {
         type: p.type,
         required: p.required,
         defaultValue: p.defaultValue,
-        description: p.description,
+        description: undefined, // ComponentProp doesn't have description field
       }));
     }
 

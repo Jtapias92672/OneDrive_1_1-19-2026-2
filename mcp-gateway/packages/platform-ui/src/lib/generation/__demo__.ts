@@ -25,7 +25,7 @@ const mockComponent: ParsedComponent = {
     fontFamily: 'Inter',
     fontSize: 16,
     fontWeight: 500,
-    textAlign: 'center',
+    textAlign: 'CENTER',
   },
   fills: [
     {

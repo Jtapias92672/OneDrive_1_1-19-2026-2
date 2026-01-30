@@ -3,6 +3,8 @@
  * Epic: Figma → Jira → Full Stack Code → Test → Deploy → Close
  */
 
+import type { ParsedFill, ParsedStroke, ParsedText } from '../../integrations/figma/parsed-types';
+
 // =============================================================================
 // Configuration Types
 // =============================================================================
@@ -103,9 +105,9 @@ export interface ParsedComponent {
   children?: string[] | ParsedComponent[]; // Child IDs or nested components
   styles: ComponentStyles;
   bounds?: { x: number; y: number; width: number; height: number };
-  text?: { content: string; fontFamily: string; fontSize: number; textAlign: string; fontWeight?: number; lineHeight?: number };
-  fills?: Array<{ type: string; color?: { r: number; g: number; b: number; a: number }; opacity: number }>;
-  strokes?: Array<{ type: string; color?: { r: number; g: number; b: number; a: number }; weight?: number }>; // For borders/strokes
+  text?: ParsedText; // Proper type with all text properties
+  fills?: ParsedFill[]; // Proper type with imageRef, imageUrl, scaleMode
+  strokes?: ParsedStroke[]; // Proper type with alignment
   imageUrl?: string; // For IMAGE nodes
 }
 
