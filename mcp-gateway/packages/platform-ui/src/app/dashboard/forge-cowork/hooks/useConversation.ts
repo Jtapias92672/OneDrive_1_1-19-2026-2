@@ -80,9 +80,9 @@ const initialOptions: POCOptions = {
   sourceUrl: '',
   generateComponents: true,
   generateTests: true,
-  generateStories: false,
+  generateStories: true,  // ✅ Now enabled by default
   generateApi: true,
-  generateHtml: false,
+  generateHtml: true,     // ✅ Now enabled by default
 };
 
 function generateId(): string {
