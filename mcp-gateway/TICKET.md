@@ -1,11 +1,11 @@
 # TICKET.md — Session Handoff
 
 ## Last Session
-- **Date:** 2026-01-30 (Full Day + Continued Session)
+- **Date:** 2026-01-30 (Full Day - Session Complete)
 - **Platform:** Claude Code
-- **Tokens:** ~105K / 200K (all 7 phases + validation + 2 root cause fixes)
-- **Status:** 🎉 ALL PHASES COMPLETE + ROOT CAUSE FIXES 🎉
-- **Commits:**
+- **Tokens:** ~110K / 200K (ready for fresh session)
+- **Status:** 🎉 PRIORITY 1 & 2 COMPLETE - READY FOR PRIORITY 3 🎉
+- **Commits:** 14 total
   - 990120e: Priority 1 complete (enable all defaults)
   - dec579c: Phase 0 complete (skills setup)
   - ff528a8: Phase 1 complete (extractors)
@@ -20,6 +20,38 @@
   - 0380d18: Root cause fix #1 (mock data structure)
   - 85bb60c: TICKET.md root cause analysis
   - b2ea4cc: Root cause fix #2 (type safety - ParsedFill)
+  - 94bc883: TICKET.md type safety documentation
+
+---
+
+## 🎯 NEXT SESSION: Priority 3 - MCP Infrastructure (Security-Critical)
+
+**Why This is Next:**
+- ⚠️ **SECURITY RISK:** All Figma API calls currently bypass security controls
+- No OAuth validation, no audit logging, no tenant isolation
+- Architectural foundation for production deployment
+- Marked as Priority 3 (higher than generator testing)
+
+**Session Plan:**
+1. **Start Fresh Session** (current: 110K tokens used)
+2. **Read Context:** TICKET.md, CLAUDE.md, MCP files
+3. **Use Plan Mode** for Phase 3A (Architecture Review)
+4. **Load Skills:** Software Engineering, Architectural Entropy Detector
+5. **Deliverable:** MCP Infrastructure architecture plan
+
+**First Action:**
+```bash
+# Load MCP Infrastructure context
+cat packages/gateway/src/core/MCPGateway.ts
+cat .mcp.json
+cat src/app/api/poc/run/route.ts
+```
+
+**Questions to Answer:**
+- How is MCP currently configured?
+- What security controls exist but are disabled?
+- What's the path to enable MCP in production?
+- What testing strategy ensures it works?
 
 ---
 
@@ -262,8 +294,21 @@
 
 ---
 
-### Priority 1: Default Output Options ✅ COMPLETE
+## Priority Status Summary
+
+### ✅ Priority 1: Default Output Options - COMPLETE
 **Status:** All checkboxes now default to true (990120e)
+
+### ✅ Priority 2: Unified Generation Architecture - COMPLETE
+**Status:** All 7 phases complete, validated, root causes fixed
+- Phase 0-6: Skills, Extractors, Generators, RenderEngine
+- 45 smoke tests passing
+- 2 root cause fixes applied (mock data + type safety)
+- **Optional:** Generator testing with real Figma files (deferred to Priority 2.1)
+
+### 🚨 Priority 3: MCP Infrastructure - NEXT SESSION (Security-Critical)
+**Status:** Ready to start - requires fresh session
+**Why Critical:** All API calls bypass security (no OAuth, audit, tenant isolation)
 
 ### Priority 2: Plan Mode Analysis - Structure for Components/Tests/API
 **Task:** Use Plan Mode + Software Engineering Skills to design architecture
