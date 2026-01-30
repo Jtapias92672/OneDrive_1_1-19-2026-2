@@ -55,6 +55,7 @@ export class TextExtractor {
    * A component is considered a text node if:
    * - type is 'text', OR
    * - has text content and no children (leaf text node)
+   * - BUT NOT if it's an interactive element (button, input, etc.)
    *
    * @param component - ParsedComponent
    * @returns true if component is a text node
@@ -63,6 +64,12 @@ export class TextExtractor {
     // Explicit text type
     if (component.type === 'text') {
       return true;
+    }
+
+    // Interactive elements are never text nodes
+    const interactiveTypes = ['button', 'input', 'form', 'link'];
+    if (interactiveTypes.includes(component.type)) {
+      return false;
     }
 
     // Has text content and no children (leaf text node)
