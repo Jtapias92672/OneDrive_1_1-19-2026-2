@@ -1,56 +1,96 @@
 # TICKET.md — Session Handoff
 
 ## Last Session
-- **Date:** 2026-01-29 (End of Day)
+- **Date:** 2026-01-30
 - **Platform:** Claude Code
-- **Commit:** e20e411 fix(forge): Figma-HTML rendering pipeline complete
+- **Commits:**
+  - 990120e: Priority 1 complete (enable all defaults)
+  - dec579c: Phase 0 complete (skills setup)
+  - ff528a8: Phase 1 complete (extractors)
+  - f8bc54f: Phase 2 complete (ReactGenerator)
 
 ---
 
 ## Completed Today ✅
 
-### Figma-HTML Rendering Pipeline
-- [x] Logo rendering (vector container pattern)
-- [x] Ghost image fix (empty icons hidden)
-- [x] Text wrapping fix (nowrap + overflow visible)
-- [x] Text alignment fix (text-align on container)
-- [x] SVG format for vectors
-- [x] MCP infrastructure analysis
+### Priority 1: Default Output Options ✅
+- [x] Enabled all generation options as default (990120e)
+- [x] Tests checkbox now default true
+- [x] Storybook Stories checkbox now default true
+- [x] HTML Files checkbox now default true
 
-### Visual Verification
-- [x] Logo clean and sharp (SVG)
-- [x] Buttons without borders
-- [x] Form labels on single line
-- [x] Text properly aligned
-- [x] Background images working
+### Priority 2: Unified Generation Architecture (Phases 0-2) ✅
+
+**Phase 0: Skills Setup (dec579c)**
+- [x] Created `.forge/skills/` directory
+- [x] Copied React Best Practices (80KB from Vercel)
+- [x] Created forge-vector-containers.md (codified logo fix)
+- [x] Created forge-hierarchy-preservation.md (codified recursive pattern)
+- [x] Created forge-architectural-entropy.md (duplication detector)
+- [x] Created MANIFEST.md (skill registry)
+
+**Phase 1: Extraction Layer (ff528a8)**
+- [x] Created `src/lib/generation/extractors/` directory
+- [x] StyleExtractor: fills/strokes/effects → CSS
+- [x] ImageResolver: vector containers, imageUrl resolution
+- [x] LayoutCalculator: relative bounds, flex inference
+- [x] TextExtractor: text content + typography
+- [x] PropsExtractor: infer React props (type-safe)
+- [x] All extractors compiled and tested
+
+**Phase 2: React Generator (f8bc54f)**
+- [x] Created `src/lib/generation/generators/react-generator.ts` (370 lines)
+- [x] ReactGenerator uses all extractors
+- [x] Generates components with actual bounds (layout)
+- [x] Generates components with actual colors (fills)
+- [x] Generates components with actual text (typography)
+- [x] Generates components with actual images (<Image>)
+- [x] Generates components with actual hierarchy (recursive JSX)
+- [x] Added feature flag: `useNewReactGenerator`
+- [x] Orchestrator modified to use new generator when flag enabled
+- [x] TypeScript compilation verified
 
 ---
 
-## Key Lessons Learned (2026-01-29)
+## Key Lessons Learned (2026-01-30)
 
 | Lesson | Evidence |
 |--------|----------|
-| Browser Console = ground truth | Found port mismatch in DevTools, not logs |
-| MCP agents save time | Cut diagnosis from 40K tokens to 15 min |
-| Vector containers > fragments | Render parent as single image |
-| Empty icons need hiding | opacity: 0 prevents ghost images |
-| Text needs nowrap | Prevents label wrapping over fields |
+| Token management critical | Hit 68K tokens at Phase 2 completion - fresh session needed |
+| Major milestones = restart time | Phases are natural checkpoint boundaries |
+| Extractors prevent duplication | Single source prevents architectural entropy |
+| Feature flags enable safe rollout | Old generator still works (backward compatible) |
+| Skills guide implementation | React Best Practices shaped ReactGenerator design |
 
 ---
 
 ## Next Session Must
 
-### Priority 1: Default Output Options (UI Update)
-**Task:** Enable all generation options as default in Forge UI
-- [x] React Components (already enabled)
-- [ ] Tests (add as default)
-- [ ] Storybook Stories (add as default)
-- [ ] API Endpoints (add as default)
-- [x] HTML Files (already enabled)
+### Priority 2: Phase 3 - Test Generator (Week 3)
+**Task:** Implement TestGenerator with real assertions
+
+**Requirements:**
+1. Create `src/lib/generation/generators/test-generator.ts` (250 lines)
+2. Generate tests that verify:
+   - Props (type safety, required/optional)
+   - Visual styles (colors, layout, typography)
+   - Interactions (onClick, onChange handlers)
+   - Text content (actual rendered text)
+3. Add feature flag: `useNewTestGenerator`
+4. Modify orchestrator to use new generator when flag enabled
+5. Run generated tests, verify >95% pass rate
 
 **Files to modify:**
-- UI component with checkboxes (screenshot shows all 5 options checked)
-- Default state should have all options selected
+- New: `src/lib/generation/generators/test-generator.ts`
+- Modify: `src/lib/poc/orchestrator.ts` (lines 1187-1210)
+- Modify: `src/lib/poc/types/index.ts` (add `useNewTestGenerator` flag)
+
+**Skills to apply:**
+- react-best-practices.md: Testing best practices
+- forge-architectural-entropy.md: Use shared extractors
+
+### Priority 1: Default Output Options ✅ COMPLETE
+**Status:** All checkboxes now default to true (990120e)
 
 ### Priority 2: Plan Mode Analysis - Structure for Components/Tests/API
 **Task:** Use Plan Mode + Software Engineering Skills to design architecture
