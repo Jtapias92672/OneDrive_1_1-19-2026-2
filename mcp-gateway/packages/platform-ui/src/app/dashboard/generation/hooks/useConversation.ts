@@ -253,7 +253,7 @@ export function useConversation(): UseConversationReturn {
             content: 'What should I generate?',
             options: ['React Components', 'Tests', 'Storybook Stories', 'API Endpoints', 'HTML Files'],
             multiSelect: true,
-            selectedOptions: ['React Components', 'Tests', 'API Endpoints'],
+            selectedOptions: ['React Components', 'Tests', 'Storybook Stories', 'API Endpoints', 'HTML Files'],
           });
           setState('config');
         }, 300);
