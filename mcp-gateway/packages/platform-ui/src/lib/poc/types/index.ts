@@ -61,6 +61,8 @@ export interface POCRunOptions {
   useNewReactGenerator?: boolean;
   /** Use new TestGenerator with real assertions (Phase 3) (default: false) */
   useNewTestGenerator?: boolean;
+  /** Use new StorybookGenerator with design variants (Phase 4) (default: false) */
+  useNewStorybookGenerator?: boolean;
 }
 
 // =============================================================================

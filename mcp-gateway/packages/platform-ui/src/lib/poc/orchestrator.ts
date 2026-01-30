@@ -54,7 +54,7 @@ import { APITestGenerator } from './test-generators/api-test-generator';
 import { VercelClient } from '../integrations/vercel/vercel-client';
 import { JiraClient } from '../integrations/jira/jira-client';
 import type { JiraDescription } from '../integrations/jira/jira-types';
-import { ReactGenerator, TestGenerator } from '../generation/generators';
+import { ReactGenerator, TestGenerator, StorybookGenerator } from '../generation/generators';
 
 // =============================================================================
 // Orchestrator Class
@@ -1124,17 +1124,19 @@ export class ForgePOCOrchestrator {
    */
   async generateFrontend(
     components: ParsedComponent[],
-    options?: { generateTests?: boolean; generateStories?: boolean; useNewReactGenerator?: boolean; useNewTestGenerator?: boolean }
+    options?: { generateTests?: boolean; generateStories?: boolean; useNewReactGenerator?: boolean; useNewTestGenerator?: boolean; useNewStorybookGenerator?: boolean }
   ): Promise<GeneratedComponent[]> {
     const generated: GeneratedComponent[] = [];
 
     // Check if new generators should be used
     const useNewReactGen = options?.useNewReactGenerator === true;
     const useNewTestGen = options?.useNewTestGenerator === true;
+    const useNewStoryGen = options?.useNewStorybookGenerator === true;
 
     // Initialize new generators if enabled
     const reactGenerator = useNewReactGen ? new ReactGenerator() : null;
     const testGenerator = useNewTestGen ? new TestGenerator() : null;
+    const storybookGenerator = useNewStoryGen ? new StorybookGenerator() : null;
 
     for (const component of components) {
       const componentName = this.toPascalCase(component.name);
@@ -1152,9 +1154,11 @@ export class ForgePOCOrchestrator {
             : this.generateComponentTest(componentName))
         : undefined;
 
-      // Generate Storybook story if requested
+      // Generate Storybook story if requested (Phase 4)
       const storyCode = options?.generateStories !== false
-        ? this.generateStory(componentName)
+        ? (storybookGenerator
+            ? storybookGenerator.generateStory(component, componentName)
+            : this.generateStory(componentName))
         : undefined;
 
       generated.push({

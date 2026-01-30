@@ -14,3 +14,6 @@ export type { ReactGeneratorOptions } from './react-generator';
 
 export { TestGenerator } from './test-generator';
 export type { TestGeneratorOptions } from './test-generator';
+
+export { StorybookGenerator } from './storybook-generator';
+export type { StorybookGeneratorOptions } from './storybook-generator';
