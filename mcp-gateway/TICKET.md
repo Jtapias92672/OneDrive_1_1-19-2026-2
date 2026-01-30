@@ -1,10 +1,10 @@
 # TICKET.md — Session Handoff
 
 ## Last Session
-- **Date:** 2026-01-30 (Full Day)
+- **Date:** 2026-01-30 (Full Day + Continued Session)
 - **Platform:** Claude Code
-- **Tokens:** 110K / 200K (all 7 phases complete + validation)
-- **Status:** 🎉 ALL PHASES COMPLETE + VALIDATED 🎉
+- **Tokens:** ~86K / 200K (all 7 phases + validation + proper fixes)
+- **Status:** 🎉 ALL PHASES COMPLETE + ROOT CAUSE FIXES 🎉
 - **Commits:**
   - 990120e: Priority 1 complete (enable all defaults)
   - dec579c: Phase 0 complete (skills setup)
@@ -15,7 +15,9 @@
   - a24d930: Phase 5 complete (HTMLGenerator)
   - 49e382b: Phase 6 complete (RenderEngine)
   - a7335bc: Validation complete (demo + test plan)
-  - 1b98bc4: Fix TextExtractor.isTextNode() (all smoke tests passing)
+  - 1b98bc4: ~~Band-aid fix~~ (superseded by 0380d18)
+  - 03e2d75: TICKET.md update
+  - 0380d18: Root cause fix (mock data + PropsExtractor + type conversion)
 
 ---
 
@@ -151,11 +153,22 @@
 8. 49e382b - Phase 6 (RenderEngine) ✅
 9. a7335bc - Validation artifacts (demo + test plan) ✅
 
-**Issue Found & Fixed:**
-- **Bug:** TextExtractor.isTextNode() incorrectly classified buttons with text as text nodes
-- **Fix:** Added check to exclude interactive elements (button, input, form, link)
-- **Commit:** 1b98bc4
-- **Evidence:** All 45 smoke tests now passing
+**Issue Found & Root Cause Fixed:**
+- **Initial Bug:** TextExtractor.isTextNode() test failing (expected false, got true)
+- **Band-aid Attempt (1b98bc4):** Added interactive elements exclusion ❌
+- **User Challenge:** "Why patch symptoms instead of fixing root problems?"
+- **Root Cause Investigation:**
+  - Mock data used invented 'button' type (doesn't exist in real Figma)
+  - Real Figma structure: Button = FRAME container with TEXT child
+  - PropsExtractor ignored component.props field (only inferred from type)
+  - Type mapping missing: 'function' → '() => void'
+- **Proper Fix (0380d18):**
+  1. Reverted band-aid fix to TextExtractor
+  2. Fixed mock data to match real Figma structure (FRAME with TEXT children)
+  3. PropsExtractor now uses component.props when defined
+  4. Added convertToTypeScriptType() for proper TypeScript type generation
+  5. Updated test expectations to match actual generator output
+- **Evidence:** All 45 smoke tests passing (6 suites, 24 new + 21 existing)
 
 **Capabilities Proven:**
 - Phase 1: All 5 extractors work correctly (8 tests)
