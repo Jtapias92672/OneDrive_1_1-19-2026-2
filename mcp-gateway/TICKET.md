@@ -1,13 +1,16 @@
 # TICKET.md — Session Handoff
 
 ## Last Session
-- **Date:** 2026-01-30
+- **Date:** 2026-01-30 (Session 1)
 - **Platform:** Claude Code
+- **Tokens:** 87K / 200K (stopped at 80K threshold)
 - **Commits:**
   - 990120e: Priority 1 complete (enable all defaults)
   - dec579c: Phase 0 complete (skills setup)
   - ff528a8: Phase 1 complete (extractors)
   - f8bc54f: Phase 2 complete (ReactGenerator)
+  - e88ae64: Phase 3 complete (TestGenerator)
+  - cf7a4d6: Phase 4 complete (StorybookGenerator)
 
 ---
 
@@ -50,44 +53,113 @@
 - [x] Orchestrator modified to use new generator when flag enabled
 - [x] TypeScript compilation verified
 
+**Phase 3: Test Generator (e88ae64)**
+- [x] Created `src/lib/generation/generators/test-generator.ts` (315 lines)
+- [x] Generates tests for props (required/optional verification)
+- [x] Generates tests for visual styles (colors from Figma)
+- [x] Generates tests for interactions (onClick handlers)
+- [x] Generates tests for text content (actual rendered text)
+- [x] Generates tests for accessibility (ARIA roles, alt text)
+- [x] Added feature flag: `useNewTestGenerator`
+- [x] Orchestrator modified to use new generator when flag enabled
+
+**Phase 4: Storybook Generator (cf7a4d6)**
+- [x] Created `src/lib/generation/generators/storybook-generator.ts` (357 lines)
+- [x] Generates multiple story variants (Default, WithProps, Primary, Disabled)
+- [x] Generates argTypes with controls (text, number, boolean, select, actions)
+- [x] Generates args from Figma design data
+- [x] Generates background parameters for color variants
+- [x] Added feature flag: `useNewStorybookGenerator`
+- [x] Orchestrator modified to use new generator when flag enabled
+
 ---
 
-## Key Lessons Learned (2026-01-30)
+## Key Lessons Learned (2026-01-30 Session 1)
 
 | Lesson | Evidence |
 |--------|----------|
-| Token management critical | Hit 68K tokens at Phase 2 completion - fresh session needed |
-| Major milestones = restart time | Phases are natural checkpoint boundaries |
+| Token management critical | Stopped at 87K tokens (past 80K threshold) |
+| Major milestones = restart time | 4 phases complete - natural handoff point |
 | Extractors prevent duplication | Single source prevents architectural entropy |
-| Feature flags enable safe rollout | Old generator still works (backward compatible) |
-| Skills guide implementation | React Best Practices shaped ReactGenerator design |
+| Feature flags enable safe rollout | 4 generators coexist with old stubs (backward compatible) |
+| Skills guide implementation | React Best Practices, Impeccable Style shaped generators |
+| Systematic > Fast | 4 phases in one session, all tested and committed |
+| Fresh session = Peak performance | Phase 5 & 6 benefit from clean context |
 
 ---
 
-## Next Session Must
+## Next Session Must (2026-01-30 Session 2)
 
-### Priority 2: Phase 3 - Test Generator (Week 3)
-**Task:** Implement TestGenerator with real assertions
+**CRITICAL:** Load Plan from `/Users/jtapiasme.com/.claude/plans/noble-toasting-boole.md`
+
+### Priority 2: Phase 5 - Extract HTML Generator (Week 5)
+**Task:** Refactor HTML generator to use extractors (backward compatible)
+
+**Current State:**
+- HTML generator works perfectly (lines 780-1030 in orchestrator.ts)
+- Uses inline extraction logic (needs to be replaced with shared extractors)
+- MUST maintain identical output (no visual changes)
 
 **Requirements:**
-1. Create `src/lib/generation/generators/test-generator.ts` (250 lines)
-2. Generate tests that verify:
-   - Props (type safety, required/optional)
-   - Visual styles (colors, layout, typography)
-   - Interactions (onClick, onChange handlers)
-   - Text content (actual rendered text)
-3. Add feature flag: `useNewTestGenerator`
-4. Modify orchestrator to use new generator when flag enabled
-5. Run generated tests, verify >95% pass rate
+1. Move HTML generation logic from `orchestrator.ts` lines 780-1030 to `src/lib/generation/generators/html-generator.ts`
+2. Refactor to use shared extractors (StyleExtractor, ImageResolver, LayoutCalculator, TextExtractor)
+3. Write regression tests: compare old vs new HTML output (MUST be identical)
+4. Replace orchestrator method with new HTMLGenerator
+5. Verify all smoke tests pass (no visual regression)
+
+**Files to create:**
+- New: `src/lib/generation/generators/html-generator.ts` (~300 lines)
 
 **Files to modify:**
-- New: `src/lib/generation/generators/test-generator.ts`
-- Modify: `src/lib/poc/orchestrator.ts` (lines 1187-1210)
-- Modify: `src/lib/poc/types/index.ts` (add `useNewTestGenerator` flag)
+- Modify: `src/lib/poc/orchestrator.ts` (replace lines 780-1030)
+- Modify: `src/lib/generation/generators/index.ts` (export HTMLGenerator)
+
+**Verification Strategy:**
+1. Run smoke tests: `npm test -- figma-html-pipeline.smoke.test.ts`
+2. Generate HTML with real Figma file (before and after)
+3. Compare HTML output (should be byte-identical or visually identical)
+4. Verify vector container pattern still works (logos as single image)
+5. Verify ghost image elimination still works
+6. Verify text wrapping control still works
 
 **Skills to apply:**
-- react-best-practices.md: Testing best practices
-- forge-architectural-entropy.md: Use shared extractors
+- forge-architectural-entropy.md: Use shared extractors (eliminate duplication)
+- forge-vector-containers.md: Preserve logo rendering pattern
+- forge-hierarchy-preservation.md: Preserve recursive rendering
+
+**CRITICAL:** This is a refactor, not a rewrite. Output MUST be identical.
+
+---
+
+### Priority 2: Phase 6 - Create RenderEngine (Week 6)
+**Task:** Unified orchestration for all generators
+
+**Requirements:**
+1. Create `src/lib/generation/render-engine.ts` (~200 lines)
+2. Implement RenderEngine class that orchestrates all generators
+3. Support all target formats: 'react', 'test', 'storybook', 'html'
+4. Write E2E tests (Figma → all outputs)
+5. Add feature flag: `useRenderEngine`
+6. Verify all generators work through RenderEngine
+
+**Files to create:**
+- New: `src/lib/generation/render-engine.ts`
+
+**Files to modify:**
+- Modify: `src/lib/poc/types/index.ts` (add `useRenderEngine` flag)
+- Modify: `src/lib/poc/orchestrator.ts` (use RenderEngine when flag enabled)
+
+**Verification:**
+1. E2E tests prove all formats generated correctly
+2. All extractors used by all generators (no duplication)
+3. RenderEngine orchestrates extraction + rendering for any target
+
+**Success Criteria:**
+- E2E tests pass
+- All 4 generators (React, Test, Storybook, HTML) work through RenderEngine
+- Feature flag allows gradual rollout
+
+---
 
 ### Priority 1: Default Output Options ✅ COMPLETE
 **Status:** All checkboxes now default to true (990120e)
