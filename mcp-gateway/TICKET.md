@@ -116,6 +116,65 @@
 
 ---
 
+## FORGE ROADMAP (Strategic Vision)
+
+### Phase 1: Figma → Working Front-End (IN PROGRESS)
+**Goal:** Take Figma design → Complete working front-end application
+
+**Workflow:**
+1. ✅ Parse Figma design file
+2. ✅ Generate React components
+3. ✅ Generate HTML files
+4. 🔄 Create Jira tickets (Epic 13 complete, integration pending)
+5. ⏳ Generate automated tests (unit + E2E)
+6. ⏳ Generate Storybook stories
+7. ⏳ Deploy to sandbox environment
+8. ⏳ Run automated tests and confirm
+9. ⏳ Close Jira tickets automatically
+
+**Current Status:**
+- ✅ Figma parsing works (images, vectors, text, layout)
+- ✅ React component generation
+- ✅ HTML generation (with today's rendering fixes)
+- 🔄 Jira integration built (Epic 13) - needs workflow automation
+- ⏳ Tests generation - Priority 2 tomorrow
+- ⏳ Storybook generation - Priority 2 tomorrow
+
+### Phase 2: Back-End Logic Generation (PLANNED)
+**Goal:** Add back-end logic to complete full-stack application
+
+**Components:**
+1. ⏳ Standard logic patterns (CRUD, auth, validation)
+2. ⏳ API endpoints generation (Express/REST)
+3. ⏳ Database schema generation
+4. ⏳ Service layer generation
+5. ⏳ Integration tests for APIs
+6. ⏳ Forge-specific business logic
+
+**Dependencies:**
+- Requires Phase 1 complete (front-end working)
+- API generation analysis - Priority 2 tomorrow
+
+### Phase 3: Infrastructure Provisioning (PLANNED)
+**Goal:** Stand up deployment environments automatically
+
+**Targets:**
+1. ⏳ AWS EC2 instances
+2. ⏳ AWS Lambda functions
+3. ⏳ Database provisioning (RDS)
+4. ⏳ Load balancers, networking
+5. ⏳ CI/CD pipelines
+6. ⏳ Monitoring and logging
+
+**Status:**
+- Epic 15 scaffolded (EC2 infrastructure)
+- Terraform modules ready in `infrastructure/terraform/`
+- Pending Phase 1 completion
+
+**Note:** This is the complete SCRUM-integrated workflow - Figma → Jira → Code → Tests → Deploy → Verify → Close ticket.
+
+---
+
 ## Protocol Reminders
 
 - Read CLAUDE.md first (Three Truths)
