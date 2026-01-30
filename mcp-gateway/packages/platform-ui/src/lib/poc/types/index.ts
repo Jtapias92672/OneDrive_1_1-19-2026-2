@@ -59,6 +59,8 @@ export interface POCRunOptions {
   imageScale?: number;
   /** Use new ReactGenerator with full design extraction (Phase 2) (default: false) */
   useNewReactGenerator?: boolean;
+  /** Use new TestGenerator with real assertions (Phase 3) (default: false) */
+  useNewTestGenerator?: boolean;
 }
 
 // =============================================================================

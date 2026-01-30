@@ -11,3 +11,6 @@
 
 export { ReactGenerator } from './react-generator';
 export type { ReactGeneratorOptions } from './react-generator';
+
+export { TestGenerator } from './test-generator';
+export type { TestGeneratorOptions } from './test-generator';

@@ -54,7 +54,7 @@ import { APITestGenerator } from './test-generators/api-test-generator';
 import { VercelClient } from '../integrations/vercel/vercel-client';
 import { JiraClient } from '../integrations/jira/jira-client';
 import type { JiraDescription } from '../integrations/jira/jira-types';
-import { ReactGenerator } from '../generation/generators';
+import { ReactGenerator, TestGenerator } from '../generation/generators';
 
 // =============================================================================
 // Orchestrator Class
@@ -1124,15 +1124,17 @@ export class ForgePOCOrchestrator {
    */
   async generateFrontend(
     components: ParsedComponent[],
-    options?: { generateTests?: boolean; generateStories?: boolean; useNewReactGenerator?: boolean }
+    options?: { generateTests?: boolean; generateStories?: boolean; useNewReactGenerator?: boolean; useNewTestGenerator?: boolean }
   ): Promise<GeneratedComponent[]> {
     const generated: GeneratedComponent[] = [];
 
-    // Check if new ReactGenerator should be used (Phase 2)
-    const useNewGenerator = options?.useNewReactGenerator === true;
+    // Check if new generators should be used
+    const useNewReactGen = options?.useNewReactGenerator === true;
+    const useNewTestGen = options?.useNewTestGenerator === true;
 
-    // Initialize new generator if enabled
-    const reactGenerator = useNewGenerator ? new ReactGenerator() : null;
+    // Initialize new generators if enabled
+    const reactGenerator = useNewReactGen ? new ReactGenerator() : null;
+    const testGenerator = useNewTestGen ? new TestGenerator() : null;
 
     for (const component of components) {
       const componentName = this.toPascalCase(component.name);
@@ -1143,9 +1145,11 @@ export class ForgePOCOrchestrator {
         ? reactGenerator.generateComponent(component, componentName)
         : this.generateReactComponent(component, componentName);
 
-      // Generate test code if requested
+      // Generate test code if requested (Phase 3)
       const testCode = options?.generateTests !== false
-        ? this.generateComponentTest(componentName)
+        ? (testGenerator
+            ? testGenerator.generateTest(component, componentName)
+            : this.generateComponentTest(componentName))
         : undefined;
 
       // Generate Storybook story if requested
