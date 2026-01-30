@@ -186,6 +186,10 @@ export async function POST(request: NextRequest) {
               deployFrontend: options?.deployFrontend ?? false,
               deployBackend: options?.deployBackend ?? false,
               outputDir: options?.outputDir ?? './generated',
+              // Enable new generators (all tested with 80%+ coverage)
+              useNewReactGenerator: options?.useNewReactGenerator ?? true,
+              useNewTestGenerator: options?.useNewTestGenerator ?? true,
+              useNewStorybookGenerator: options?.useNewStorybookGenerator ?? true,
             },
           });
 

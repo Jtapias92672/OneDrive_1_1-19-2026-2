@@ -1,1 +1,3 @@
-{}
+{
+  "/dashboard/generation/page": "app/dashboard/generation/page.js"
+}

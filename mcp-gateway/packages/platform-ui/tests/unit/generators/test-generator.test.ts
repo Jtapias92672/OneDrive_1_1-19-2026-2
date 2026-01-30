@@ -38,7 +38,7 @@ describe('TestGenerator', () => {
       expect(test).toContain("import React from 'react'");
       expect(test).toContain("import { render, screen } from '@testing-library/react'");
       expect(test).toContain("import '@testing-library/jest-dom'");
-      expect(test).toContain("import Button from './Button'");
+      expect(test).toContain("import Button from '../components/Button'");
     });
 
     it('should generate describe block', () => {

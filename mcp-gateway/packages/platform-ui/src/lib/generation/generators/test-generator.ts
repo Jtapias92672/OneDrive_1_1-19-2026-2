@@ -93,7 +93,7 @@ export class TestGenerator {
       "import React from 'react';",
       "import { render, screen } from '@testing-library/react';",
       "import '@testing-library/jest-dom';",
-      `import ${componentName} from './${componentName}';`,
+      `import ${componentName} from '../components/${componentName}';`,
     ];
 
     // Add user-event if interaction tests enabled
