@@ -211,7 +211,7 @@ export function useConversation(): UseConversationReturn {
     }
   }, [state, options, addMessage]);
 
-  const submitText = useCallback((text: string) => {
+  const submitText = useCallback(async (text: string) => {
     // Add user response
     addMessage({
       role: 'user',
@@ -220,22 +220,46 @@ export function useConversation(): UseConversationReturn {
     });
 
     if (state === 'source-input') {
-      setOptions(prev => ({ ...prev, sourceUrl: text }));
+      // Set the source URL
+      const newOptions = { ...options, sourceUrl: text };
+      setOptions(newOptions);
 
-      // Move to config
-      setTimeout(() => {
-        addMessage({
+      // Check if we already configured options (coming from confirm state)
+      // If so, skip config and go straight to execute
+      const alreadyConfigured = options.generateComponents !== undefined;
+
+      if (alreadyConfigured) {
+        // Already configured, start execution immediately
+        setState('execute');
+        setIsExecuting(true);
+
+        // Add progress message
+        const progressMsg = addMessage({
           role: 'ai',
-          type: 'question',
-          content: 'What should I generate?',
-          options: ['React Components', 'Tests', 'Storybook Stories', 'API Endpoints', 'HTML Files'],
-          multiSelect: true,
-          selectedOptions: ['React Components', 'Tests', 'API Endpoints'],
+          type: 'progress',
+          content: 'Generating...',
+          progress: 0,
+          progressMessage: 'Initializing...',
         });
-        setState('config');
-      }, 300);
+
+        // Use the updated sourceUrl from newOptions
+        setTimeout(() => confirmGeneration(), 100);
+      } else {
+        // First time, move to config
+        setTimeout(() => {
+          addMessage({
+            role: 'ai',
+            type: 'question',
+            content: 'What should I generate?',
+            options: ['React Components', 'Tests', 'Storybook Stories', 'API Endpoints', 'HTML Files'],
+            multiSelect: true,
+            selectedOptions: ['React Components', 'Tests', 'API Endpoints'],
+          });
+          setState('config');
+        }, 300);
+      }
     }
-  }, [state, addMessage]);
+  }, [state, options, addMessage, setIsExecuting]);
 
   const toggleConfigOption = useCallback((option: string) => {
     setOptions(prev => {
@@ -293,6 +317,33 @@ export function useConversation(): UseConversationReturn {
         setState('confirm');
       }, 300);
     } else if (state === 'confirm') {
+      // Check if source URL is provided
+      if (!options.sourceUrl || options.sourceUrl.trim() === '') {
+        // Need to get source URL first
+        addMessage({
+          role: 'user',
+          type: 'response',
+          content: 'Generate',
+        });
+
+        // Ask for source URL
+        setTimeout(() => {
+          const prompt = options.sourceType === 'figma'
+            ? 'Paste your Figma URL:'
+            : options.sourceType === 'html'
+            ? 'Paste the path to your HTML file:'
+            : 'Describe what you want to build:';
+
+          addMessage({
+            role: 'ai',
+            type: 'text-input',
+            content: prompt,
+          });
+          setState('source-input');
+        }, 300);
+        return;
+      }
+
       // Start execution
       addMessage({
         role: 'user',
