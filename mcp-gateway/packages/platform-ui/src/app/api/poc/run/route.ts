@@ -48,58 +48,117 @@ export async function POST(request: NextRequest) {
         };
 
         try {
-          // TODO: MCP Gateway integration temporarily disabled
-          // REASON: Next.js webpack cannot resolve ES module imports from monorepo core directory
-          // BLOCKER: Requires proper npm workspaces or package structure setup
-          // See: docs/PHASE4_STATUS.md for Phase 4 OAuth configuration details
-          //
-          // Phase 4 OAuth infrastructure is fully implemented and documented:
-          // - OAuth 2.1 + PKCE client: /oauth/oauth-client.ts
-          // - Token manager with AES-256-GCM encryption: /oauth/token-manager.ts
-          // - Security layer with JWT validation: /security/index.ts
-          // - OAuth callback route: /api/auth/callback
-          // - Environment variables configured in .env.local
-          //
-          // When monorepo imports are fixed, uncomment the code below:
-          /*
+          // ✅ SKILL: Bundle Optimization - Lazy load gateway only when enabled
           const setupGateway = async () => {
             if (process.env.MCP_GATEWAY_ENABLED !== 'true') return null;
-            const { setupMCPGateway } = await import('../../../../../../../core/setup-mcp-gateway');
+
+            // Dynamic import reduces cold start when gateway disabled
+            const { setupMCPGateway } = await import('@/lib/gateway/core/setup-mcp-gateway');
+
             return setupMCPGateway({
               mcpMode: 'hybrid',
               autoDiscoverTools: true,
               gatewayConfig: {
                 security: {
                   oauth: {
-                    enabled: process.env.OAUTH_ENABLED === 'true',
+                    enabled: process.env.OAUTH_ENABLED === 'true',  // ✅ PHASE 4: Enable OAuth 2.1 + PKCE
                     issuer: process.env.OAUTH_ISSUER,
                     clientId: process.env.OAUTH_CLIENT_ID,
                     scopes: process.env.OAUTH_SCOPES?.split(',') || ['openid', 'profile'],
-                    pkceRequired: process.env.OAUTH_PKCE_REQUIRED !== 'false',
+                    pkceRequired: process.env.OAUTH_PKCE_REQUIRED !== 'false', // Default true
                   },
                   inputSanitization: {
-                    enabled: true,
-                    maxInputSize: 1024 * 1024,
+                    enabled: true,  // ✅ PHASE 3: Enable input sanitization
+                    maxInputSize: 1024 * 1024, // 1MB
                     allowedContentTypes: ['application/json'],
-                    blockPatterns: ['<script', 'javascript:', 'data:text/html', 'onerror=', 'onload=', 'eval(', 'Function(', 'DROP TABLE', 'DELETE FROM', '; --', 'UNION SELECT'],
+                    blockPatterns: [
+                      '<script',        // XSS: Script tags
+                      'javascript:',    // XSS: JavaScript protocol
+                      'data:text/html', // XSS: Data URI HTML
+                      'onerror=',       // XSS: Event handlers
+                      'onload=',        // XSS: Event handlers
+                      'eval(',          // Code injection
+                      'Function(',      // Code injection
+                      'DROP TABLE',     // SQL injection (case-sensitive check)
+                      'DELETE FROM',    // SQL injection
+                      '; --',           // SQL injection comment
+                      'UNION SELECT',   // SQL injection
+                    ],
+                  },
+                  toolIntegrity: {
+                    enabled: false,  // Future: Tool signature verification
+                    hashAlgorithm: 'sha256' as const,
+                    requireSignature: false,
+                    trustedSigners: [],
+                  },
+                  supplyChain: {
+                    enabled: false,  // Future: SBOM and vulnerability scanning
+                    allowedRegistries: [],
+                    requireSBOM: false,
+                    vulnerabilityScan: false,
                   },
                 },
                 monitoring: {
+                  enabled: true,  // ✅ PHASE 2: Enable monitoring
                   audit: {
-                    enabled: true,
-                    logLevel: 'INFO',
-                    includePayloads: true,
-                    includeOutputs: false,
+                    enabled: true,  // ✅ PHASE 2: Enable audit logging
+                    logLevel: 'info' as const,
+                    includePayloads: true,  // Log tool inputs
+                    retentionDays: 90,  // 90-day retention
+                  },
+                  anomalyDetection: {
+                    enabled: false,  // Future: Anomaly detection
+                    baseline: 0,
+                    alertThreshold: 0,
+                  },
+                  toolBehavior: {
+                    enabled: false,  // Future: Tool behavior monitoring
+                    trackDescriptionChanges: false,
+                    alertOnChange: false,
+                  },
+                  metrics: {
+                    enabled: false,  // Future: Metrics collection
+                    exportInterval: 60000,
                   },
                 },
-                approval: { carsIntegration: { enabled: false } },
-                sandbox: { enabled: false },
+                approval: {
+                  enabled: false,  // Phase 5: Human approval gates
+                  defaultMode: 'never' as const,
+                  requireApproval: [],
+                  autoApprove: ['*'],  // Auto-approve all tools for now
+                  timeoutMs: 60000,  // 60 second timeout
+                  carsIntegration: {
+                    enabled: false,  // Phase 5: CARS risk-based approval
+                    riskThreshold: 0.5,
+                  },
+                },
+                sandbox: {
+                  enabled: false,  // Phase 6: Sandbox execution
+                  runtime: 'none' as const,
+                  limits: {
+                    maxCpuMs: 5000,
+                    maxMemoryMb: 512,
+                    maxDiskMb: 100,
+                    maxNetworkConnections: 10,
+                    executionTimeoutMs: 30000,
+                  },
+                  network: {
+                    allowEgress: false,
+                    allowedHosts: [],
+                    blockedHosts: [],
+                  },
+                  filesystem: {
+                    readOnly: [],
+                    writable: [],
+                    blocked: [],
+                  },
+                },
               },
             });
           };
+
+          // Initialize gateway (Phases 1-3: routing, audit, sanitization)
           const gatewaySetup = await setupGateway();
-          */
-          const gatewaySetup = null; // Temporarily bypassing gateway
 
           // Create orchestrator with gateway routing
           const orchestrator = createPOCOrchestrator({

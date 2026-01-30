@@ -437,7 +437,7 @@ export class StyleGenerator {
   }
 
   private radiusToTailwind(radius: number | number[]): string {
-    const value = Array.isArray(radius) ? radius[0] : radius;
+    const value = Array.isArray(radius) ? (radius[0] ?? 0) : radius;
 
     const radiusMap: Record<number, string> = {
       0: 'rounded-none',
@@ -454,7 +454,7 @@ export class StyleGenerator {
     // Find closest
     const closest = Object.keys(radiusMap)
       .map(Number)
-      .reduce((prev, curr) => 
+      .reduce((prev, curr) =>
         Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
       );
 

@@ -254,14 +254,14 @@ export class ComponentBuilder {
     // Check frame type
     switch (frame.type) {
       case 'TEXT':
-        return ELEMENT_MAPPINGS.text;
+        return ELEMENT_MAPPINGS.text!;
 
       case 'RECTANGLE':
         // Could be a button, card, or container based on children
         if (frame.interactions?.some(i => i.trigger === 'click')) {
-          return ELEMENT_MAPPINGS.button;
+          return ELEMENT_MAPPINGS.button!;
         }
-        return ELEMENT_MAPPINGS.container;
+        return ELEMENT_MAPPINGS.container!;
 
       case 'ELLIPSE':
       case 'POLYGON':
@@ -274,13 +274,13 @@ export class ComponentBuilder {
         return this.inferElementFromName(frame.name);
 
       case 'INSTANCE':
-        return ELEMENT_MAPPINGS.container;
+        return ELEMENT_MAPPINGS.container!;
 
       case 'COMPONENT':
-        return ELEMENT_MAPPINGS.container;
+        return ELEMENT_MAPPINGS.container!;
 
       default:
-        return ELEMENT_MAPPINGS.container;
+        return ELEMENT_MAPPINGS.container!;
     }
   }
 
@@ -289,46 +289,46 @@ export class ComponentBuilder {
 
     // Check for common patterns
     if (lowerName.includes('button') || lowerName.includes('btn')) {
-      return ELEMENT_MAPPINGS.button;
+      return ELEMENT_MAPPINGS.button!;
     }
     if (lowerName.includes('link')) {
-      return ELEMENT_MAPPINGS.link;
+      return ELEMENT_MAPPINGS.link!;
     }
     if (lowerName.includes('input') || lowerName.includes('field')) {
-      return ELEMENT_MAPPINGS.input;
+      return ELEMENT_MAPPINGS.input!;
     }
     if (lowerName.includes('image') || lowerName.includes('img') || lowerName.includes('avatar')) {
-      return ELEMENT_MAPPINGS.image;
+      return ELEMENT_MAPPINGS.image!;
     }
     if (lowerName.includes('header')) {
-      return ELEMENT_MAPPINGS.header;
+      return ELEMENT_MAPPINGS.header!;
     }
     if (lowerName.includes('footer')) {
-      return ELEMENT_MAPPINGS.footer;
+      return ELEMENT_MAPPINGS.footer!;
     }
     if (lowerName.includes('nav')) {
-      return ELEMENT_MAPPINGS.navigation;
+      return ELEMENT_MAPPINGS.navigation!;
     }
     if (lowerName.includes('card')) {
-      return ELEMENT_MAPPINGS.card;
+      return ELEMENT_MAPPINGS.card!;
     }
     if (lowerName.includes('modal') || lowerName.includes('dialog')) {
-      return ELEMENT_MAPPINGS.modal;
+      return ELEMENT_MAPPINGS.modal!;
     }
     if (lowerName.includes('form')) {
-      return ELEMENT_MAPPINGS.form;
+      return ELEMENT_MAPPINGS.form!;
     }
     if (lowerName.includes('list')) {
-      return ELEMENT_MAPPINGS.list;
+      return ELEMENT_MAPPINGS.list!;
     }
     if (lowerName.includes('icon')) {
-      return ELEMENT_MAPPINGS.icon;
+      return ELEMENT_MAPPINGS.icon!;
     }
     if (/^h[1-6]$/i.test(lowerName) || lowerName.includes('heading') || lowerName.includes('title')) {
-      return { ...ELEMENT_MAPPINGS.heading, element: this.inferHeadingLevel(lowerName) };
+      return { ...ELEMENT_MAPPINGS.heading!, element: this.inferHeadingLevel(lowerName) };
     }
 
-    return ELEMENT_MAPPINGS.container;
+    return ELEMENT_MAPPINGS.container!;
   }
 
   private inferHeadingLevel(name: string): string {
