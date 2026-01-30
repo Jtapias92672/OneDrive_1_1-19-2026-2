@@ -34,6 +34,17 @@ export class PropsExtractor {
    * @returns Array of inferred props
    */
   extractProps(component: ParsedComponent): InferredProp[] {
+    // If component already has props defined (e.g., test scenarios), use those
+    if (component.props && component.props.length > 0) {
+      return component.props.map((p) => ({
+        name: p.name,
+        type: p.type,
+        required: p.required,
+        defaultValue: p.defaultValue,
+        description: p.description,
+      }));
+    }
+
     const props: InferredProp[] = [];
 
     // Extract props based on component type
@@ -456,6 +467,22 @@ export class PropsExtractor {
    * @param props - Array of inferred props
    * @returns TypeScript interface string
    */
+  /**
+   * Convert generic prop type to TypeScript type
+   */
+  private convertToTypeScriptType(type: string): string {
+    const typeMap: Record<string, string> = {
+      function: '() => void',
+      string: 'string',
+      number: 'number',
+      boolean: 'boolean',
+      array: 'any[]',
+      object: 'Record<string, any>',
+    };
+
+    return typeMap[type.toLowerCase()] || type;
+  }
+
   generatePropsInterface(componentName: string, props: InferredProp[]): string {
     if (props.length === 0) return '';
 
@@ -466,7 +493,8 @@ export class PropsExtractor {
     for (const prop of props) {
       const optional = prop.required ? '' : '?';
       const comment = prop.description ? `  /** ${prop.description} */\n` : '';
-      lines.push(`${comment}  ${prop.name}${optional}: ${prop.type};`);
+      const tsType = this.convertToTypeScriptType(prop.type);
+      lines.push(`${comment}  ${prop.name}${optional}: ${tsType};`);
     }
 
     lines.push('}');
