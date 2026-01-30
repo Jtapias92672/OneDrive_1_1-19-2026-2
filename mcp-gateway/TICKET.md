@@ -71,21 +71,98 @@
 - Consistent file structure across all output types
 - Reusable patterns for component/test/API generation
 
-### Priority 3: Enable MCP Gateway Routing
-**Task:** Complete MCP integration for security controls
+### Priority 3: MCP Infrastructure - Enterprise Architecture & Implementation
+**Task:** Architect, implement, and test MCP infrastructure at enterprise level
 
+**Scope:** Complete end-to-end MCP integration with production-grade reliability
+
+#### Phase 3A: Architecture Review & Design
+**Use Plan Mode + Software Engineering Skills**
+
+**Analysis Required:**
+1. Current MCP infrastructure audit
+   - Gateway routing patterns
+   - Security control points (OAuth, sandbox, audit)
+   - Error handling and fallbacks
+   - Performance bottlenecks
+
+2. Enterprise requirements
+   - Multi-tenant isolation
+   - Rate limiting and throttling
+   - Circuit breakers for external APIs
+   - Observability (logging, metrics, tracing)
+   - Graceful degradation patterns
+
+3. Design deliverables
+   - MCP request/response flow diagrams
+   - Security control architecture
+   - Error handling strategy
+   - Testing strategy (unit, integration, E2E)
+
+#### Phase 3B: Implementation
 **Actions:**
-1. Initialize MCPGateway in `/api/poc/run/route.ts`
-2. Pass gateway instance to orchestrator
-3. Test security controls (OAuth, sandbox, audit)
+1. Initialize MCPGateway in `/api/poc/run/route.ts` with full config
+2. Pass gateway instance to orchestrator with error boundaries
+3. Implement security controls:
+   - OAuth token validation
+   - Request sandboxing
+   - Audit logging (all MCP calls)
+   - Tenant ID/User ID propagation
 4. Change `.mcp.json` defaultMode to "mcp"
-5. Verify Figma server routing works
-6. Add health check for gateway
+5. Add health check endpoints
+6. Implement circuit breakers for Figma API
+7. Add retry logic with exponential backoff
+8. Request/response logging at gateway level
+
+#### Phase 3C: Enterprise-Level Testing
+**Test Coverage Required:**
+
+1. **Unit Tests** (per component)
+   - Gateway routing logic
+   - Security validation
+   - Error handling paths
+   - Tenant isolation
+
+2. **Integration Tests**
+   - End-to-end Figma API calls through gateway
+   - OAuth flow validation
+   - Audit log verification
+   - Multi-tenant scenarios
+
+3. **Performance Tests**
+   - Load testing (concurrent requests)
+   - Latency benchmarks (gateway overhead)
+   - Memory leak detection
+   - Rate limiting behavior
+
+4. **Failure Mode Tests**
+   - Figma API down (circuit breaker activates)
+   - Invalid OAuth tokens (rejected with proper error)
+   - Network timeouts (retries work)
+   - Malformed requests (sandboxed properly)
+
+5. **Security Tests**
+   - Tenant boundary violations (prevented)
+   - Unauthorized access attempts (blocked)
+   - Audit log tampering (impossible)
+   - Token leakage (prevented)
 
 **Files:**
 - `packages/platform-ui/src/app/api/poc/run/route.ts`
+- `packages/gateway/src/core/MCPGateway.ts`
 - `.mcp.json`
-- Test with real Figma URL
+- `tests/integration/mcp-gateway-enterprise.test.ts` (new)
+- `tests/performance/mcp-load.test.ts` (new)
+
+**Success Criteria:**
+- [ ] All MCP calls route through gateway (no direct FigmaClient)
+- [ ] Security controls verified (OAuth, sandbox, audit)
+- [ ] Tests: 95%+ coverage on MCP components
+- [ ] Performance: <50ms gateway overhead
+- [ ] Observability: All calls logged with trace IDs
+- [ ] Circuit breaker tested and working
+- [ ] Multi-tenant isolation verified
+- [ ] Production-ready error handling
 
 ### Priority 4: Restore Cowork App
 **Task:** Investigate and restore Claude Cowork app access
