@@ -88,16 +88,16 @@ function DashboardContent() {
             />
             */}
 
-            <EvidencePacksCard
-              data={evidencePacks}
-              expanded={expandedSections.evidencePacks}
-              onToggle={() => toggleSection('evidencePacks')}
-            />
-
             <GenerationProgressCard
               data={progressData}
               expanded={expandedSections.generationProgress}
               onToggle={() => toggleSection('generationProgress')}
+            />
+
+            <EvidencePacksCard
+              data={evidencePacks}
+              expanded={expandedSections.evidencePacks}
+              onToggle={() => toggleSection('evidencePacks')}
             />
 
             <CarsFrameworkCard
