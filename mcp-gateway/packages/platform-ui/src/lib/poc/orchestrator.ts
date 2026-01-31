@@ -284,7 +284,7 @@ export class ForgePOCOrchestrator {
       const response = await this.gateway.processRequest({
         id: randomUUID(),
         tool: 'figma_getFile',
-        params: { fileKey },
+        params: { fileKey, depth: 10 },  // Fetch nested children
         context: {
           tenantId: this.config.tenantId || 'default',
           userId: this.config.userId || 'orchestrator',
@@ -300,7 +300,7 @@ export class ForgePOCOrchestrator {
       return response.result;
     } else {
       console.log('[getFigmaFile] Using direct FigmaClient');
-      return this.figmaClient.getFile(fileKey);
+      return this.figmaClient.getFile(fileKey, { depth: 10 });  // Fetch nested children
     }
   }
 
