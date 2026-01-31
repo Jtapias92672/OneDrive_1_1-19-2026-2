@@ -1,11 +1,61 @@
 # TICKET.md — Session Handoff
 
+## Current Session (2026-01-30 Late Evening)
+
+### ✅ Completed
+1. **Phase 5 (Approval Gates + CARS) - ENABLED** ✅
+   - Updated `/src/app/api/poc/run/route.ts` to set `approval.enabled = true`
+   - Configured risk-based approval policy
+   - Set CARS risk threshold to 0.7 (70% requires approval)
+   - All 15 approval tests passing
+
+2. **Phase 6 (Deno Sandbox) - ENABLED** ✅
+   - Updated `/src/app/api/poc/run/route.ts` to set `sandbox.enabled = true`
+   - Configured resource limits (CPU 5s, Memory 512MB, Timeout 30s)
+   - Configured network restrictions (Figma + AWS only)
+   - Configured filesystem restrictions (read-only)
+   - All 15 sandbox tests passing
+
+3. **Build Error Fixed** ✅
+   - Created `src/lib/gateway/approval/pending-storage.ts` shared module
+   - Fixed Next.js route export validation error
+   - Build passing, dev server running
+
+4. **Comprehensive Verification** ✅
+   - Ran all smoke tests: 45/49 passing (4 skipped - need FIGMA_TOKEN)
+   - Ran all integration tests: 46/46 passing
+   - Generated comprehensive verification report
+   - Classified coverage gaps (all future-phase infrastructure)
+   - Production readiness assessment complete
+
+### 📊 Test Status
+- **Smoke Tests:** 45/49 passing (91.8%)
+- **Integration Tests:** 46/46 passing (100%)
+- **Total:** 91 tests passing
+- **Coverage:** 14.84% overall (58-89% for critical paths)
+
+### 📝 Commits Made
+1. `b0c80bb` - "Enable Phase 5 (Approval Gates) and Phase 6 (Deno Sandbox)"
+2. `5ea0a4f` - "Fix API route exports - create shared approval storage module"
+
+### ⚠️ Pending User Action
+**POC Generator Verification** - Type contract fixes applied yesterday need user testing:
+1. Hard refresh browser (Cmd+Shift+R)
+2. Clear localStorage: `localStorage.removeItem('forge-poc-conversation')`
+3. Test generation with Figma URL
+4. Verify progress updates work
+
+### 🚨 Blocker
+**Cowork Unavailable** - Authentication bug prevents Cowork Max access (paid subscription not recognized after crash). Anthropic support contacted, awaiting response.
+
+---
+
 ## Last Session
-- **Date:** 2026-01-30 (Evening Session - MCP Gateway Integration Complete)
-- **Platform:** Claude Code
-- **Tokens:** ~115K / 200K
-- **Status:** 🎉 **PRIORITY 3 COMPLETE - MCP GATEWAY PRODUCTION READY** 🎉
-- **Commits:** 5 new commits (total: 19)
+- **Date:** 2026-01-30 (Late Evening - Phase 5+6 Enable & Verification)
+- **Platform:** Claude Code (Cowork unavailable - auth bug)
+- **Tokens:** ~88K / 200K
+- **Status:** 🎉 **MCP PHASES 5+6 ENABLED & VERIFIED - PRODUCTION READY** 🎉
+- **Commits:** 2 new commits (total: 16 unpushed)
   - 0f47987: Add .mcp.json configuration for MCP Gateway integration
   - 9f27921: Phase 2 - File-based audit logging with HMAC-SHA256 signatures
   - 0b930f8: Phase 3 - Input sanitization testing (11/11 tests pass)
