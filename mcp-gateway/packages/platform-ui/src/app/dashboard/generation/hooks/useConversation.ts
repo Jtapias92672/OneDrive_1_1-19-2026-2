@@ -211,7 +211,7 @@ export function useConversation(): UseConversationReturn {
     }
   }, [state, options, addMessage]);
 
-  const submitText = useCallback(async (text: string) => {
+  const submitText = useCallback((text: string) => {
     // Add user response
     addMessage({
       role: 'user',
@@ -220,46 +220,22 @@ export function useConversation(): UseConversationReturn {
     });
 
     if (state === 'source-input') {
-      // Set the source URL
-      const newOptions = { ...options, sourceUrl: text };
-      setOptions(newOptions);
+      setOptions(prev => ({ ...prev, sourceUrl: text }));
 
-      // Check if we already configured options (coming from confirm state)
-      // If so, skip config and go straight to execute
-      const alreadyConfigured = options.generateComponents !== undefined;
-
-      if (alreadyConfigured) {
-        // Already configured, start execution immediately
-        setState('execute');
-        setIsExecuting(true);
-
-        // Add progress message
-        const progressMsg = addMessage({
+      // Move to config
+      setTimeout(() => {
+        addMessage({
           role: 'ai',
-          type: 'progress',
-          content: 'Generating...',
-          progress: 0,
-          progressMessage: 'Initializing...',
+          type: 'question',
+          content: 'What should I generate?',
+          options: ['React Components', 'Tests', 'Storybook Stories', 'API Endpoints', 'HTML Files'],
+          multiSelect: true,
+          selectedOptions: ['React Components', 'Tests', 'API Endpoints'],
         });
-
-        // Use the updated sourceUrl from newOptions
-        setTimeout(() => confirmGeneration(), 100);
-      } else {
-        // First time, move to config
-        setTimeout(() => {
-          addMessage({
-            role: 'ai',
-            type: 'question',
-            content: 'What should I generate?',
-            options: ['React Components', 'Tests', 'Storybook Stories', 'API Endpoints', 'HTML Files'],
-            multiSelect: true,
-            selectedOptions: ['React Components', 'Tests', 'Storybook Stories', 'API Endpoints', 'HTML Files'],
-          });
-          setState('config');
-        }, 300);
-      }
+        setState('config');
+      }, 300);
     }
-  }, [state, options, addMessage, setIsExecuting]);
+  }, [state, addMessage]);
 
   const toggleConfigOption = useCallback((option: string) => {
     setOptions(prev => {
@@ -292,13 +268,51 @@ export function useConversation(): UseConversationReturn {
 
   const confirmGeneration = useCallback(async () => {
     if (state === 'config') {
-      // Add user confirmation
+      // Read selections from UI (message.selectedOptions) not from stale options state
+      const lastMessage = messages[messages.length - 1];
+      const uiSelections = (lastMessage?.selectedOptions || []) as string[];
+
+      // Map UI labels to display names and update options state
       const selectedItems: string[] = [];
-      if (options.generateComponents) selectedItems.push('Components');
-      if (options.generateTests) selectedItems.push('Tests');
-      if (options.generateStories) selectedItems.push('Stories');
-      if (options.generateApi) selectedItems.push('API');
-      if (options.generateHtml) selectedItems.push('HTML');
+      const newOptions = { ...options };
+
+      if (uiSelections.includes('React Components')) {
+        selectedItems.push('Components');
+        newOptions.generateComponents = true;
+      } else {
+        newOptions.generateComponents = false;
+      }
+
+      if (uiSelections.includes('Tests')) {
+        selectedItems.push('Tests');
+        newOptions.generateTests = true;
+      } else {
+        newOptions.generateTests = false;
+      }
+
+      if (uiSelections.includes('Storybook Stories')) {
+        selectedItems.push('Stories');
+        newOptions.generateStories = true;
+      } else {
+        newOptions.generateStories = false;
+      }
+
+      if (uiSelections.includes('API Endpoints')) {
+        selectedItems.push('API');
+        newOptions.generateApi = true;
+      } else {
+        newOptions.generateApi = false;
+      }
+
+      if (uiSelections.includes('HTML Files')) {
+        selectedItems.push('HTML');
+        newOptions.generateHtml = true;
+      } else {
+        newOptions.generateHtml = false;
+      }
+
+      // Update options to match UI selections
+      setOptions(newOptions);
 
       addMessage({
         role: 'user',
@@ -317,33 +331,6 @@ export function useConversation(): UseConversationReturn {
         setState('confirm');
       }, 300);
     } else if (state === 'confirm') {
-      // Check if source URL is provided
-      if (!options.sourceUrl || options.sourceUrl.trim() === '') {
-        // Need to get source URL first
-        addMessage({
-          role: 'user',
-          type: 'response',
-          content: 'Generate',
-        });
-
-        // Ask for source URL
-        setTimeout(() => {
-          const prompt = options.sourceType === 'figma'
-            ? 'Paste your Figma URL:'
-            : options.sourceType === 'html'
-            ? 'Paste the path to your HTML file:'
-            : 'Describe what you want to build:';
-
-          addMessage({
-            role: 'ai',
-            type: 'text-input',
-            content: prompt,
-          });
-          setState('source-input');
-        }, 300);
-        return;
-      }
-
       // Start execution
       addMessage({
         role: 'user',
@@ -425,11 +412,6 @@ export function useConversation(): UseConversationReturn {
                   // Final result
                   setMessages(prev => prev.filter(m => m.id !== progressMsg.id));
 
-                  // Check if workflow failed with an error
-                  if (data.status === 'failed' && data.error) {
-                    throw new Error(data.error);
-                  }
-
                   const componentCount = data.frontendComponents?.length || 0;
                   const modelCount = data.inferredModels?.length || 0;
                   const testCount = data.backendFiles?.tests?.length || 0;
@@ -445,7 +427,7 @@ export function useConversation(): UseConversationReturn {
                     type: 'result',
                     content: hasFiles
                       ? "Done! Here's what I created:"
-                      : 'Generation completed but no files were created. The source may be empty or contain no valid components.',
+                      : 'Generation failed - no files were created. The source may be invalid or inaccessible.',
                     result: {
                       runId: data.runId,
                       status: data.status,
@@ -494,7 +476,7 @@ export function useConversation(): UseConversationReturn {
         setIsExecuting(false);
       }
     }
-  }, [state, options, addMessage]);
+  }, [state, options, messages, addMessage, startGeneration, updateProgress, completeGeneration, handleError]);
 
   const restart = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
