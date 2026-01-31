@@ -148,9 +148,16 @@ Total:           91 tests passing
 ```
 MCP_GATEWAY_ENABLED=true
 OAUTH_ENABLED=false
-FIGMA_TOKEN=[set if testing Figma integration]
+FIGMA_TOKEN=figd_****...phe0 (✅ verified working, see .env.local)
 AUDIT_SIGNATURE_KEY=[set in .env.local]
 ```
+
+**FIGMA_TOKEN Status:**
+- Location: `packages/platform-ui/.env.local`
+- Added: Jan 30, 19:57 (about 2 hours ago)
+- Verified: ✅ Token works with Figma API
+- File: POC_Test_Design (6GefaVgI8xnuDIHhSbfzsJ)
+- Content: Has frames, text, instances, vectors with depth=10
 
 ---
 
@@ -170,6 +177,16 @@ AUDIT_SIGNATURE_KEY=[set in .env.local]
 **Impact:** Phase 4 (OAuth) infrastructure ready but not testable
 **Status:** Awaiting user decision on provider choice
 **Risk:** Low - Not blocking other work
+
+### Issue 4: Figma Integration Tests Failing (NEW - Late Night Discovery)
+**Impact:** Integration tests fail despite valid token and working API
+**Status:** Needs debugging
+**Evidence:**
+- ✅ Token works (curl test successful)
+- ✅ Figma API returns data (frames, text, instances, vectors)
+- ❌ Orchestrator returns status="failed" with empty components
+**Investigation Needed:** Debug orchestrator.run() to find failure point
+**Risk:** Medium - May indicate regression in orchestrator
 
 ---
 

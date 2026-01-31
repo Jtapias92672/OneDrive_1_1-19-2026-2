@@ -88,6 +88,12 @@ Passing Suites:
 
 Skipped:
 ⊘ figma-api-integration.test.ts (needs FIGMA_TOKEN env var)
+
+UPDATE (21:15): FIGMA_TOKEN now available in .env.local
+- Token: figd_****...phe0
+- Verified working with Figma API (curl test successful)
+- File 6GefaVgI8xnuDIHhSbfzsJ returns content with depth=10
+- NOTE: Integration tests fail due to orchestrator issue (not token issue)
 ```
 
 ### Integration Tests
@@ -348,6 +354,17 @@ Zero Coverage Files (Future Phases 7-9):
 **Status:** Production recommendation documented
 **Mitigation:** Works for development, easy to upgrade to Redis/PostgreSQL
 **Risk:** Low - Development mode acceptable
+
+### Risk 3: Figma Integration Tests Failing (NEW - 21:15)
+**Impact:** Integration tests return status="failed" with empty components
+**Owner:** Needs investigation
+**Status:** Token verified working, Figma API returns data, orchestrator failing
+**Evidence:**
+- curl test: ✅ Figma API returns frames, text, instances, vectors
+- Token: ✅ Valid (figd_****...phe0)
+- Orchestrator: ❌ Returns failed status with empty components array
+**Next:** Debug orchestrator.run() to find where it's failing
+**Risk:** Medium - Integration tests should pass
 
 ---
 
