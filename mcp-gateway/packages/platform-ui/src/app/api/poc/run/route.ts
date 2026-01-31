@@ -122,35 +122,35 @@ export async function POST(request: NextRequest) {
                   },
                 },
                 approval: {
-                  enabled: false,  // Phase 5: Human approval gates
-                  defaultMode: 'never' as const,
-                  requireApproval: [],
-                  autoApprove: ['*'],  // Auto-approve all tools for now
+                  enabled: true,  // ✅ PHASE 5: Enable human approval gates
+                  defaultMode: 'risk-based' as const,  // Use CARS for risk-based approval
+                  requireApproval: ['*_delete*', '*_update*'],  // Require approval for destructive operations
+                  autoApprove: ['*_read*', '*_get*'],  // Auto-approve read-only operations
                   timeoutMs: 60000,  // 60 second timeout
                   carsIntegration: {
-                    enabled: false,  // Phase 5: CARS risk-based approval
-                    riskThreshold: 0.5,
+                    enabled: true,  // ✅ PHASE 5: Enable CARS risk-based approval
+                    riskThreshold: 0.7,  // Require approval for operations scoring ≥ 70%
                   },
                 },
                 sandbox: {
-                  enabled: false,  // Phase 6: Sandbox execution
-                  runtime: 'none' as const,
+                  enabled: true,  // ✅ PHASE 6: Enable Deno sandbox execution
+                  runtime: 'deno' as const,  // Use Deno for isolated execution
                   limits: {
-                    maxCpuMs: 5000,
-                    maxMemoryMb: 512,
-                    maxDiskMb: 100,
-                    maxNetworkConnections: 10,
-                    executionTimeoutMs: 30000,
+                    maxCpuMs: 5000,  // 5 second CPU limit
+                    maxMemoryMb: 512,  // 512MB memory limit
+                    maxDiskMb: 100,  // 100MB disk usage
+                    maxNetworkConnections: 10,  // Max 10 concurrent connections
+                    executionTimeoutMs: 30000,  // 30 second wall-clock timeout
                   },
                   network: {
-                    allowEgress: false,
-                    allowedHosts: [],
-                    blockedHosts: [],
+                    allowEgress: true,  // Allow network access (restricted by allowedHosts)
+                    allowedHosts: ['api.figma.com', '*.amazonaws.com', 'bedrock-runtime.*.amazonaws.com'],  // Figma + AWS only
+                    blockedHosts: ['169.254.169.254'],  // Block AWS metadata endpoint
                   },
                   filesystem: {
-                    readOnly: [],
-                    writable: [],
-                    blocked: [],
+                    readOnly: ['/tmp/mcp-sandbox'],  // Read-only temp directory
+                    writable: [],  // No write access
+                    blocked: ['/etc', '/var', '/usr', '/bin', '/sbin', process.cwd()],  // Block system dirs and working dir
                   },
                 },
               },
