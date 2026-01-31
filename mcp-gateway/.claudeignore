@@ -1,0 +1,65 @@
+# Claude Code Ignore File
+# Prevents indexing of large/unnecessary directories that cause performance issues
+
+# Terraform state and providers (4.2GB of cached providers)
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Test outputs and reports
+coverage/
+.nyc_output/
+playwright-report/
+playwright-results.json
+playwright/.cache/
+test-results/
+e2e/screenshots/
+e2e/videos/
+e2e/traces/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Claude session data
+.claude/
+
+# Large test datasets
+**/tests/datasets/secrets-labeled-dataset.json
