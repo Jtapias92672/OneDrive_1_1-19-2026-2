@@ -8,37 +8,16 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-
-// Approval state storage (in production, use Redis or database)
-interface PendingApproval {
-  requestId: string;
-  tool: string;
-  params: Record<string, unknown>;
-  context: {
-    tenantId: string;
-    userId?: string;
-    sessionId?: string;
-  };
-  riskAssessment?: {
-    score: number;
-    riskLevel: string;
-    factors: string[];
-  };
-  createdAt: string;
-  expiresAt: string;
-  status: 'pending' | 'approved' | 'denied' | 'timeout';
-}
-
-// In-memory storage for demo (production should use Redis/DB)
-const pendingApprovals = new Map<string, PendingApproval>();
-const approvalCallbacks = new Map<string, (decision: ApprovalDecision) => void>();
-
-interface ApprovalDecision {
-  approved: boolean;
-  approver: string;
-  reason?: string;
-  timestamp: string;
-}
+import {
+  pendingApprovals,
+  approvalCallbacks,
+  getPendingApproval,
+  deletePendingApproval,
+  getApprovalCallback,
+  deleteApprovalCallback,
+  type PendingApproval,
+  type ApprovalDecision,
+} from '@/lib/gateway/approval/pending-storage';
 
 /**
  * GET /api/mcp/approve/:requestId
@@ -187,29 +166,4 @@ export async function POST(
       { status: 500 }
     );
   }
-}
-
-/**
- * Register a pending approval (called by ApprovalGate)
- */
-export function registerPendingApproval(
-  pending: PendingApproval,
-  callback: (decision: ApprovalDecision) => void
-): void {
-  pendingApprovals.set(pending.requestId, pending);
-  approvalCallbacks.set(pending.requestId, callback);
-}
-
-/**
- * Get all pending approvals (admin endpoint)
- */
-export async function getAll(request: NextRequest) {
-  const pending = Array.from(pendingApprovals.values()).filter(
-    (p) => p.status === 'pending' && new Date(p.expiresAt) > new Date()
-  );
-
-  return NextResponse.json({
-    pending,
-    count: pending.length,
-  });
 }

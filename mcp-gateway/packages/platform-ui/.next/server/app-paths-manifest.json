@@ -1,9 +1,1 @@
-{
-  "/dashboard/generation/page": "app/dashboard/generation/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/session/tokens/route": "app/api/session/tokens/route.js",
-  "/api/cars/route": "app/api/cars/route.js",
-  "/api/supply-chain/route": "app/api/supply-chain/route.js",
-  "/api/evidence-packs/route": "app/api/evidence-packs/route.js",
-  "/api/guardrails/route": "app/api/guardrails/route.js"
-}
+{}

@@ -18,6 +18,13 @@ import {
   RequestContext,
 } from '../core/types';
 
+import {
+  pendingApprovals,
+  approvalCallbacks,
+  registerPendingApproval,
+  type PendingApproval as StoredPendingApproval,
+} from './pending-storage';
+
 // ============================================
 // APPROVAL GATE
 // ============================================
@@ -25,8 +32,8 @@ import {
 export class ApprovalGate {
   private config: ApprovalConfig;
   private approvalHistory = new Map<string, ApprovalRecord>();
-  private pendingApprovals = new Map<string, PendingApproval>();
-  private approvalCallbacks = new Map<string, ApprovalCallback>();
+  // Use shared storage for pending approvals (shared with API route)
+  // private pendingApprovals and approvalCallbacks now come from pending-storage.ts
 
   constructor(config: ApprovalConfig) {
     this.config = config;
@@ -54,18 +61,17 @@ export class ApprovalGate {
       status: 'pending',
     };
 
-    this.pendingApprovals.set(requestId, pending);
-
     // Notify approvers
     await this.notifyApprovers(pending);
 
     // Wait for approval or timeout
     return new Promise((resolve) => {
       const timeout = setTimeout(() => {
-        const pendingReq = this.pendingApprovals.get(requestId);
+        const pendingReq = pendingApprovals.get(requestId);
         if (pendingReq && pendingReq.status === 'pending') {
           pendingReq.status = 'timeout';
-          this.pendingApprovals.delete(requestId);
+          pendingApprovals.delete(requestId);
+          approvalCallbacks.delete(requestId);
           resolve({
             required: true,
             status: 'timeout',
@@ -73,16 +79,20 @@ export class ApprovalGate {
         }
       }, this.config.timeoutMs);
 
-      // Register callback for approval response
-      this.approvalCallbacks.set(requestId, (response) => {
+      // Register callback for approval response using shared storage
+      const callback = (response: ApprovalInfo) => {
         clearTimeout(timeout);
-        this.pendingApprovals.delete(requestId);
-        
+        pendingApprovals.delete(requestId);
+        approvalCallbacks.delete(requestId);
+
         // Record in history
         this.recordApproval(tool, response);
-        
+
         resolve(response);
-      });
+      };
+
+      // Register using shared storage function
+      registerPendingApproval(pending as any, callback as any);
     });
   }
 
@@ -90,7 +100,7 @@ export class ApprovalGate {
    * Submit approval response
    */
   submitApproval(requestId: string, approved: boolean, approver: string, reason?: string): void {
-    const callback = this.approvalCallbacks.get(requestId);
+    const callback = approvalCallbacks.get(requestId);
     if (!callback) {
       throw new Error(`No pending approval for request: ${requestId}`);
     }
@@ -103,8 +113,8 @@ export class ApprovalGate {
       reason,
     };
 
-    callback(response);
-    this.approvalCallbacks.delete(requestId);
+    callback(response as any);
+    approvalCallbacks.delete(requestId);
   }
 
   /**
@@ -214,7 +224,7 @@ export class ApprovalGate {
    * Get all pending approvals
    */
   getPendingApprovals(): PendingApproval[] {
-    return Array.from(this.pendingApprovals.values());
+    return Array.from(pendingApprovals.values()) as any[];
   }
 
   /**
