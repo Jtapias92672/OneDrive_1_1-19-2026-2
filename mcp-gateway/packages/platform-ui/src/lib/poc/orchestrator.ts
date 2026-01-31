@@ -193,6 +193,27 @@ export class ForgePOCOrchestrator {
         throw new Error('Either figmaUrl, htmlContent, or htmlPath is required');
       }
 
+      // Pre-flight check: Warn if no components fetched (Epic 7.5 v2)
+      if (components.length === 0) {
+        console.warn('⚠️  [PREFLIGHT] No components fetched from source');
+        if (input.figmaUrl) {
+          console.warn('⚠️  [PREFLIGHT] Possible causes:');
+          console.warn('    - Figma file is empty (no UI elements)');
+          console.warn('    - API depth parameter missing (check orchestrator.getFigmaFile)');
+          console.warn('    - File permissions issue');
+        }
+      } else {
+        const totalNodes = this.countTotalNodes(components);
+        console.log(`[Orchestrator] Fetched ${components.length} top-level components (${totalNodes} total nodes)`);
+
+        // Warn if suspiciously few nested nodes (possible depth issue)
+        if (input.figmaUrl && totalNodes === components.length && components.length > 0) {
+          console.warn('⚠️  [PREFLIGHT] No nested children found - possible depth parameter issue');
+          console.warn('    Top-level components: ${components.length}, Total nodes: ${totalNodes}');
+          console.warn('    Expected: totalNodes > topLevel for real Figma files');
+        }
+      }
+
       // Stage 2: Create Jira Epic
       if (!input.options?.skipJira) {
         this.emitProgress(runId, 'creating_jira_epic', 10, 'Creating Jira Epic...');
@@ -430,6 +451,20 @@ export class ForgePOCOrchestrator {
    */
   private convertToParsedComponents(parsedDesign: ReturnType<FigmaParser['parse']>): ParsedComponent[] {
     return this.convertComponents(parsedDesign.components);
+  }
+
+  /**
+   * Count total nodes including nested children (Epic 7.5 v2 preflight check)
+   * Used to detect depth parameter issues
+   */
+  private countTotalNodes(components: ParsedComponent[]): number {
+    let count = components.length;
+    for (const component of components) {
+      if (component.children && component.children.length > 0) {
+        count += this.countTotalNodes(component.children);
+      }
+    }
+    return count;
   }
 
   /**
