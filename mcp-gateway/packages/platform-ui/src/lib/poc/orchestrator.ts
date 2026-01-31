@@ -461,7 +461,10 @@ export class ForgePOCOrchestrator {
     let count = components.length;
     for (const component of components) {
       if (component.children && component.children.length > 0) {
-        count += this.countTotalNodes(component.children);
+        // Only count if children are ParsedComponent objects (not string IDs)
+        if (typeof component.children[0] !== 'string') {
+          count += this.countTotalNodes(component.children as ParsedComponent[]);
+        }
       }
     }
     return count;

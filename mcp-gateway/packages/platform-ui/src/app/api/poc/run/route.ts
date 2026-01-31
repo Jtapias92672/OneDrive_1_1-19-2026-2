@@ -211,18 +211,20 @@ export async function POST(request: NextRequest) {
             ...result,
             frontendComponents: result.frontendComponents.map(c => ({
               name: c.name,
+              code: '',  // Empty string satisfies type contract, FileViewer fetches full content
               filePath: c.filePath,
             })),
             htmlFiles: result.htmlFiles?.map(f => ({
               name: f.name,
+              content: '',  // Empty string satisfies type contract, FileViewer fetches full content
               path: f.path,
             })),
             backendFiles: {
-              controllers: result.backendFiles.controllers.map((f: any) => ({ name: f.name })),
-              services: result.backendFiles.services.map((f: any) => ({ name: f.name })),
-              models: result.backendFiles.models.map((f: any) => ({ name: f.name })),
-              routes: result.backendFiles.routes.map((f: any) => ({ name: f.name })),
-              tests: result.backendFiles.tests.map((f: any) => ({ name: f.name })),
+              controllers: result.backendFiles.controllers.map((f: any) => ({ name: f.name, content: '', path: f.path || '' })),
+              services: result.backendFiles.services.map((f: any) => ({ name: f.name, content: '', path: f.path || '' })),
+              models: result.backendFiles.models.map((f: any) => ({ name: f.name, content: '', path: f.path || '' })),
+              routes: result.backendFiles.routes.map((f: any) => ({ name: f.name, content: '', path: f.path || '' })),
+              tests: result.backendFiles.tests.map((f: any) => ({ name: f.name, content: '', path: f.path || '' })),
             },
           };
 
